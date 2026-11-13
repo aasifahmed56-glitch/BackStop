@@ -130,3 +130,4 @@ export default function Navbar({ activeTab, setActiveTab, role, setRole, onReset
     </header>
   );
 }
+

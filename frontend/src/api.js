@@ -89,3 +89,4 @@ export const api = {
   // Backtest
   getBacktest: (projectId = 1) => request(`/backtest/projects/${projectId}`),
 };
+

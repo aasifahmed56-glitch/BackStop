@@ -20,6 +20,12 @@
     "payments migration conflict meeting-06 vs issue-31 postponed",
     "notifications stale module no commits 45 days before cutoff"
   ],
+  "ground_truth_modules": [
+    "deploy",
+    "payments",
+    "auth",
+    "notifications"
+  ],
   "post_cutoff_events": [
     "Dev takes over deploy April 2026 hits two failures two reverts",
     "Kabir takes over payments migration decision reopened April issue",

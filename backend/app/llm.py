@@ -87,10 +87,10 @@ def complete_json(
     if _fake_provider is not None:
         return _fake_provider(system, user, schema)
 
-    provider = os.getenv("LLM_PROVIDER", "gemini").lower()
+    provider = os.getenv("LLM_PROVIDER", "none").lower()
     model = os.getenv("LLM_MODEL", "gemini-3.5-flash-lite")
     api_key = os.getenv("LLM_API_KEY", "")
-    daily_limit = int(os.getenv("LLM_DAILY_CALL_LIMIT", "100"))
+    daily_limit = int(os.getenv("LLM_DAILY_CALL_LIMIT", "50"))
 
     cache_key = get_cache_key(model, system, user)
     cache_file = CACHE_DIR / f"{cache_key}.json"

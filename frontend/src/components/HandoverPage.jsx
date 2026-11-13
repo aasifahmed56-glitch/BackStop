@@ -508,3 +508,4 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
     </div>
   );
 }
+

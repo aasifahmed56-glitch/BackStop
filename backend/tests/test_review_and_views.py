@@ -259,3 +259,4 @@ class TestHandoverAndRoleSecurity:
             ).first()
             assert log is not None
             assert "Alex Dev" in (log.detail or "")
+
