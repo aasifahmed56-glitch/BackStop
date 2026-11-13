@@ -1,0 +1,68 @@
+[
+  {
+    "type": "decision",
+    "quote": "Focus on a stable MVP by February.",
+    "chunk_id": "2936",
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "quote": "Auth: Riya (backend lead)",
+    "chunk_id": "2936",
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "quote": "Payments: Riya + Kabir",
+    "chunk_id": "2936",
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "quote": "Notifications: Meena",
+    "chunk_id": "2936",
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "quote": "Events API: Dev",
+    "chunk_id": "2936",
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "quote": "Web UI: Sara + Meena",
+    "chunk_id": "2936",
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "quote": "Deploy: Riya",
+    "chunk_id": "2936",
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "quote": "Docs: Dev + Kabir",
+    "chunk_id": "2936",
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "quote": "[Riya] Set up auth scaffold by 10 Oct.",
+    "chunk_id": "2937",
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "quote": "[Dev] Create GitHub repo and CI pipeline.",
+    "chunk_id": "2937",
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "quote": "[Sara] Wireframes for event pages by 15 Oct.",
+    "chunk_id": "2937",
+    "conflict": false
+  }
+]

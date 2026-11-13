@@ -1,0 +1,62 @@
+[
+  {
+    "type": "decision",
+    "quote": "Auth GDPR endpoint (in progress, hand off to Meena).",
+    "chunk_id": "2973",
+    "conflict": false
+  },
+  {
+    "type": "decision",
+    "quote": "Payments migration (postponed, hand off to Kabir).",
+    "chunk_id": "2973",
+    "conflict": false
+  },
+  {
+    "type": "decision",
+    "quote": "Sara to continue as main auth reviewer post-Riya.",
+    "chunk_id": "2973",
+    "conflict": false
+  },
+  {
+    "type": "reason",
+    "quote": null,
+    "chunk_id": "2970",
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "quote": "Dev: takes over deploy/ (needs Riya's runbook).",
+    "chunk_id": "2974",
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "quote": "Kabir: takes over payments/.",
+    "chunk_id": "2974",
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "quote": "Meena: takes over auth/ (with Sara's support).",
+    "chunk_id": "2974",
+    "conflict": false
+  },
+  {
+    "type": "blocker",
+    "quote": "FCM push key (blocked, no owner).",
+    "chunk_id": "2973",
+    "conflict": false
+  },
+  {
+    "type": "dependency",
+    "quote": "Dev: takes over deploy/ (needs Riya's runbook).",
+    "chunk_id": "2974",
+    "conflict": false
+  },
+  {
+    "type": "open_question",
+    "quote": "Notifications stale since late Jan \u2014 needs attention.",
+    "chunk_id": "2974",
+    "conflict": false
+  }
+]

@@ -1,0 +1,57 @@
+[
+  {
+    "type": "decision",
+    "quote": "Remove test keys from config before go-live.",
+    "chunk_id": "2950",
+    "reason": null,
+    "owner": null,
+    "blocker": null,
+    "dependency": null,
+    "open_question": null,
+    "conflict": false
+  },
+  {
+    "type": "decision",
+    "quote": "Remove immediately.",
+    "chunk_id": "2951",
+    "reason": "If test key leaks to production there will be issues.",
+    "owner": null,
+    "blocker": null,
+    "dependency": null,
+    "open_question": null,
+    "conflict": false
+  },
+  {
+    "type": "decision",
+    "quote": "Kabir to implement refund endpoint by 20 Dec.",
+    "chunk_id": "2950",
+    "reason": null,
+    "owner": "Kabir",
+    "blocker": null,
+    "dependency": null,
+    "open_question": null,
+    "conflict": false
+  },
+  {
+    "type": "decision",
+    "quote": "[Kabir] Refund endpoint by 20 Dec.",
+    "chunk_id": "2952",
+    "reason": null,
+    "owner": "Kabir",
+    "blocker": null,
+    "dependency": null,
+    "open_question": null,
+    "conflict": false
+  },
+  {
+    "type": "decision",
+    "quote": "[Riya] Rotate Stripe keys before staging deploy.",
+    "chunk_id": "2952",
+    "reason": null,
+    "owner": "Riya",
+    "blocker": null,
+    "dependency": null,
+    "open_question": null,
+    "conflict": false
+  }
+]

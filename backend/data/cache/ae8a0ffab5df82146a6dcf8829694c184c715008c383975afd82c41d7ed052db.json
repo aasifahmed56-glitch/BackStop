@@ -1,0 +1,62 @@
+[
+  {
+    "type": "decision",
+    "quote": "Going with JWT \u2014 sessions had issues in demo.",
+    "chunk_id": 2728,
+    "conflict": false
+  },
+  {
+    "type": "reason",
+    "quote": "sessions had issues in demo.",
+    "chunk_id": 2728,
+    "conflict": false
+  },
+  {
+    "type": "decision",
+    "quote": "Going with Stripe for now \u2014 better docs.",
+    "chunk_id": 2732,
+    "conflict": false
+  },
+  {
+    "type": "reason",
+    "quote": "better docs.",
+    "chunk_id": 2732,
+    "conflict": false
+  },
+  {
+    "type": "decision",
+    "quote": "Websockets broke on campus wifi in testing \u2014 reverting to polling.",
+    "chunk_id": 2740,
+    "conflict": false
+  },
+  {
+    "type": "reason",
+    "quote": "Websockets broke on campus wifi in testing",
+    "chunk_id": 2740,
+    "conflict": false
+  },
+  {
+    "type": "decision",
+    "quote": "Migration postponed to next sprint \u2014 not enough time to test.",
+    "chunk_id": 2763,
+    "conflict": false
+  },
+  {
+    "type": "reason",
+    "quote": "not enough time to test.",
+    "chunk_id": 2763,
+    "conflict": false
+  },
+  {
+    "type": "blocker",
+    "quote": "Blocked on key provisioning.",
+    "chunk_id": 2767,
+    "conflict": false
+  },
+  {
+    "type": "blocker",
+    "quote": "No one has access to the FCM console. This is blocked.",
+    "chunk_id": 2768,
+    "conflict": false
+  }
+]

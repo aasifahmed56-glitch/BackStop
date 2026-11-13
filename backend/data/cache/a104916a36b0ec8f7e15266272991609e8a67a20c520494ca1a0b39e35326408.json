@@ -1,0 +1,117 @@
+[
+  {
+    "type": "decision",
+    "quote": "Payment gateway research done. Stripe wins.",
+    "chunk_id": "2845"
+  },
+  {
+    "type": "decision",
+    "quote": "Reverting to polling.",
+    "chunk_id": "2868"
+  },
+  {
+    "type": "decision",
+    "quote": "Polling it is.",
+    "chunk_id": "2870"
+  },
+  {
+    "type": "decision",
+    "quote": "Let's target 20 Feb as per the sprint plan.",
+    "chunk_id": "2890"
+  },
+  {
+    "type": "decision",
+    "quote": "Migration postponed \u2014 not enough testing time. Per issue #31.",
+    "chunk_id": "2895"
+  },
+  {
+    "type": "reason",
+    "quote": "Sessions failed under load in the demo \u2014 the server couldn't keep up with concurrent requests. JWT is stateless so it scales horizontally.",
+    "chunk_id": "2854"
+  },
+  {
+    "type": "reason",
+    "quote": "Also easier for the mobile client.",
+    "chunk_id": "2856"
+  },
+  {
+    "type": "reason",
+    "quote": "Yeah, websockets need persistent connections \u2014 campus wifi drops them. Polling is safer.",
+    "chunk_id": "2869"
+  },
+  {
+    "type": "reason",
+    "quote": "Migration postponed \u2014 not enough testing time. Per issue #31.",
+    "chunk_id": "2895"
+  },
+  {
+    "type": "owner",
+    "quote": "I'll start on auth today.",
+    "chunk_id": "2836"
+  },
+  {
+    "type": "owner",
+    "quote": "I'll take the event creation form.",
+    "chunk_id": "2837"
+  },
+  {
+    "type": "owner",
+    "quote": "I'll help Riya with payments once auth is scaffolded.",
+    "chunk_id": "2838"
+  },
+  {
+    "type": "owner",
+    "quote": "I'll handle notifications. Setting up SendGrid.",
+    "chunk_id": "2839"
+  },
+  {
+    "type": "owner",
+    "quote": "I'll integrate Stripe this week.",
+    "chunk_id": "2846"
+  },
+  {
+    "type": "owner",
+    "quote": "I can help with webhook testing.",
+    "chunk_id": "2863"
+  },
+  {
+    "type": "owner",
+    "quote": "I'll handle the testing harness.",
+    "chunk_id": "2891"
+  },
+  {
+    "type": "owner",
+    "quote": "Dev can you write up the deploy runbook? Only you have the full picture.",
+    "chunk_id": "2897"
+  },
+  {
+    "type": "blocker",
+    "quote": "FCM push key still blocked \u2014 no one has console access.",
+    "chunk_id": "2905"
+  },
+  {
+    "type": "dependency",
+    "quote": "I'll help Riya with payments once auth is scaffolded.",
+    "chunk_id": "2838"
+  },
+  {
+    "type": "open_question",
+    "quote": "Quick question \u2014 why JWT and not server sessions?",
+    "chunk_id": "2853"
+  },
+  {
+    "type": "open_question",
+    "quote": "Any blockers for today?",
+    "chunk_id": "2864"
+  },
+  {
+    "type": "open_question",
+    "quote": "Will the notifications PR be ready today?",
+    "chunk_id": "2884"
+  },
+  {
+    "type": "open_question",
+    "quote": "Who's taking over deploy after Riya leaves?",
+    "chunk_id": "2911"
+  }
+]

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
+import { ChevronDown, ChevronUp,
   BarChart3,
   CheckCircle2,
   XCircle,
@@ -17,7 +17,27 @@ import {
 } from "lucide-react";
 import { api } from "../api";
 
-export default function BacktestPage() {
+
+function HelpPanel({ children }) {
+  const [open, setOpen] = React.useState(false);
+  return (
+    <div className="border border-gray-200 rounded-xl bg-gray-50 overflow-hidden">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors cursor-pointer"
+      >
+        <span>What am I looking at?</span>
+        {open ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+      </button>
+      {open && (
+        <div className="px-4 pb-4 text-sm text-gray-600 leading-relaxed border-t border-gray-200 pt-3">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+export default function BacktestPage({ setActiveTab }) {
   const [backtestData, setBacktestData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -48,11 +68,11 @@ export default function BacktestPage() {
           <div className="flex items-center gap-2">
             <BarChart3 className="w-6 h-6 text-indigo-600" />
             <h1 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight">
-              Handover Risk Backtest
+              Did it work? (test)
             </h1>
           </div>
           <p className="text-xs md:text-sm text-gray-500 mt-1">
-            Re-runs the derived engine strictly up to the departure cutoff date, comparing Backstop risk ranking against raw commit-count baseline.
+            Backstop's risk rankings vs. raw commit counts — measured against post-departure ground truth.
           </p>
         </div>
 
@@ -83,7 +103,18 @@ export default function BacktestPage() {
         </div>
       </div>
 
-      {isLoading ? (
+      
+      <HelpPanel>
+        <p>
+          Backstop re-runs its risk-scoring engine using only data before the departure date, then compares ranked modules
+          to a hidden ground_truth.json the AI never sees. <strong>Precision@k</strong> = what fraction of top-k predictions were real problems.
+          <strong>Recall@k</strong> = what fraction of all real problems were caught in the top k.
+        </p>
+        <p className="mt-2">
+          This is a tiny synthetic dataset of 7 modules; 4 of 7 are positives. High recall is expected by chance. Results are a demonstration only.
+        </p>
+      </HelpPanel>
+{isLoading ? (
         <div className="p-16 bg-white rounded-2xl border border-gray-200 text-center space-y-3">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-indigo-600 border-t-transparent" />
           <p className="text-xs font-semibold text-gray-600">Re-running derived risk algorithms & evaluating rankings...</p>
@@ -117,7 +148,7 @@ export default function BacktestPage() {
                   ? `Equal P@4 with baseline`
                   : backtestData.backstop?.metrics?.["precision@4"] != null
                   ? `P@4: ${(backtestData.backstop.metrics["precision@4"] * 100).toFixed(0)}%`
-                  : "See table →"}
+                  : "See table â†’"}
               </div>
               <p className="text-xs text-emerald-600/80">Same hits at k=1..4; Backstop ranks deploy first, baseline ranks it third</p>
             </div>
@@ -311,7 +342,7 @@ export default function BacktestPage() {
                     <span><strong>Hits (4/4):</strong> deploy, payments, auth, notifications</span>
                   </div>
                   <div className="flex items-center gap-1.5 text-gray-500">
-                    <span className="w-4 text-center">—</span>
+                    <span className="w-4 text-center">â€”</span>
                     <span><strong>Misses (0):</strong> None. Perfect recall at k=4.</span>
                   </div>
                 </div>
@@ -321,7 +352,7 @@ export default function BacktestPage() {
                 <span className="text-xs font-bold text-slate-900 uppercase">What the Rankings Show</span>
                 <p className="text-xs text-slate-700 leading-relaxed">
                   Same hits at k=1..4; Backstop ranks <em>deploy</em> first, baseline ranks it third.
-                  Both reach 100% recall at k=4. The score formula (leaver share × staleness × 1/others)
+                  Both reach 100% recall at k=4. The score formula (leaver share Ã— staleness Ã— 1/others)
                   shifts ordering but does not change the total number of hits on this dataset.
                 </p>
               </div>
@@ -330,7 +361,7 @@ export default function BacktestPage() {
 
           {/* Limitations Note */}
           <div className="p-4 bg-amber-50 rounded-xl border border-amber-200 flex gap-3 items-start">
-            <span className="text-amber-500 mt-0.5 shrink-0">⚠️</span>
+            <span className="text-amber-500 mt-0.5 shrink-0">âš ï¸</span>
             <p className="text-xs text-amber-900 leading-relaxed">
               <strong>Limitations:</strong> Tiny synthetic dataset of 7 modules; 4 of 7 (57%) are positives, so high recall is expected by chance.
               These results are a <strong>demonstration only</strong> and do not reflect real-world performance.
@@ -349,7 +380,7 @@ export default function BacktestPage() {
               <div className="space-y-2">
                 <div className="text-xs font-bold text-indigo-700 uppercase flex items-center justify-between">
                   <span>Backstop Ranking (Knowledge at Risk)</span>
-                  <span className="text-[10px] text-gray-400">Score = Share × Staleness × 1/Others</span>
+                  <span className="text-[10px] text-gray-400">Score = Share Ã— Staleness Ã— 1/Others</span>
                 </div>
                 <div className="space-y-1.5">
                   {backtestData.backstop?.ranking?.map((r) => (
@@ -413,14 +444,36 @@ export default function BacktestPage() {
               </div>
             </div>
           </div>
+
+          {/* Next Step / Complete Walkthrough */}
+          <div className="flex justify-center pt-4 no-print">
+            <button
+              onClick={() => setActiveTab?.("home")}
+              className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 py-3 rounded-xl text-sm shadow-sm hover:shadow-md transition-all cursor-pointer"
+            >
+              <RefreshCw className="w-4 h-4" /> Start another demo run (Back to Step 1)
+            </button>
+          </div>
         </div>
       ) : (
-        <div className="p-12 bg-white rounded-2xl border border-gray-200 text-center space-y-2 text-gray-500">
+        <div className="p-12 bg-white rounded-2xl border border-gray-200 text-center space-y-3 text-gray-500">
           <HelpCircle className="w-8 h-8 mx-auto text-gray-400" />
           <h4 className="font-bold text-gray-800">No Backtest Data Available</h4>
           <p className="text-xs">Ensure sample git log is loaded and departure cutoff date is configured.</p>
+          <div className="pt-2">
+            <button
+              onClick={() => setActiveTab?.("home")}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-xs font-bold rounded-xl cursor-pointer hover:bg-indigo-700"
+            >
+              Go to Step 1: Load data
+            </button>
+          </div>
         </div>
       )}
     </div>
   );
 }
+
+
+
+

@@ -1,0 +1,14 @@
+{
+  "decisions": [],
+  "reasons": [],
+  "owners": [],
+  "blockers": [
+    {
+      "quote": "Deploy pipeline is non-trivial",
+      "chunk_id": "2946",
+      "conflict": false
+    }
+  ],
+  "dependencies": [],
+  "open_questions": []
+}

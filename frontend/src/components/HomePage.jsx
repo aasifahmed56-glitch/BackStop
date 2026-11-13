@@ -1,19 +1,31 @@
 import React, { useState } from "react";
 import {
-  FileText,
-  Shield,
-  CheckCircle2,
-  AlertTriangle,
-  Play,
-  RotateCcw,
-  Sparkles,
-  ArrowRight,
-  Database,
-  Lock,
-  GitCommit,
-  Layers,
-  HelpCircle,
+  ArrowRight, CheckCircle2, ChevronDown, ChevronUp,
+  RotateCcw, HelpCircle,
 } from "lucide-react";
+
+function HelpPanel({ children }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="border border-gray-200 rounded-2xl bg-white shadow-xs overflow-hidden">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center justify-between px-5 py-3.5 text-[15px] font-semibold text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-colors cursor-pointer"
+      >
+        <span className="flex items-center gap-2">
+          <HelpCircle className="w-4 h-4 text-indigo-600" />
+          What am I looking at?
+        </span>
+        {open ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+      </button>
+      {open && (
+        <div className="px-5 pb-5 text-[15px] text-gray-600 leading-relaxed border-t border-gray-100 pt-3">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function HomePage({
   project,
@@ -26,191 +38,143 @@ export default function HomePage({
   actionStatus,
 }) {
   return (
-    <div className="space-y-10 max-w-6xl mx-auto py-2">
-      {/* Hero Section */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-900 via-indigo-800 to-slate-900 text-white p-8 md:p-12 shadow-xl border border-indigo-700/40">
-        <div className="relative z-10 max-w-3xl space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/30 border border-indigo-400/30 text-indigo-200 text-xs font-semibold uppercase tracking-wider backdrop-blur-xs">
-            <Sparkles className="w-3.5 h-3.5 text-indigo-300" />
-            Deterministic & LLM-Powered Transition System
-          </div>
-          <h1 className="text-3xl md:text-5xl font-black tracking-tight leading-tight">
-            Every claim shows its source quote and a status. A human approves before handover.
-          </h1>
-          <p className="text-base md:text-lg text-indigo-100 font-normal leading-relaxed">
-            Backstop turns messy git logs, issues, meeting notes, tasks, and chat exports into an auditable ledger of claims.
-            Every item is either mathematically computed by plain code or strictly cited from exact source quotes.
-          </p>
+    <div className="max-w-3xl mx-auto space-y-8 py-6">
 
-          <div className="pt-4 flex flex-wrap items-center gap-4">
-            <button
-              onClick={onResetSample}
-              disabled={isLoading}
-              className="flex items-center gap-2.5 bg-amber-400 hover:bg-amber-300 text-amber-950 font-bold px-6 py-3.5 rounded-xl shadow-lg hover:shadow-xl transition-all transform active:scale-95 disabled:opacity-50 cursor-pointer text-sm md:text-base"
-            >
-              <RotateCcw className={`w-5 h-5 ${isLoading ? "animate-spin" : ""}`} />
-              {isLoading ? "Loading Synthetic Project..." : "Load the Sample Project"}
-            </button>
+      {/* Hero */}
+      <div className="text-center space-y-4">
+        <h1 className="text-3xl md:text-5xl font-black text-gray-900 tracking-tight leading-tight">
+          Team handover, with proof.
+        </h1>
+        <p className="text-lg text-gray-600 leading-relaxed max-w-xl mx-auto">
+          Backstop turns messy git logs, issues, and notes into an auditable handover document where every claim is backed by an exact quote and approved by a human.
+        </p>
 
-            <button
-              onClick={() => setActiveTab("review")}
-              className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 font-semibold px-5 py-3.5 rounded-xl transition-all text-sm cursor-pointer backdrop-blur-xs"
-            >
-              Open Review Queue
-              <ArrowRight className="w-4 h-4" />
-            </button>
-
-            <button
-              onClick={() => setActiveTab("handover")}
-              className="flex items-center gap-2 bg-indigo-600/50 hover:bg-indigo-600/70 text-indigo-100 border border-indigo-400/30 font-semibold px-5 py-3.5 rounded-xl transition-all text-sm cursor-pointer backdrop-blur-xs"
-            >
-              View Handover Dossier
-            </button>
-          </div>
-
-          {actionStatus && (
-            <div className="mt-4 p-3 rounded-lg bg-indigo-950/70 border border-indigo-500/40 text-xs text-indigo-200 flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-              <span>{actionStatus}</span>
-            </div>
-          )}
-        </div>
-
-        {/* Ambient background decoration */}
-        <div className="absolute -right-20 -bottom-20 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
-      </div>
-
-      {/* Synthetic Data & Simulation Callout */}
-      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-3.5 text-blue-900 text-sm shadow-2xs">
-        <HelpCircle className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
-        <div>
-          <h4 className="font-bold text-blue-950">Fictional Data & Simulated Role-Based Access</h4>
-          <p className="mt-0.5 text-blue-800 leading-normal text-xs md:text-sm">
-            All people, code commits, issues, and notes in this demo are 100% synthetic (Project: <em>Campus Event App</em>, Leaver: <em>Riya</em>, Cutoff: <em>15 Mar 2026</em>).
-            There is no external login system. Use the simulated role switcher in the top bar to inspect how Backstop automatically redacts restricted information for <code className="bg-blue-100 text-blue-900 px-1 py-0.5 rounded">incoming_dev</code> and <code className="bg-blue-100 text-blue-900 px-1 py-0.5 rounded">incoming_pm</code> while providing complete clarity to <code className="bg-blue-100 text-blue-900 px-1 py-0.5 rounded">lead</code> and <code className="bg-blue-100 text-blue-900 px-1 py-0.5 rounded">admin</code>.
+        {/* Big primary button */}
+        <div className="pt-3">
+          <button
+            onClick={async () => {
+              await onResetSample();
+              setActiveTab("review");
+            }}
+            disabled={isLoading}
+            className="inline-flex items-center gap-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-8 py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all transform active:scale-95 disabled:opacity-60 cursor-pointer text-base"
+          >
+            <RotateCcw className={`w-5 h-5 ${isLoading ? "animate-spin" : ""}`} />
+            {isLoading ? "Loading sample project..." : "Start the 2-minute demo"}
+            {!isLoading && <ArrowRight className="w-5 h-5" />}
+          </button>
+          <p className="text-xs text-gray-400 mt-2">
+            Loads sample data, runs verification checks, and opens Step 2 (Check claims).
           </p>
         </div>
+
+        {actionStatus && (
+          <div className="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm px-4 py-2.5 rounded-xl">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            {actionStatus}
+          </div>
+        )}
       </div>
 
-      {/* Live Sample Project Stats */}
-      {project && (
-        <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-xs space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
-            <div>
-              <div className="text-xs font-bold text-indigo-600 uppercase tracking-wider">Active Workspace</div>
-              <h2 className="text-xl font-black text-gray-900">{project.name}</h2>
-              <p className="text-xs text-gray-500 mt-0.5">
-                Departing Teammate: <strong className="text-gray-800">{project.leaver_name}</strong> · Cutoff Date: <strong className="text-gray-800">{project.departure_date}</strong>
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={onDerive}
-                disabled={isLoading}
-                className="px-3 py-1.5 text-xs font-semibold bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg border border-gray-300 transition-colors cursor-pointer"
-              >
-                Re-run Plain Derivation
-              </button>
-              <button
-                onClick={onExtract}
-                disabled={isLoading}
-                className="px-3 py-1.5 text-xs font-semibold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg border border-indigo-200 transition-colors cursor-pointer"
-              >
-                Re-run LLM Extraction
-              </button>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
-              <span className="text-xs font-medium text-gray-500">Ingested Sources</span>
-              <div className="text-xl font-black text-gray-900 mt-1">{project.source_count || 5}</div>
-              <span className="text-[11px] text-gray-400">git, issues, notes, tasks, chat</span>
-            </div>
-            <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
-              <span className="text-xs font-medium text-gray-500">Indexed Chunks</span>
-              <div className="text-xl font-black text-gray-900 mt-1">{project.chunk_count || 0}</div>
-              <span className="text-[11px] text-gray-400">line-numbered citations</span>
-            </div>
-            <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
-              <span className="text-xs font-medium text-gray-500">Total Claims in Ledger</span>
-              <div className="text-xl font-black text-indigo-600 mt-1">{stats?.total_claims || 0}</div>
-              <span className="text-[11px] text-gray-400">
-                {stats?.kind_breakdown?.derived || 0} derived · {stats?.kind_breakdown?.interpreted || 0} interpreted
+      {/* Try this - 4-step card */}
+      <div className="bg-white border border-gray-200 rounded-2xl shadow-xs overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+          <h2 className="font-bold text-gray-900 text-base">Try this - 4 steps, 2 minutes</h2>
+        </div>
+        <ol className="divide-y divide-gray-100">
+          {[
+            {
+              n: 1,
+              label: "Load sample data",
+              sub: "Click the big button above. Backstop ingests 5 synthetic sources, masks sensitive tokens, and compiles verifiable claims.",
+            },
+            {
+              n: 2,
+              label: "Check the claims",
+              sub: "Inspect claims with exact source quotes. Use 'Approve all Verified' as a demo shortcut or review one-by-one.",
+            },
+            {
+              n: 3,
+              label: "View the handover",
+              sub: "Switch roles between New developer, New project manager, and Lead to observe permission-gated sections.",
+            },
+            {
+              n: 4,
+              label: "Did it work? (test)",
+              sub: "Evaluate Backstop's risk rankings against unassisted post-departure ground truth metrics.",
+            },
+          ].map((step) => (
+            <li key={step.n} className="flex items-start gap-4 px-6 py-4">
+              <span className="w-7 h-7 rounded-full bg-indigo-600 text-white flex items-center justify-center font-black text-sm shrink-0 mt-0.5">
+                {step.n}
               </span>
-            </div>
-            <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
-              <span className="text-xs font-medium text-gray-500">Approved for Handover</span>
-              <div className="text-xl font-black text-emerald-600 mt-1">{stats?.approved_count || 0}</div>
-              <span className="text-[11px] text-gray-400">ready in Day 1 / Week 1 / Month 1</span>
-            </div>
+              <div>
+                <p className="font-semibold text-gray-900 text-[15px]">{step.label}</p>
+                <p className="text-sm text-gray-500 mt-0.5 leading-relaxed">{step.sub}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </div>
+
+      {/* Next step prompt if already loaded */}
+      {project && stats?.total_claims > 0 && (
+        <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <p className="font-bold text-emerald-900 text-[15px]">
+              Sample project already loaded ({stats.total_claims} claims ready)
+            </p>
+            <p className="text-xs text-emerald-700 mt-0.5">
+              {stats.approved_count ?? 0} approved · {stats.status_breakdown?.verified ?? 0} verified · Departing: {project.leaver_name}
+            </p>
           </div>
+          <button
+            onClick={() => setActiveTab("review")}
+            className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-5 py-2.5 rounded-xl text-sm transition-colors cursor-pointer shrink-0 shadow-xs"
+          >
+            Go to Step 2: Check claims
+            <ArrowRight className="w-4 h-4" />
+          </button>
         </div>
       )}
 
-      {/* 3-Step Guided Architecture */}
-      <div className="space-y-4">
-        <div className="text-center max-w-xl mx-auto">
-          <h3 className="text-xl font-bold text-gray-900">How Backstop Guarantees Handover Integrity</h3>
-          <p className="text-xs text-gray-500 mt-1">
-            Three strict safeguards prevent hallucinated handovers, knowledge leaks, and orphan services.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
-          {/* Step 1 */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-xs flex flex-col justify-between hover:border-indigo-300 transition-all">
-            <div className="space-y-3">
-              <div className="w-10 h-10 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-700 flex items-center justify-center font-bold text-sm">
-                1
-              </div>
-              <h4 className="font-bold text-gray-900 text-base">Ingest & Mask Secrets</h4>
-              <p className="text-xs text-gray-600 leading-relaxed">
-                Raw git logs, issues, notes, and chats are parsed into chunk-level citations. Before any LLM call, API keys, passwords, emails, and phone numbers are strictly redacted.
-              </p>
-            </div>
-            <div className="mt-4 pt-3 border-t border-gray-100 text-[11px] text-indigo-600 font-semibold flex items-center gap-1.5">
-              <Lock className="w-3.5 h-3.5" />
-              Pre-LLM privacy barrier
-            </div>
-          </div>
-
-          {/* Step 2 */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-xs flex flex-col justify-between hover:border-indigo-300 transition-all">
-            <div className="space-y-3">
-              <div className="w-10 h-10 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-700 flex items-center justify-center font-bold text-sm">
-                2
-              </div>
-              <h4 className="font-bold text-gray-900 text-base">Deduce & Double-Verify</h4>
-              <p className="text-xs text-gray-600 leading-relaxed">
-                Code metrics (sole knowledge, staleness, git reverts) are calculated by <strong>plain Python code</strong>. LLM items require <strong>exact substring quotes</strong> verified against original source text and corroborated by support checks.
-              </p>
-            </div>
-            <div className="mt-4 pt-3 border-t border-gray-100 text-[11px] text-indigo-600 font-semibold flex items-center gap-1.5">
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              Checks reduce errors; a human approves
-            </div>
-          </div>
-
-          {/* Step 3 */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-xs flex flex-col justify-between hover:border-indigo-300 transition-all">
-            <div className="space-y-3">
-              <div className="w-10 h-10 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-700 flex items-center justify-center font-bold text-sm">
-                3
-              </div>
-              <h4 className="font-bold text-gray-900 text-base">Human Review & Phased Plan</h4>
-              <p className="text-xs text-gray-600 leading-relaxed">
-                Human reviewers approve, correct, or reject claims with version history. Approved claims auto-compile into Day 1, Week 1, and Month 1 action plans with locked placeholders for withheld secrets.
-              </p>
-            </div>
-            <div className="mt-4 pt-3 border-t border-gray-100 text-[11px] text-indigo-600 font-semibold flex items-center gap-1.5">
-              <Shield className="w-3.5 h-3.5" />
-              Permission-aware output
-            </div>
-          </div>
-        </div>
+      {/* Synthetic data notice, shortened */}
+      <div className="text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded-xl p-3.5 text-center leading-relaxed">
+        <strong>Synthetic demonstration:</strong> All projects, people, git logs, and notes are fictional. Roles are simulated in-browser.
       </div>
+
+      {/* Collapsible Help Panel */}
+      <HelpPanel>
+        <p>
+          Backstop uses deterministic code analysis on git history to derive ownership, staleness, and reverts, combined with strict LLM quotation checks for decisions and risks.
+          Every item requires character-by-character proof from source files before a human reviewer can approve it for handover.
+        </p>
+      </HelpPanel>
+
+      {/* Advanced: re-run individual steps */}
+      {project && (
+        <details className="text-xs text-gray-400">
+          <summary className="cursor-pointer hover:text-gray-600 font-semibold select-none">
+            Advanced options
+          </summary>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button
+              onClick={onDerive}
+              disabled={isLoading}
+              className="px-3 py-1.5 bg-white hover:bg-gray-100 text-gray-700 rounded-lg border border-gray-300 font-semibold transition-colors cursor-pointer disabled:opacity-50"
+            >
+              Re-run plain code derivation
+            </button>
+            <button
+              onClick={onExtract}
+              disabled={isLoading}
+              className="px-3 py-1.5 bg-white hover:bg-gray-100 text-gray-700 rounded-lg border border-gray-300 font-semibold transition-colors cursor-pointer disabled:opacity-50"
+            >
+              Re-run LLM extraction
+            </button>
+          </div>
+        </details>
+      )}
     </div>
   );
 }
-
