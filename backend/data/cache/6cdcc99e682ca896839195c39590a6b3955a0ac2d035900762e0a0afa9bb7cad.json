@@ -1,0 +1,32 @@
+{
+  "decisions": [
+    {
+      "quote": "JWT is the auth mechanism. Sessions were rejected due to load failures in the Oct demo.",
+      "chunk_id": "850"
+    }
+  ],
+  "reasons": [
+    {
+      "quote": "Sessions were rejected due to load failures in the Oct demo.",
+      "chunk_id": "850"
+    }
+  ],
+  "owners": [
+    {
+      "quote": "Remaining: GDPR deletion endpoint (hand to Meena).",
+      "chunk_id": "850"
+    },
+    {
+      "quote": "Kabir has context on the gateway.",
+      "chunk_id": "851"
+    }
+  ],
+  "blockers": [
+    {
+      "quote": "Push notification setup is fully blocked.",
+      "chunk_id": "855"
+    }
+  ],
+  "dependencies": [],
+  "open_questions": []
+}

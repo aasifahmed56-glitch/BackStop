@@ -1,0 +1,27 @@
+[
+  {
+    "chunk_id": "671",
+    "blockers": [
+      {
+        "quote": "No owner assigned. FCM console access unclear. BLOCKED.",
+        "reason": "FCM console access unclear"
+      }
+    ]
+  },
+  {
+    "chunk_id": "680",
+    "owners": [
+      {
+        "quote": "Riya to document the full deploy process before departure."
+      }
+    ]
+  },
+  {
+    "chunk_id": "681",
+    "dependencies": [
+      {
+        "quote": "See issue #31."
+      }
+    ]
+  }
+]

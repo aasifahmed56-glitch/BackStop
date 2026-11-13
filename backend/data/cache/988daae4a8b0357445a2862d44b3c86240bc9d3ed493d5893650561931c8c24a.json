@@ -1,0 +1,36 @@
+{
+  "decisions": [
+    {
+      "quote": "Payments migration postponed (see issue #31).",
+      "chunk_id": "833",
+      "conflict": false
+    }
+  ],
+  "reasons": [],
+  "owners": [
+    {
+      "quote": "Auth: GDPR deletion endpoint in progress. Riya handling.",
+      "chunk_id": "833",
+      "conflict": false
+    },
+    {
+      "quote": "- [Riya] Complete deploy runbook before 15 Mar.",
+      "chunk_id": "835",
+      "conflict": false
+    },
+    {
+      "quote": "- [Dev] Identify who takes over deploy after Riya.",
+      "chunk_id": "835",
+      "conflict": false
+    }
+  ],
+  "blockers": [
+    {
+      "quote": "Notifications: push notification keys still blocked.",
+      "chunk_id": "833",
+      "conflict": false
+    }
+  ],
+  "dependencies": [],
+  "open_questions": []
+}

@@ -1,0 +1,57 @@
+{
+  "decisions": [
+    {
+      "quote": "Auth GDPR endpoint (in progress, hand off to Meena).",
+      "chunk_id": "839",
+      "conflict": false
+    },
+    {
+      "quote": "Payments migration (postponed, hand off to Kabir).",
+      "chunk_id": "839",
+      "conflict": false
+    },
+    {
+      "quote": "Dev: takes over deploy/ (needs Riya's runbook).",
+      "chunk_id": "840",
+      "conflict": false
+    },
+    {
+      "quote": "Kabir: takes over payments/.",
+      "chunk_id": "840",
+      "conflict": false
+    },
+    {
+      "quote": "Meena: takes over auth/ (with Sara's support).",
+      "chunk_id": "840",
+      "conflict": false
+    }
+  ],
+  "reasons": [],
+  "owners": [
+    {
+      "quote": "[Riya] Finalise runbook by 12 Mar.",
+      "chunk_id": "841",
+      "conflict": false
+    },
+    {
+      "quote": "[Dev] Review deploy/ codebase with Riya this week.",
+      "chunk_id": "841",
+      "conflict": false
+    }
+  ],
+  "blockers": [
+    {
+      "quote": "FCM push key (blocked, no owner).",
+      "chunk_id": "839",
+      "conflict": false
+    }
+  ],
+  "dependencies": [
+    {
+      "quote": "Dev: takes over deploy/ (needs Riya's runbook).",
+      "chunk_id": "840",
+      "conflict": false
+    }
+  ],
+  "open_questions": []
+}

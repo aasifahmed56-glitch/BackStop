@@ -1,0 +1,34 @@
+{
+  "decisions": [],
+  "reasons": [],
+  "owners": [
+    {
+      "item": "Deploy will own after 15 Mar.",
+      "quote": "Deploy: Dev will own after 15 Mar.",
+      "chunk_id": "844",
+      "conflict": false
+    },
+    {
+      "item": "Push notification keys: still no owner.",
+      "quote": "Push notification keys: still no owner.",
+      "chunk_id": "845",
+      "conflict": false
+    },
+    {
+      "item": "Own payments migration in April sprint.",
+      "quote": "[Kabir] Own payments migration in April sprint.",
+      "chunk_id": "846",
+      "conflict": false
+    }
+  ],
+  "blockers": [
+    {
+      "item": "Migration blocked on testing.",
+      "quote": "Migration blocked on testing.",
+      "chunk_id": "844",
+      "conflict": false
+    }
+  ],
+  "dependencies": [],
+  "open_questions": []
+}

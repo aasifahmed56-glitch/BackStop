@@ -1,0 +1,128 @@
+[
+  {
+    "type": "decision",
+    "quote": "Stripe wins.",
+    "chunk_id": "711",
+    "conflict": false
+  },
+  {
+    "type": "decision",
+    "quote": "Reverting to polling.",
+    "chunk_id": "734",
+    "conflict": false
+  },
+  {
+    "type": "decision",
+    "quote": "Polling it is.",
+    "chunk_id": "736",
+    "conflict": false
+  },
+  {
+    "type": "decision",
+    "quote": "Migration postponed \u2014 not enough testing time. Per issue #31.",
+    "chunk_id": "761",
+    "conflict": false
+  },
+  {
+    "type": "reason",
+    "quote": "Sessions failed under load in the demo \u2014 the server couldn't keep up with concurrent requests. JWT is stateless so it scales horizontally.",
+    "chunk_id": "720",
+    "conflict": false
+  },
+  {
+    "type": "reason",
+    "quote": "Also easier for the mobile client.",
+    "chunk_id": "722",
+    "conflict": false
+  },
+  {
+    "type": "reason",
+    "quote": "Websockets need persistent connections \u2014 campus wifi drops them. Polling is safer.",
+    "chunk_id": "735",
+    "conflict": false
+  },
+  {
+    "type": "reason",
+    "quote": "Migration postponed \u2014 not enough testing time.",
+    "chunk_id": "761",
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "quote": "I'll start on auth today.",
+    "chunk_id": "702",
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "quote": "I'll take the event creation form.",
+    "chunk_id": "703",
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "quote": "I'll help Riya with payments once auth is scaffolded.",
+    "chunk_id": "704",
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "quote": "I'll handle notifications. Setting up SendGrid.",
+    "chunk_id": "705",
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "quote": "I'll integrate Stripe this week.",
+    "chunk_id": "712",
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "quote": "I can help with webhook testing.",
+    "chunk_id": "729",
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "quote": "I'll handle the testing harness.",
+    "chunk_id": "757",
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "quote": "Adding it to my tasks.",
+    "chunk_id": "764",
+    "conflict": false
+  },
+  {
+    "type": "blocker",
+    "quote": "FCM push key still blocked \u2014 no one has console access.",
+    "chunk_id": "771",
+    "conflict": false
+  },
+  {
+    "type": "dependency",
+    "quote": "I'll help Riya with payments once auth is scaffolded.",
+    "chunk_id": "704",
+    "conflict": false
+  },
+  {
+    "type": "open_question",
+    "quote": "Quick question \u2014 why JWT and not server sessions?",
+    "chunk_id": "719",
+    "conflict": false
+  },
+  {
+    "type": "open_question",
+    "quote": "Will the notifications PR be ready today?",
+    "chunk_id": "750",
+    "conflict": false
+  },
+  {
+    "type": "open_question",
+    "quote": "Who's taking over deploy after Riya leaves?",
+    "chunk_id": "777",
+    "conflict": false
+  }
+]
