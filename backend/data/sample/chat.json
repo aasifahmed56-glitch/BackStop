@@ -1,0 +1,590 @@
+[
+  {
+    "id": 1,
+    "author": "Dev",
+    "text": "Repo is up! Everyone please clone and set up local env.",
+    "timestamp": "2025-10-02T10:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 2,
+    "author": "Riya",
+    "text": "On it. I'll start on auth today.",
+    "timestamp": "2025-10-02T11:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 3,
+    "author": "Sara",
+    "text": "I'll take the event creation form.",
+    "timestamp": "2025-10-02T11:30:00",
+    "channel": "general"
+  },
+  {
+    "id": 4,
+    "author": "Kabir",
+    "text": "I'll help Riya with payments once auth is scaffolded.",
+    "timestamp": "2025-10-03T10:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 5,
+    "author": "Meena",
+    "text": "I'll handle notifications. Setting up SendGrid.",
+    "timestamp": "2025-10-03T10:30:00",
+    "channel": "general"
+  },
+  {
+    "id": 6,
+    "author": "Dev",
+    "text": "Great. Stand-up at 10am every Monday.",
+    "timestamp": "2025-10-03T11:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 7,
+    "author": "Riya",
+    "text": "Auth scaffold is up. JWT middleware added.",
+    "timestamp": "2025-10-08T10:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 8,
+    "author": "Dev",
+    "text": "Looks good in the PR. Sara can you review?",
+    "timestamp": "2025-10-08T11:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 9,
+    "author": "Sara",
+    "text": "On it, reviewing auth PR now.",
+    "timestamp": "2025-10-08T11:30:00",
+    "channel": "general"
+  },
+  {
+    "id": 10,
+    "author": "Sara",
+    "text": "LGTM! Approved.",
+    "timestamp": "2025-10-08T14:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 11,
+    "author": "Kabir",
+    "text": "Payment gateway research done. Stripe wins.",
+    "timestamp": "2025-10-10T10:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 12,
+    "author": "Riya",
+    "text": "Agree. I'll integrate Stripe this week.",
+    "timestamp": "2025-10-10T10:30:00",
+    "channel": "general"
+  },
+  {
+    "id": 13,
+    "author": "Meena",
+    "text": "SendGrid is working. First test email sent!",
+    "timestamp": "2025-10-15T10:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 14,
+    "author": "Dev",
+    "text": "Nice. Event listing API is live on staging.",
+    "timestamp": "2025-10-18T10:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 15,
+    "author": "Dev",
+    "text": "Reminder: stand-up in 10 mins.",
+    "timestamp": "2025-10-20T10:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 16,
+    "author": "Sara",
+    "text": "Event creation form PR ready for review.",
+    "timestamp": "2025-10-22T10:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 17,
+    "author": "Riya",
+    "text": "Reviewing Sara's PR.",
+    "timestamp": "2025-10-22T11:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 18,
+    "author": "Sara",
+    "text": "PR reviewed and approved.",
+    "timestamp": "2025-10-25T10:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 19,
+    "author": "Dev",
+    "text": "Quick question \u2014 why JWT and not server sessions?",
+    "timestamp": "2025-11-03T10:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 20,
+    "author": "Riya",
+    "text": "Sessions failed under load in the demo \u2014 the server couldn't keep up with concurrent requests. JWT is stateless so it scales horizontally.",
+    "timestamp": "2025-11-03T10:30:00",
+    "channel": "general"
+  },
+  {
+    "id": 21,
+    "author": "Dev",
+    "text": "Makes sense. Good call.",
+    "timestamp": "2025-11-03T10:45:00",
+    "channel": "general"
+  },
+  {
+    "id": 22,
+    "author": "Sara",
+    "text": "Agreed. Also easier for the mobile client.",
+    "timestamp": "2025-11-03T11:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 23,
+    "author": "Kabir",
+    "text": "Auth PR looks good Sara. Nice review comments.",
+    "timestamp": "2025-11-05T10:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 24,
+    "author": "Sara",
+    "text": "Thanks! Riya's code is very clean.",
+    "timestamp": "2025-11-05T11:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 25,
+    "author": "Kabir",
+    "text": "Sprint velocity looking good this week.",
+    "timestamp": "2025-11-07T10:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 26,
+    "author": "Meena",
+    "text": "Working on websocket notifications experiment.",
+    "timestamp": "2025-11-10T10:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 27,
+    "author": "Dev",
+    "text": "Cool, let us know how it goes.",
+    "timestamp": "2025-11-10T10:30:00",
+    "channel": "general"
+  },
+  {
+    "id": 28,
+    "author": "Riya",
+    "text": "Stripe integration done. Webhooks are tricky.",
+    "timestamp": "2025-11-15T10:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 29,
+    "author": "Kabir",
+    "text": "I can help with webhook testing.",
+    "timestamp": "2025-11-15T11:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 30,
+    "author": "Meena",
+    "text": "Any blockers for today?",
+    "timestamp": "2025-11-17T10:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 31,
+    "author": "Dev",
+    "text": "No blockers. All green.",
+    "timestamp": "2025-11-17T10:30:00",
+    "channel": "general"
+  },
+  {
+    "id": 32,
+    "author": "Sara",
+    "text": "Event detail page merged. Looks great.",
+    "timestamp": "2025-11-20T10:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 33,
+    "author": "Dev",
+    "text": "Good progress everyone. Sprint review on Friday.",
+    "timestamp": "2025-11-20T11:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 34,
+    "author": "Meena",
+    "text": "Websockets broke on campus wifi during testing. Reverting to polling.",
+    "timestamp": "2025-11-28T10:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 35,
+    "author": "Riya",
+    "text": "Yeah, websockets need persistent connections \u2014 campus wifi drops them. Polling is safer.",
+    "timestamp": "2025-11-28T10:30:00",
+    "channel": "general"
+  },
+  {
+    "id": 36,
+    "author": "Dev",
+    "text": "Understood. Polling it is.",
+    "timestamp": "2025-11-28T11:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 37,
+    "author": "Kabir",
+    "text": "Refund endpoint is live.",
+    "timestamp": "2025-12-01T10:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 38,
+    "author": "Riya",
+    "text": "Quick sync after stand-up?",
+    "timestamp": "2025-12-05T10:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 39,
+    "author": "Sara",
+    "text": "Sure, in 5 mins.",
+    "timestamp": "2025-12-05T10:05:00",
+    "channel": "general"
+  },
+  {
+    "id": 40,
+    "author": "Riya",
+    "text": "Reviewing auth multi-role PR. Almost ready.",
+    "timestamp": "2025-12-10T10:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 41,
+    "author": "Sara",
+    "text": "LGTM on the auth multi-role changes.",
+    "timestamp": "2025-12-12T10:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 42,
+    "author": "Dev",
+    "text": "RSVP endpoint merged. Nice work.",
+    "timestamp": "2025-12-15T10:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 43,
+    "author": "Sara",
+    "text": "Ticket purchase flow ready for review.",
+    "timestamp": "2025-12-20T10:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 44,
+    "author": "Meena",
+    "text": "Reviewing Sara's ticket flow.",
+    "timestamp": "2025-12-20T11:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 45,
+    "author": "Kabir",
+    "text": "Payment history endpoint done.",
+    "timestamp": "2025-12-28T10:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 46,
+    "author": "Dev",
+    "text": "Great. Everyone take a break over New Year!",
+    "timestamp": "2025-12-30T10:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 47,
+    "author": "Dev",
+    "text": "Back! Staging environment is looking stable.",
+    "timestamp": "2026-01-05T10:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 48,
+    "author": "Kabir",
+    "text": "Issue #20 resolved.",
+    "timestamp": "2026-01-12T10:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 49,
+    "author": "Riya",
+    "text": "Password reset flow merged.",
+    "timestamp": "2026-01-15T10:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 50,
+    "author": "Meena",
+    "text": "Will the notifications PR be ready today?",
+    "timestamp": "2026-01-20T10:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 51,
+    "author": "Dev",
+    "text": "Probably tomorrow.",
+    "timestamp": "2026-01-20T11:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 52,
+    "author": "Sara",
+    "text": "Organiser dashboard shipped!",
+    "timestamp": "2026-01-28T10:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 53,
+    "author": "Kabir",
+    "text": "Currency support (INR + USD) is live.",
+    "timestamp": "2026-01-30T10:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 54,
+    "author": "Meena",
+    "text": "Notifications delivery report in progress.",
+    "timestamp": "2026-01-30T11:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 55,
+    "author": "Dev",
+    "text": "Need to plan the payments gateway migration.",
+    "timestamp": "2026-02-01T10:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 56,
+    "author": "Riya",
+    "text": "Let's target 20 Feb as per the sprint plan.",
+    "timestamp": "2026-02-01T11:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 57,
+    "author": "Kabir",
+    "text": "I'll handle the testing harness.",
+    "timestamp": "2026-02-01T11:30:00",
+    "channel": "general"
+  },
+  {
+    "id": 58,
+    "author": "Riya",
+    "text": "LGTM on the payments retry logic.",
+    "timestamp": "2026-02-03T10:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 59,
+    "author": "Sara",
+    "text": "Mobile responsiveness PR is up \u2014 please review.",
+    "timestamp": "2026-02-12T10:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 60,
+    "author": "Meena",
+    "text": "Reviewing Sara's mobile PR.",
+    "timestamp": "2026-02-12T11:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 61,
+    "author": "Kabir",
+    "text": "Migration postponed \u2014 not enough testing time. Per issue #31.",
+    "timestamp": "2026-02-21T10:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 62,
+    "author": "Riya",
+    "text": "Agreed. Pushing to next sprint.",
+    "timestamp": "2026-02-21T11:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 63,
+    "author": "Dev",
+    "text": "Riya can you write up the deploy runbook? Only you have the full picture.",
+    "timestamp": "2026-02-25T10:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 64,
+    "author": "Riya",
+    "text": "Will do. Adding it to my tasks.",
+    "timestamp": "2026-02-25T11:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 65,
+    "author": "Sara",
+    "text": "Accessibility audit started. Some issues to fix.",
+    "timestamp": "2026-02-28T10:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 66,
+    "author": "Dev",
+    "text": "Production go-live checklist started.",
+    "timestamp": "2026-03-01T10:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 67,
+    "author": "Sara",
+    "text": "Pushing the accessibility fixes now.",
+    "timestamp": "2026-03-02T10:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 68,
+    "author": "Riya",
+    "text": "SSL certs are set up. Secrets moved to env vars.",
+    "timestamp": "2026-03-05T10:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 69,
+    "author": "Kabir",
+    "text": "Payment history CSV export almost ready.",
+    "timestamp": "2026-03-05T11:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 70,
+    "author": "Kabir",
+    "text": "Database backup is running.",
+    "timestamp": "2026-03-07T10:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 71,
+    "author": "Meena",
+    "text": "FCM push key still blocked \u2014 no one has console access.",
+    "timestamp": "2026-03-08T10:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 72,
+    "author": "Dev",
+    "text": "That's a risk. Flagging for the handover.",
+    "timestamp": "2026-03-08T11:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 73,
+    "author": "Meena",
+    "text": "Test suite passed on staging.",
+    "timestamp": "2026-03-09T10:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 74,
+    "author": "Riya",
+    "text": "My last day is 15 Mar. I'll try to document as much as possible.",
+    "timestamp": "2026-03-10T10:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 75,
+    "author": "Sara",
+    "text": "We'll miss you Riya! Thanks for all the auth and deploy work.",
+    "timestamp": "2026-03-10T11:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 76,
+    "author": "Dev",
+    "text": "All good. Ready for the final sprint.",
+    "timestamp": "2026-03-11T10:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 77,
+    "author": "Dev",
+    "text": "Who's taking over deploy after Riya leaves?",
+    "timestamp": "2026-03-12T10:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 78,
+    "author": "Kabir",
+    "text": "I can try but I don't have the full context.",
+    "timestamp": "2026-03-12T11:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 79,
+    "author": "Dev",
+    "text": "Let's make sure the runbook is complete before 15 Mar.",
+    "timestamp": "2026-03-12T11:30:00",
+    "channel": "general"
+  },
+  {
+    "id": 80,
+    "author": "Riya",
+    "text": "Adding final deploy notes to the docs task.",
+    "timestamp": "2026-03-13T10:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 81,
+    "author": "Dev",
+    "text": "Riya's last day today. Thanks for everything!",
+    "timestamp": "2026-03-15T10:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 82,
+    "author": "Sara",
+    "text": "Best of luck Riya!",
+    "timestamp": "2026-03-15T11:00:00",
+    "channel": "general"
+  },
+  {
+    "id": 83,
+    "author": "Kabir",
+    "text": "\ud83d\udc4b Thanks Riya!",
+    "timestamp": "2026-03-15T11:30:00",
+    "channel": "general"
+  },
+  {
+    "id": 84,
+    "author": "Meena",
+    "text": "\ud83d\udc99 Take care Riya!",
+    "timestamp": "2026-03-15T12:00:00",
+    "channel": "general"
+  }
+]

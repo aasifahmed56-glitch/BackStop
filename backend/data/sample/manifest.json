@@ -1,0 +1,18 @@
+{
+  "git_log.txt": "public",
+  "issues.json": "public",
+  "tasks.csv": "team",
+  "chat.json": "team",
+  "notes/meeting-01.md": "public",
+  "notes/meeting-02.md": "public",
+  "notes/meeting-03.md": "public",
+  "notes/meeting-04.md": "team",
+  "notes/meeting-05.md": "team",
+  "notes/meeting-06.md": "team",
+  "notes/meeting-07.md": "team",
+  "notes/meeting-08.md": "team",
+  "notes/meeting-09.md": "team",
+  "notes/meeting-10.md": "team",
+  "notes/advisor-private.md": "restricted",
+  "notes/budget-confidential.md": "confidential"
+}

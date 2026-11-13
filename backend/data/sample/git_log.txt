@@ -1,0 +1,1457 @@
+commit 2b6073e5dd3a641c58ad50e49f095c6f1e3068ca
+Author: Riya <riya@campuseventapp.example>
+Date:   Thu Oct 02 10:00:00 2025 +0530
+
+    Add JWT authentication middleware
+
+    Files changed:
+      M auth/add_jwt_authentication_middlew.py
+
+commit fb36fe9a1e8a5b83a6b296d43c957a8cfba4a91f
+Author: Sara <sara@campuseventapp.example>
+Date:   Sat Oct 04 10:00:00 2025 +0530
+
+    web-ui: add component 14
+
+    Files changed:
+      M web-ui/components/comp_4.tsx
+
+commit 34c20f9c7e9b662bedec3cb78e127885c7de6e72
+Author: Riya <riya@campuseventapp.example>
+Date:   Tue Oct 07 10:00:00 2025 +0530
+
+    Implement token refresh endpoint
+
+    Files changed:
+      M auth/implement_token_refresh_endpoi.py
+
+commit d7cd4c737b35e126236570d6cf0e97f46ed8bce7
+Author: Riya <riya@campuseventapp.example>
+Date:   Tue Oct 07 10:00:00 2025 +0530
+
+    Fix token expiry edge case
+
+    Files changed:
+      M auth/fix_token_expiry_edge_case.py
+
+commit 476acbdef8e9a16d24575e4f6d7b0f31f003d937
+Author: Riya <riya@campuseventapp.example>
+Date:   Wed Oct 08 10:00:00 2025 +0530
+
+    Add user registration flow
+
+    Files changed:
+      M auth/add_user_registration_flow.py
+
+commit 1f7459fbc249e9e6f39d3b4acc908a1a06765e72
+Author: Riya <riya@campuseventapp.example>
+Date:   Thu Oct 09 10:00:00 2025 +0530
+
+    Harden auth input validation
+
+    Files changed:
+      M auth/harden_auth_input_validation.py
+
+commit 28a9ec7d953e47c9a57575449e88336837b70463
+Author: Dev <dev@campuseventapp.example>
+Date:   Thu Oct 09 10:00:00 2025 +0530
+
+    Deploy: fix typo in nginx config comment
+
+    Files changed:
+      M deploy/nginx.conf
+
+commit a585f85743b5bfb3b49c9fd454b2004fac10475f
+Author: Meena <meena@campuseventapp.example>
+Date:   Thu Oct 09 10:00:00 2025 +0530
+
+    Scaffold notifications module
+
+    Files changed:
+      M notifications/scaffold_notifications_module.py
+
+commit 4d1179a2cf138699c6e49690f1ca413826b7044d
+Author: Kabir <kabir@campuseventapp.example>
+Date:   Sat Oct 11 10:00:00 2025 +0530
+
+    docs: add section 4
+
+    Files changed:
+      M docs/section_2.md
+
+commit 134c9c3132420c9de77464879eb903ad90cd9c28
+Author: Riya <riya@campuseventapp.example>
+Date:   Sun Oct 12 10:00:00 2025 +0530
+
+    Scaffold payments module
+
+    Files changed:
+      M payments/scaffold_payments_module.py
+
+commit 74f6df7651267a6c0141cdd0d7089770424e70ac
+Author: Riya <riya@campuseventapp.example>
+Date:   Sun Oct 12 10:00:00 2025 +0530
+
+    Integrate Stripe gateway
+
+    Files changed:
+      M payments/integrate_stripe_gateway.py
+
+commit b4063d1fa2e4b6777239b21cd5c40bd9ad775c6e
+Author: Sara <sara@campuseventapp.example>
+Date:   Tue Oct 14 10:00:00 2025 +0530
+
+    web-ui: update component 12
+
+    Files changed:
+      M web-ui/components/comp_6.tsx
+
+commit df36d657e6fca2f2f51d1e02df1c49615a8fae78
+Author: Riya <riya@campuseventapp.example>
+Date:   Wed Oct 15 10:00:00 2025 +0530
+
+    Add Dockerfile for backend
+
+    Files changed:
+      M deploy/add_dockerfile_for_backend.sh
+
+commit 93a431fcb1240505636a2296a793a7ae7481ff4f
+Author: Dev <dev@campuseventapp.example>
+Date:   Wed Oct 15 10:00:00 2025 +0530
+
+    events-api: add endpoint 3
+
+    Files changed:
+      M events-api/endpoint_3.py
+
+commit b74fd1654b0d60dcfebdec3c334cca21a0c052e5
+Author: Sara <sara@campuseventapp.example>
+Date:   Wed Oct 15 10:00:00 2025 +0530
+
+    web-ui: add component 1
+
+    Files changed:
+      M web-ui/components/comp_1.tsx
+
+commit 63ce5842eff4dc71c3aa6d816415b46a5a79f59a
+Author: Sara <sara@campuseventapp.example>
+Date:   Fri Oct 17 10:00:00 2025 +0530
+
+    events-api: fix endpoint 15
+
+    Files changed:
+      M events-api/endpoint_17.py
+
+commit a7ba100f13865fb89bead9f4b3735f5ea04ffd13
+Author: Riya <riya@campuseventapp.example>
+Date:   Sat Oct 18 10:00:00 2025 +0530
+
+    Add webhook handler for payment events
+
+    Files changed:
+      M payments/add_webhook_handler_for_paymen.py
+
+commit af05fc3d89d3cc94ff8c1d25c9042611759739be
+Author: Dev <dev@campuseventapp.example>
+Date:   Sat Oct 18 10:00:00 2025 +0530
+
+    events-api: add endpoint 3
+
+    Files changed:
+      M events-api/endpoint_17.py
+
+commit a4a0fd61b7e52299b69486c1ae8d6e6d6b554fa7
+Author: Dev <dev@campuseventapp.example>
+Date:   Sat Oct 18 10:00:00 2025 +0530
+
+    docs: add section 3
+
+    Files changed:
+      M docs/section_8.md
+
+commit 116b520f8a6df6e0441827d5814368c9a89ab04c
+Author: Kabir <kabir@campuseventapp.example>
+Date:   Sun Oct 19 10:00:00 2025 +0530
+
+    Payments: minor UI integration
+
+    Files changed:
+      M payments/ui_helpers.py
+
+commit e522a1bf1867245f9e2c0176963851a9843f03fc
+Author: Sara <sara@campuseventapp.example>
+Date:   Sun Oct 19 10:00:00 2025 +0530
+
+    web-ui: add component 10
+
+    Files changed:
+      M web-ui/components/comp_2.tsx
+
+commit c41762838a56b671566a46f2f7b561661db3c1a8
+Author: Dev <dev@campuseventapp.example>
+Date:   Sun Oct 19 10:00:00 2025 +0530
+
+    docs: update section 3
+
+    Files changed:
+      M docs/section_6.md
+
+commit 3c5fa21422c1fa799aeaf5f577ac9517054af196
+Author: Meena <meena@campuseventapp.example>
+Date:   Mon Oct 20 10:00:00 2025 +0530
+
+    web-ui: add component 14
+
+    Files changed:
+      M web-ui/components/comp_9.tsx
+
+commit 9fb0e9398f7cdf1a0bf895e6ca0a55864df921ae
+Author: Riya <riya@campuseventapp.example>
+Date:   Tue Oct 21 10:00:00 2025 +0530
+
+    Payments: idempotency keys
+
+    Files changed:
+      M payments/payments:_idempotency_keys.py
+
+commit 4aa2b18a52bffe1a804f5c3f24c88b8ae9922b9e
+Author: Riya <riya@campuseventapp.example>
+Date:   Tue Oct 21 10:00:00 2025 +0530
+
+    Payments: retry logic
+
+    Files changed:
+      M payments/payments:_retry_logic.py
+
+commit b05bf9cc33fce3a97cc86239d075eb811278d1ed
+Author: Riya <riya@campuseventapp.example>
+Date:   Thu Oct 23 10:00:00 2025 +0530
+
+    Add rate limiting to login endpoint
+
+    Files changed:
+      M auth/add_rate_limiting_to_login_end.py
+
+commit ee66561351b520e7dc79e032f96c313a91d78a9b
+Author: Riya <riya@campuseventapp.example>
+Date:   Fri Oct 24 10:00:00 2025 +0530
+
+    Refactor auth service layer
+
+    Files changed:
+      M auth/refactor_auth_service_layer.py
+
+commit 40592a85f8c80d065b513a19c255adaf722bf03c
+Author: Sara <sara@campuseventapp.example>
+Date:   Fri Oct 24 10:00:00 2025 +0530
+
+    Review fix: auth PR cleanup
+
+    Files changed:
+      M auth/tests/test_auth.py
+
+commit e546d70a4d0a4c667f52b5c4166f241547b277be
+Author: Kabir <kabir@campuseventapp.example>
+Date:   Fri Oct 24 10:00:00 2025 +0530
+
+    docs: update section 1
+
+    Files changed:
+      M docs/section_1.md
+
+commit 96ac0a68b20da723a5f0275712554f028e1cb39b
+Author: Sara <sara@campuseventapp.example>
+Date:   Sat Oct 25 10:00:00 2025 +0530
+
+    Review fix: auth PR cleanup
+
+    Files changed:
+      M auth/tests/test_auth.py
+
+commit f3212bfcffab8442bb253fc37597f2e16b766925
+Author: Riya <riya@campuseventapp.example>
+Date:   Sun Oct 26 10:00:00 2025 +0530
+
+    Payments: add refund endpoint
+
+    Files changed:
+      M payments/payments:_add_refund_endpoint.py
+
+commit 1782d89c28dd842e3f8413f4a91a9929e5e0d1fc
+Author: Sara <sara@campuseventapp.example>
+Date:   Sun Oct 26 10:00:00 2025 +0530
+
+    web-ui: add component 9
+
+    Files changed:
+      M web-ui/components/comp_14.tsx
+
+commit 43990e8a43c67b26752d5f56c8131720fd6fedeb
+Author: Riya <riya@campuseventapp.example>
+Date:   Mon Oct 27 10:00:00 2025 +0530
+
+    Add password reset email trigger
+
+    Files changed:
+      M auth/add_password_reset_email_trigg.py
+
+commit 32f7e716739049da401245600854678d99215f85
+Author: Sara <sara@campuseventapp.example>
+Date:   Mon Oct 27 10:00:00 2025 +0530
+
+    Review fix: auth PR cleanup
+
+    Files changed:
+      M auth/tests/test_auth.py
+
+commit 29600bc82e2e569d98879705164eda94af93078b
+Author: Riya <riya@campuseventapp.example>
+Date:   Tue Oct 28 10:00:00 2025 +0530
+
+    Add email notification service
+
+    Files changed:
+      M notifications/add_email_notification_service.py
+
+commit c6d39b37663897dbb88f76f788adac47f44ffcbb
+Author: Meena <meena@campuseventapp.example>
+Date:   Tue Oct 28 10:00:00 2025 +0530
+
+    Notifications: add push stub
+
+    Files changed:
+      M notifications/notifications:_add_push_stub.py
+
+commit 778eb498e65c20f1eab3d4841b30e33157a2ff2a
+Author: Sara <sara@campuseventapp.example>
+Date:   Tue Oct 28 10:00:00 2025 +0530
+
+    web-ui: update component 9
+
+    Files changed:
+      M web-ui/components/comp_8.tsx
+
+commit e7ac440ca3bd0e6de0dc2bd4049e57a8e284c5ba
+Author: Riya <riya@campuseventapp.example>
+Date:   Wed Oct 29 10:00:00 2025 +0530
+
+    Unit tests for JWT decode
+
+    Files changed:
+      M auth/unit_tests_for_jwt_decode.py
+
+commit b054a39a66561f7e0674599453a72aeecbaf53f7
+Author: Dev <dev@campuseventapp.example>
+Date:   Wed Oct 29 10:00:00 2025 +0530
+
+    events-api: add endpoint 14
+
+    Files changed:
+      M events-api/endpoint_20.py
+
+commit 7f5beccdca9c885e1de382d7ab7e702698a40403
+Author: Sara <sara@campuseventapp.example>
+Date:   Wed Oct 29 10:00:00 2025 +0530
+
+    events-api: add endpoint 10
+
+    Files changed:
+      M events-api/endpoint_8.py
+
+commit 16b80ef7422abf5e7e61fd2d1f62fdcf7b663723
+Author: Riya <riya@campuseventapp.example>
+Date:   Sat Nov 01 10:00:00 2025 +0530
+
+    Payments: currency conversion helper
+
+    Files changed:
+      M payments/payments:_currency_conversion_.py
+
+commit ec0a9ee3197ad3078cc2f3e99cd3ef86489b2a80
+Author: Sara <sara@campuseventapp.example>
+Date:   Sun Nov 02 10:00:00 2025 +0530
+
+    events-api: add endpoint 6
+
+    Files changed:
+      M events-api/endpoint_9.py
+
+commit 5a68b642833d2706686451758d06901c9a33e4e3
+Author: Meena <meena@campuseventapp.example>
+Date:   Mon Nov 03 10:00:00 2025 +0530
+
+    web-ui: update component 8
+
+    Files changed:
+      M web-ui/components/comp_13.tsx
+
+commit 3bbcebb63547a45e7cbc5350db089b433938f5c7
+Author: Riya <riya@campuseventapp.example>
+Date:   Tue Nov 04 10:00:00 2025 +0530
+
+    Use websockets for notifications
+
+    Files changed:
+      M notifications/use_websockets_for_notifications.py
+
+commit bb7b5282eff8d1d002a12370aeea0860b848b6f2
+Author: Riya <riya@campuseventapp.example>
+Date:   Wed Nov 05 10:00:00 2025 +0530
+
+    Fix auth redirect on session timeout
+
+    Files changed:
+      M auth/fix_auth_redirect_on_session_t.py
+
+commit e83945c1f73b4d1fa0667ab1da5ffee3eb94ea48
+Author: Meena <meena@campuseventapp.example>
+Date:   Wed Nov 05 10:00:00 2025 +0530
+
+    web-ui: update component 8
+
+    Files changed:
+      M web-ui/components/comp_4.tsx
+
+commit a2d032dde499da86bcb1b5131999f5ac7386296c
+Author: Kabir <kabir@campuseventapp.example>
+Date:   Fri Nov 07 10:00:00 2025 +0530
+
+    docs: add section 5
+
+    Files changed:
+      M docs/section_6.md
+
+commit 43146c2651f7c116881189cd06cb8f38a2442244
+Author: Dev <dev@campuseventapp.example>
+Date:   Sat Nov 08 10:00:00 2025 +0530
+
+    docs: update section 10
+
+    Files changed:
+      M docs/section_9.md
+
+commit c5fb797206d6d76da949b7265bafc54c5e3f2c0b
+Author: Riya <riya@campuseventapp.example>
+Date:   Sun Nov 09 10:00:00 2025 +0530
+
+    Improve error messages for invalid tokens
+
+    Files changed:
+      M auth/improve_error_messages_for_inv.py
+
+commit f3cd1dca2442667998ed60fbc9e13a299aaf5c11
+Author: Riya <riya@campuseventapp.example>
+Date:   Mon Nov 10 10:00:00 2025 +0530
+
+    Add OAuth2 scaffold for future use
+
+    Files changed:
+      M auth/add_oauth2_scaffold_for_future.py
+
+commit 3b8b357ab2f74e1db55c851b710b051ceb88567c
+Author: Meena <meena@campuseventapp.example>
+Date:   Mon Nov 10 10:00:00 2025 +0530
+
+    Notifications: improve delivery retry
+
+    Files changed:
+      M notifications/notifications:_improve_delivery_ret.py
+
+commit a2a6be76034bc9c8531a7f5661572ace9a531526
+Author: Meena <meena@campuseventapp.example>
+Date:   Mon Nov 10 10:00:00 2025 +0530
+
+    Notifications: add template engine
+
+    Files changed:
+      M notifications/notifications:_add_template_engine.py
+
+commit 99678ee2242d9df7368a67b729c3034c9c78948f
+Author: Sara <sara@campuseventapp.example>
+Date:   Mon Nov 10 10:00:00 2025 +0530
+
+    web-ui: add component 2
+
+    Files changed:
+      M web-ui/components/comp_14.tsx
+
+commit 8cc736ba3d04d1d1c3bbd969cdc9892f49f8ed2c
+Author: Riya <riya@campuseventapp.example>
+Date:   Tue Nov 11 10:00:00 2025 +0530
+
+    Payments: logging and audit trail
+
+    Files changed:
+      M payments/payments:_logging_and_audit_tr.py
+
+commit 604ab2253d62aa61cc6bbe779dd1fabdc6fd7548
+Author: Riya <riya@campuseventapp.example>
+Date:   Tue Nov 11 10:00:00 2025 +0530
+
+    Add docker-compose for local dev
+
+    Files changed:
+      M deploy/add_docker-compose_for_local_d.sh
+
+commit 2dcec0ad0e27f6fee4de151aa0abc61131987051
+Author: Dev <dev@campuseventapp.example>
+Date:   Tue Nov 11 10:00:00 2025 +0530
+
+    docs: update section 1
+
+    Files changed:
+      M docs/section_3.md
+
+commit db731c1546ddaa199253be973e21b56c3a39b4f0
+Author: Meena <meena@campuseventapp.example>
+Date:   Wed Nov 12 10:00:00 2025 +0530
+
+    web-ui: add component 4
+
+    Files changed:
+      M web-ui/components/comp_14.tsx
+
+commit de3936acc363a1e0556d6827f1903ef64bc66a82
+Author: Riya <riya@campuseventapp.example>
+Date:   Thu Nov 13 10:00:00 2025 +0530
+
+    CI: add GitHub Actions workflow
+
+    Files changed:
+      M deploy/ci:_add_github_actions_workflo.sh
+
+commit 11ef259caa46f33e190aa2020758d45bdb1e5684
+Author: Dev <dev@campuseventapp.example>
+Date:   Sat Nov 15 10:00:00 2025 +0530
+
+    events-api: add endpoint 10
+
+    Files changed:
+      M events-api/endpoint_17.py
+
+commit fa780d22cea1b0d005e2f0cba33e5d91a03806ed
+Author: Sara <sara@campuseventapp.example>
+Date:   Mon Nov 17 10:00:00 2025 +0530
+
+    web-ui: add component 11
+
+    Files changed:
+      M web-ui/components/comp_14.tsx
+
+commit c41754cb35ffcb8c2e08ab05c6b43f6ff2403d6e
+Author: Riya <riya@campuseventapp.example>
+Date:   Wed Nov 19 10:00:00 2025 +0530
+
+    Payments: unit tests for gateway
+
+    Files changed:
+      M payments/payments:_unit_tests_for_gatew.py
+
+commit 7b98a690a24de6d573f2c117515c77d1c4b93d2b
+Author: Riya <riya@campuseventapp.example>
+Date:   Thu Nov 20 10:00:00 2025 +0530
+
+    Cache token blacklist in memory
+
+    Files changed:
+      M auth/cache_token_blacklist_in_memor.py
+
+commit f604d2fd8811c10c336af19e1f3ac1dc1f0e6b76
+Author: Riya <riya@campuseventapp.example>
+Date:   Thu Nov 20 10:00:00 2025 +0530
+
+    payments: test Stripe key sk_test_FAKE_0000000000EXAMPLE (remove before prod)
+
+    Files changed:
+      M payments/config_test.py
+
+commit 65e47299a7e7166ac3f806b7c5954090c4c75932
+Author: Meena <meena@campuseventapp.example>
+Date:   Fri Nov 21 10:00:00 2025 +0530
+
+    Notifications: unit tests
+
+    Files changed:
+      M notifications/notifications:_unit_tests.py
+
+commit 338cbcf9f6ef235b59b592fdcf820090759c52cd
+Author: Riya <riya@campuseventapp.example>
+Date:   Sun Nov 23 10:00:00 2025 +0530
+
+    Payments: mock gateway for tests
+
+    Files changed:
+      M payments/payments:_mock_gateway_for_tes.py
+
+commit 02b21851ba955fb6a75b8e95ad6b420b9dc925c9
+Author: Riya <riya@campuseventapp.example>
+Date:   Tue Nov 25 10:00:00 2025 +0530
+
+    Docs: auth module overview
+
+    Files changed:
+      M auth/docs:_auth_module_overview.py
+
+commit a175155afdab503b5cb07626e56dc9c37c00415e
+Author: Riya <riya@campuseventapp.example>
+Date:   Tue Nov 25 10:00:00 2025 +0530
+
+    Bump JWT library version
+
+    Files changed:
+      M auth/bump_jwt_library_version.py
+
+commit 21ff5feb6a9605f68e8a41687001da713af71c7e
+Author: Riya <riya@campuseventapp.example>
+Date:   Wed Nov 26 10:00:00 2025 +0530
+
+    Add multi-role support to auth
+
+    Files changed:
+      M auth/add_multi-role_support_to_auth.py
+
+commit 4a6562074d92b1ac6c3068fae9346d0989f2f7f2
+Author: Riya <riya@campuseventapp.example>
+Date:   Wed Nov 26 10:00:00 2025 +0530
+
+    Deploy: nginx config for production
+
+    Files changed:
+      M deploy/deploy:_nginx_config_for_produ.sh
+
+commit 3301a3d295bc188d8e0b9c1299f11ccdee4a9726
+Author: Dev <dev@campuseventapp.example>
+Date:   Wed Nov 26 10:00:00 2025 +0530
+
+    events-api: add endpoint 3
+
+    Files changed:
+      M events-api/endpoint_2.py
+
+commit 9a66eb07455c4ddaf34bc5b917e67850c1b6c892
+Author: Dev <dev@campuseventapp.example>
+Date:   Wed Nov 26 10:00:00 2025 +0530
+
+    events-api: fix endpoint 2
+
+    Files changed:
+      M events-api/endpoint_8.py
+
+commit e300053576ea377f785d4d100dc3333a8dfa722c
+Author: Riya <riya@campuseventapp.example>
+Date:   Thu Nov 27 10:00:00 2025 +0530
+
+    Fix race condition in token store
+
+    Files changed:
+      M auth/fix_race_condition_in_token_st.py
+
+commit 39fbb4ed7348990ffd894a75454afa3830dc6520
+Author: Riya <riya@campuseventapp.example>
+Date:   Fri Nov 28 10:00:00 2025 +0530
+
+    Payments: handle declined cards
+
+    Files changed:
+      M payments/payments:_handle_declined_card.py
+
+commit 74e6b9fd5baa7f542a847bb8efea33d6e59710a9
+Author: Riya <riya@campuseventapp.example>
+Date:   Fri Nov 28 10:00:00 2025 +0530
+
+    Deploy: add env var injection script
+
+    Files changed:
+      M deploy/deploy:_add_env_var_injection_.sh
+
+commit 9731a86d2f5fef2d215f5073c92cc2666708bfec
+Author: Riya <riya@campuseventapp.example>
+Date:   Sat Nov 29 10:00:00 2025 +0530
+
+    Auth: integrate with events-api
+
+    Files changed:
+      M auth/auth:_integrate_with_events-ap.py
+
+commit 800b3e418410f7886a2f7c2ec03f3081bc6ac990
+Author: Riya <riya@campuseventapp.example>
+Date:   Sat Nov 29 10:00:00 2025 +0530
+
+    Payments: add receipt email trigger
+
+    Files changed:
+      M payments/payments:_add_receipt_email_tr.py
+
+commit 1d01714b3a06189b6e894c79cdf5628eb7301197
+Author: Meena <meena@campuseventapp.example>
+Date:   Sun Nov 30 10:00:00 2025 +0530
+
+    web-ui: add component 4
+
+    Files changed:
+      M web-ui/components/comp_9.tsx
+
+commit fc1bea7f40ddd5a61de02a5ef4b55167db76e22b
+Author: Meena <meena@campuseventapp.example>
+Date:   Sun Nov 30 10:00:00 2025 +0530
+
+    web-ui: update component 15
+
+    Files changed:
+      M web-ui/components/comp_10.tsx
+
+commit fd1e7979c9debe77e71a0d8bb3fd8b96b7aa2de9
+Author: Riya <riya@campuseventapp.example>
+Date:   Tue Dec 02 10:00:00 2025 +0530
+
+    Add audit log for auth failures
+
+    Files changed:
+      M auth/add_audit_log_for_auth_failure.py
+
+commit 0e8772c554886d179175fb0608dcfae8a75ddd5c
+Author: Riya <riya@campuseventapp.example>
+Date:   Tue Dec 02 10:00:00 2025 +0530
+
+    Deploy: add health check endpoint wiring
+
+    Files changed:
+      M deploy/deploy:_add_health_check_endpo.sh
+
+commit 9b571a05ac851e7db6431d3d35c0aa1e798f0b86
+Author: Sara <sara@campuseventapp.example>
+Date:   Wed Dec 03 10:00:00 2025 +0530
+
+    web-ui: add component 7
+
+    Files changed:
+      M web-ui/components/comp_11.tsx
+
+commit 9eceb2d1a95e69b3654c29e8d85b833bae2bf28a
+Author: Dev <dev@campuseventapp.example>
+Date:   Thu Dec 04 10:00:00 2025 +0530
+
+    events-api: add endpoint 4
+
+    Files changed:
+      M events-api/endpoint_18.py
+
+commit bc89fbae8e6016004cfa20c38579a83a68cbb066
+Author: Riya <riya@campuseventapp.example>
+Date:   Sun Dec 07 10:00:00 2025 +0530
+
+    Payments: document API contracts
+
+    Files changed:
+      M payments/payments:_document_api_contrac.py
+
+commit caf0b3dd73ab59b3b37f1fb10442d07e0e9cad4c
+Author: Dev <dev@campuseventapp.example>
+Date:   Sun Dec 07 10:00:00 2025 +0530
+
+    events-api: fix endpoint 18
+
+    Files changed:
+      M events-api/endpoint_18.py
+
+commit 81b8f8c2865ea54f978ca153ae30e6c14b08c887
+Author: Sara <sara@campuseventapp.example>
+Date:   Sun Dec 07 10:00:00 2025 +0530
+
+    events-api: add endpoint 13
+
+    Files changed:
+      M events-api/endpoint_12.py
+
+commit 4a511fc8a3a3ad3deb6d1a0b01241de6765610b1
+Author: Meena <meena@campuseventapp.example>
+Date:   Sun Dec 07 10:00:00 2025 +0530
+
+    web-ui: update component 12
+
+    Files changed:
+      M web-ui/components/comp_12.tsx
+
+commit b0d584a94e6d023bcd4a4efdaf0d2096813bb3ed
+Author: Dev <dev@campuseventapp.example>
+Date:   Sun Dec 07 10:00:00 2025 +0530
+
+    docs: update section 9
+
+    Files changed:
+      M docs/section_3.md
+
+commit 22941a90cf8a1a439f5a341375ab29cf25cba45a
+Author: Riya <riya@campuseventapp.example>
+Date:   Mon Dec 08 10:00:00 2025 +0530
+
+    Payments: add payment history endpoint
+
+    Files changed:
+      M payments/payments:_add_payment_history_.py
+
+commit 577c71a14de3babedad9c304e8a26e9d281503ff
+Author: Sara <sara@campuseventapp.example>
+Date:   Mon Dec 08 10:00:00 2025 +0530
+
+    events-api: fix endpoint 14
+
+    Files changed:
+      M events-api/endpoint_6.py
+
+commit ac2299d2bf0c343a8c6ee0a1fa4b99669e14f36d
+Author: Riya <riya@campuseventapp.example>
+Date:   Tue Dec 09 10:00:00 2025 +0530
+
+    Deploy: add SSL termination config
+
+    Files changed:
+      M deploy/deploy:_add_ssl_termination_co.sh
+
+commit 5ce0e7384229da651a79a632928e22e86faebdf3
+Author: Kabir <kabir@campuseventapp.example>
+Date:   Tue Dec 09 10:00:00 2025 +0530
+
+    docs: update section 6
+
+    Files changed:
+      M docs/section_4.md
+
+commit 9773629c982ae916208ead92e9e8c1ae80fa66db
+Author: Riya <riya@campuseventapp.example>
+Date:   Wed Dec 10 10:00:00 2025 +0530
+
+    Cleanup unused auth helpers
+
+    Files changed:
+      M auth/cleanup_unused_auth_helpers.py
+
+commit 6f7c5ced964ce19840b08863c61694899f638828
+Author: Riya <riya@campuseventapp.example>
+Date:   Thu Dec 11 10:00:00 2025 +0530
+
+    Auth: add test fixtures
+
+    Files changed:
+      M auth/auth:_add_test_fixtures.py
+
+commit 7f9c62d13cf18cc9a06acd791459be6a4f0c270d
+Author: Riya <riya@campuseventapp.example>
+Date:   Thu Dec 11 10:00:00 2025 +0530
+
+    Auth middleware: handle edge case for expired refresh tokens
+
+    Files changed:
+      M auth/auth_middleware:_handle_edge_c.py
+
+commit e83c8b9a5af146a630be8b895d3f760288851848
+Author: Riya <riya@campuseventapp.example>
+Date:   Thu Dec 11 10:00:00 2025 +0530
+
+    Payments: performance test scaffold
+
+    Files changed:
+      M payments/payments:_performance_test_sca.py
+
+commit c476735caed746c3bc658b446b5825392be3b334
+Author: Riya <riya@campuseventapp.example>
+Date:   Fri Dec 12 10:00:00 2025 +0530
+
+    Revert: switch to polling for notifications
+
+    Files changed:
+      M notifications/revert:_switch_to_polling_for_notif.py
+
+commit 3dd5c11f70dfd55ee942c86c286f05dc71850a61
+Author: Riya <riya@campuseventapp.example>
+Date:   Sun Dec 14 10:00:00 2025 +0530
+
+    Payments: pin gateway SDK version
+
+    Files changed:
+      M payments/payments:_pin_gateway_sdk_vers.py
+
+commit 5d244f5266c5679fadbc8d3cb7062ea8574d0123
+Author: Riya <riya@campuseventapp.example>
+Date:   Mon Dec 15 10:00:00 2025 +0530
+
+    Payments: code review fixes
+
+    Files changed:
+      M payments/payments:_code_review_fixes.py
+
+commit 4d1b458c565a99a8f458c7197fdae696e155ab96
+Author: Sara <sara@campuseventapp.example>
+Date:   Fri Dec 19 10:00:00 2025 +0530
+
+    events-api: add endpoint 12
+
+    Files changed:
+      M events-api/endpoint_15.py
+
+commit ecfb872d234bb361e70c8f191e63b728205ed7de
+Author: Sara <sara@campuseventapp.example>
+Date:   Sat Dec 20 10:00:00 2025 +0530
+
+    web-ui: update component 3
+
+    Files changed:
+      M web-ui/components/comp_11.tsx
+
+commit 82f897be6a8e73146208c248b7c4cc9c83e63bad
+Author: Riya <riya@campuseventapp.example>
+Date:   Tue Dec 23 10:00:00 2025 +0530
+
+    Deploy: add rollback script
+
+    Files changed:
+      M deploy/deploy:_add_rollback_script.sh
+
+commit 31a8c9b4a84312177b752f0f42701036c75b01c2
+Author: Dev <dev@campuseventapp.example>
+Date:   Thu Dec 25 10:00:00 2025 +0530
+
+    docs: update section 5
+
+    Files changed:
+      M docs/section_3.md
+
+commit 4682e460fb6f3f3b1a36fe2bb817450af360c963
+Author: Kabir <kabir@campuseventapp.example>
+Date:   Thu Dec 25 10:00:00 2025 +0530
+
+    docs: update section 4
+
+    Files changed:
+      M docs/section_5.md
+
+commit f9bb2c37a5fc05281758a5eb06b40b8879857d9d
+Author: Sara <sara@campuseventapp.example>
+Date:   Fri Dec 26 10:00:00 2025 +0530
+
+    Review fix: auth PR cleanup
+
+    Files changed:
+      M auth/tests/test_auth.py
+
+commit 287d87c8be95951fd3ac24651a0f20130a679903
+Author: Dev <dev@campuseventapp.example>
+Date:   Fri Dec 26 10:00:00 2025 +0530
+
+    events-api: add endpoint 8
+
+    Files changed:
+      M events-api/endpoint_19.py
+
+commit b0eaed7a5bedc098bd1381363a9f88bc9ab61c88
+Author: Riya <riya@campuseventapp.example>
+Date:   Sat Dec 27 10:00:00 2025 +0530
+
+    Auth: pin dependency versions
+
+    Files changed:
+      M auth/auth:_pin_dependency_versions.py
+
+commit a89ee8fd6ad53868b57f00402e0f35cfde899172
+Author: Riya <riya@campuseventapp.example>
+Date:   Sun Dec 28 10:00:00 2025 +0530
+
+    Payments: add PCI compliance notes
+
+    Files changed:
+      M payments/payments:_add_pci_compliance_n.py
+
+commit 4e3449931577ebd1a0c6ce5e6e1cbdeaa08595b2
+Author: Riya <riya@campuseventapp.example>
+Date:   Tue Dec 30 10:00:00 2025 +0530
+
+    Payments: cleanup unused imports
+
+    Files changed:
+      M payments/payments:_cleanup_unused_impor.py
+
+commit affc916c257b8466bc73698f8346a916535ac25d
+Author: Meena <meena@campuseventapp.example>
+Date:   Tue Dec 30 10:00:00 2025 +0530
+
+    web-ui: add component 14
+
+    Files changed:
+      M web-ui/components/comp_12.tsx
+
+commit c97e3a2b1b392d45c475b38c89fba6e8403b47f1
+Author: Kabir <kabir@campuseventapp.example>
+Date:   Tue Dec 30 10:00:00 2025 +0530
+
+    docs: update section 3
+
+    Files changed:
+      M docs/section_4.md
+
+commit aae514e6f8be7913f8b0e47b0a54ff4046ffff35
+Author: Sara <sara@campuseventapp.example>
+Date:   Wed Dec 31 10:00:00 2025 +0530
+
+    Review fix: auth PR cleanup
+
+    Files changed:
+      M auth/tests/test_auth.py
+
+commit 62b8ada6964972a9a32bee6eca9218b2d205ff4b
+Author: Meena <meena@campuseventapp.example>
+Date:   Wed Dec 31 10:00:00 2025 +0530
+
+    Notifications: polling implementation
+
+    Files changed:
+      M notifications/notifications:_polling_implementati.py
+
+commit dab2320f9999301c2d7a267236fef3a332f79bde
+Author: Riya <riya@campuseventapp.example>
+Date:   Thu Jan 01 10:00:00 2026 +0530
+
+    Payments: bump SDK
+
+    Files changed:
+      M payments/payments:_bump_sdk.py
+
+commit 6c9db6f98ab017ee38f06cf37ec424ebe7a1829e
+Author: Riya <riya@campuseventapp.example>
+Date:   Fri Jan 02 10:00:00 2026 +0530
+
+    Payments: add pagination to history
+
+    Files changed:
+      M payments/payments:_add_pagination_to_hi.py
+
+commit 86507eee15ab2b1ba1bbf928025dd22c04bf42ef
+Author: Riya <riya@campuseventapp.example>
+Date:   Sat Jan 03 10:00:00 2026 +0530
+
+    Payments: validation improvements
+
+    Files changed:
+      M payments/payments:_validation_improveme.py
+
+commit 0c077c973a7790e4ad32052099511f24ab98fb50
+Author: Riya <riya@campuseventapp.example>
+Date:   Mon Jan 05 10:00:00 2026 +0530
+
+    Payments: add admin override endpoint
+
+    Files changed:
+      M payments/payments:_add_admin_override_e.py
+
+commit c5edcd171d563309f81b9cb6d499e97b7ce34317
+Author: Sara <sara@campuseventapp.example>
+Date:   Tue Jan 06 10:00:00 2026 +0530
+
+    Review fix: auth PR cleanup
+
+    Files changed:
+      M auth/tests/test_auth.py
+
+commit cb39605c3ab4148c1569fd3de770227de7de089a
+Author: Riya <riya@campuseventapp.example>
+Date:   Tue Jan 06 10:00:00 2026 +0530
+
+    Payments: integrate with events-api
+
+    Files changed:
+      M payments/payments:_integrate_with_event.py
+
+commit 8095ec12d5682921c4db41e5d48250318ce257d4
+Author: Riya <riya@campuseventapp.example>
+Date:   Tue Jan 06 10:00:00 2026 +0530
+
+    Deploy: add staging environment config
+
+    Files changed:
+      M deploy/deploy:_add_staging_environmen.sh
+
+commit 5c1f8f306d140dd5e1cb0ca3348ca421f81884fc
+Author: Sara <sara@campuseventapp.example>
+Date:   Sun Jan 11 10:00:00 2026 +0530
+
+    web-ui: update component 1
+
+    Files changed:
+      M web-ui/components/comp_7.tsx
+
+commit 924e800e0616beab7553cc1ec91cb14ac7f2e452
+Author: Meena <meena@campuseventapp.example>
+Date:   Mon Jan 12 10:00:00 2026 +0530
+
+    Notifications: add notification history
+
+    Files changed:
+      M notifications/notifications:_add_notification_his.py
+
+commit e5d57117d45986b181479332713b6f95b2abbd19
+Author: Sara <sara@campuseventapp.example>
+Date:   Tue Jan 13 10:00:00 2026 +0530
+
+    web-ui: update component 11
+
+    Files changed:
+      M web-ui/components/comp_7.tsx
+
+commit 517469a9d5a0329ccca74973e4caeebef998dd0e
+Author: Riya <riya@campuseventapp.example>
+Date:   Fri Jan 16 10:00:00 2026 +0530
+
+    Auth: add e2e test scaffold
+
+    Files changed:
+      M auth/auth:_add_e2e_test_scaffold.py
+
+commit f08f14069ab663228d564d20a2eaf22cdebe976d
+Author: Riya <riya@campuseventapp.example>
+Date:   Sat Jan 17 10:00:00 2026 +0530
+
+    Lint fixes in auth/
+
+    Files changed:
+      M auth/lint_fixes_in_auth/.py
+
+commit 63607bb4e900759f1b8dc48893aaaa899e807e95
+Author: Riya <riya@campuseventapp.example>
+Date:   Sat Jan 17 10:00:00 2026 +0530
+
+    Auth: fix typo in error message
+
+    Files changed:
+      M auth/auth:_fix_typo_in_error_messag.py
+
+commit 5f42b94c4a99a4b0721c4944b9eba52c3280ff9d
+Author: Meena <meena@campuseventapp.example>
+Date:   Wed Jan 21 10:00:00 2026 +0530
+
+    Notifications: cleanup after revert
+
+    Files changed:
+      M notifications/notifications:_cleanup_after_revert.py
+
+commit dc66ab29d04d0777fe3a64864c658f185d9a44c4
+Author: Kabir <kabir@campuseventapp.example>
+Date:   Thu Jan 22 10:00:00 2026 +0530
+
+    docs: update section 2
+
+    Files changed:
+      M docs/section_2.md
+
+commit 97a3ac8af500168a5b40909e391f196cac2124a1
+Author: Riya <riya@campuseventapp.example>
+Date:   Fri Jan 23 10:00:00 2026 +0530
+
+    Auth: logging improvements
+
+    Files changed:
+      M auth/auth:_logging_improvements.py
+
+commit 7fcbac4c406f4d21f36a186917401bc07a006256
+Author: Riya <riya@campuseventapp.example>
+Date:   Sun Jan 25 10:00:00 2026 +0530
+
+    Payments: idempotency test cases
+
+    Files changed:
+      M payments/payments:_idempotency_test_cas.py
+
+commit 0bc76bc136bc18f540fa5d5dc438fa461b7e7300
+Author: Meena <meena@campuseventapp.example>
+Date:   Sun Jan 25 10:00:00 2026 +0530
+
+    Notifications: pre-stale-period cleanup
+
+    Files changed:
+      M notifications/notifications:_pre-stale-period_cle.py
+
+commit f36ca7fcf055b63a8fd8b31b70e93a0aed19d1d1
+Author: Dev <dev@campuseventapp.example>
+Date:   Sun Jan 25 10:00:00 2026 +0530
+
+    events-api: add endpoint 9
+
+    Files changed:
+      M events-api/endpoint_17.py
+
+commit 99135db61a85f30214c252392ca62e10eb94bc72
+Author: Riya <riya@campuseventapp.example>
+Date:   Mon Jan 26 10:00:00 2026 +0530
+
+    Payments: pre-migration branch setup
+
+    Files changed:
+      M payments/payments:_pre-migration_branch.py
+
+commit 24732b9b91d4683ff9df87a3012de72e05349e71
+Author: Riya <riya@campuseventapp.example>
+Date:   Tue Jan 27 10:00:00 2026 +0530
+
+    Deploy: secrets management via vault stub
+
+    Files changed:
+      M deploy/deploy:_secrets_management_via.sh
+
+commit 0820813796be313363e1906392573545094176c3
+Author: Dev <dev@campuseventapp.example>
+Date:   Mon Feb 02 10:00:00 2026 +0530
+
+    events-api: add endpoint 18
+
+    Files changed:
+      M events-api/endpoint_5.py
+
+commit 42cfe98368d37706d363efee60fb866cb171cb63
+Author: Sara <sara@campuseventapp.example>
+Date:   Thu Feb 05 10:00:00 2026 +0530
+
+    events-api: add endpoint 15
+
+    Files changed:
+      M events-api/endpoint_5.py
+
+commit 53f0a2799f72b2dab0a6b84cb993a95e8e506705
+Author: Riya <riya@campuseventapp.example>
+Date:   Sat Feb 07 10:00:00 2026 +0530
+
+    Auth: extend token lifetime for mobile
+
+    Files changed:
+      M auth/auth:_extend_token_lifetime_fo.py
+
+commit ab8c258abcdbcc5e860578d78de75abfe3e162f1
+Author: Sara <sara@campuseventapp.example>
+Date:   Tue Feb 10 10:00:00 2026 +0530
+
+    events-api: fix endpoint 8
+
+    Files changed:
+      M events-api/endpoint_3.py
+
+commit 21223f06ae76b030cd859ac7a8879e4c354d24f9
+Author: Dev <dev@campuseventapp.example>
+Date:   Fri Feb 13 10:00:00 2026 +0530
+
+    events-api: add endpoint 16
+
+    Files changed:
+      M events-api/endpoint_1.py
+
+commit 2822bec21f9753baf27f810ecfe2f88a4efcfacb
+Author: Sara <sara@campuseventapp.example>
+Date:   Fri Feb 13 10:00:00 2026 +0530
+
+    events-api: add endpoint 18
+
+    Files changed:
+      M events-api/endpoint_7.py
+
+commit e5170a109355938cc31daff67980a6b66054783e
+Author: Riya <riya@campuseventapp.example>
+Date:   Sat Feb 14 10:00:00 2026 +0530
+
+    Deploy: add monitoring hooks
+
+    Files changed:
+      M deploy/deploy:_add_monitoring_hooks.sh
+
+commit b672beb6d924f85e960a4279e3d47d497b3c24aa
+Author: Riya <riya@campuseventapp.example>
+Date:   Sun Feb 15 10:00:00 2026 +0530
+
+    Payments: document rollback procedure
+
+    Files changed:
+      M payments/payments:_document_rollback_pr.py
+
+commit 1a42ea0c7f95764afd5b04927b505af04a13ac92
+Author: Riya <riya@campuseventapp.example>
+Date:   Tue Feb 17 10:00:00 2026 +0530
+
+    Auth: document header format
+
+    Files changed:
+      M auth/auth:_document_header_format.py
+
+commit 55dc4b585224c6e238dc8bfdbbc6e1205b27f8f2
+Author: Riya <riya@campuseventapp.example>
+Date:   Tue Feb 17 10:00:00 2026 +0530
+
+    Auth: add CORS preflight handling
+
+    Files changed:
+      M auth/auth:_add_cors_preflight_handl.py
+
+commit 4b12bb43f6c107630a97e04011993a02b495dc98
+Author: Kabir <kabir@campuseventapp.example>
+Date:   Tue Feb 17 10:00:00 2026 +0530
+
+    docs: update section 9
+
+    Files changed:
+      M docs/section_1.md
+
+commit 1dc8bf2c0beed7b2a1df686c578754b1767bad36
+Author: Riya <riya@campuseventapp.example>
+Date:   Thu Feb 19 10:00:00 2026 +0530
+
+    Payments: pre-cutoff cleanup
+
+    Files changed:
+      M payments/payments:_pre-cutoff_cleanup.py
+
+commit f6decf50aa68a16bfbe2533d6367cc9ccf5aff82
+Author: Kabir <kabir@campuseventapp.example>
+Date:   Thu Feb 19 10:00:00 2026 +0530
+
+    docs: update section 2
+
+    Files changed:
+      M docs/section_3.md
+
+commit 7173f0bd7029549ca8774788c80cfe17d702ace2
+Author: Riya <riya@campuseventapp.example>
+Date:   Fri Feb 20 10:00:00 2026 +0530
+
+    Deploy: document deploy steps (internal)
+
+    Files changed:
+      M deploy/deploy:_document_deploy_steps_.sh
+
+commit 646c97887820496ac40925c9ca66f603341bd128
+Author: Meena <meena@campuseventapp.example>
+Date:   Fri Feb 20 10:00:00 2026 +0530
+
+    web-ui: update component 5
+
+    Files changed:
+      M web-ui/components/comp_4.tsx
+
+commit 0a68607059517b37ca24f3af1d3449c9fb994986
+Author: Riya <riya@campuseventapp.example>
+Date:   Sat Feb 21 10:00:00 2026 +0530
+
+    Auth: cleanup legacy session code
+
+    Files changed:
+      M auth/auth:_cleanup_legacy_session_c.py
+
+commit 51d84a5648a8ea827adf4acdeeb0373bcd6dead4
+Author: Meena <meena@campuseventapp.example>
+Date:   Fri Feb 27 10:00:00 2026 +0530
+
+    web-ui: add component 14
+
+    Files changed:
+      M web-ui/components/comp_9.tsx
+
+commit 42a3320c47f6e340c48a0bc0e541feae6dd3981a
+Author: Meena <meena@campuseventapp.example>
+Date:   Fri Feb 27 10:00:00 2026 +0530
+
+    web-ui: add component 4
+
+    Files changed:
+      M web-ui/components/comp_11.tsx
+
+commit 9c8719c5dbcbe31346d08b18734c2754ae0bc0ea
+Author: Riya <riya@campuseventapp.example>
+Date:   Sat Feb 28 10:00:00 2026 +0530
+
+    Auth: performance profiling notes
+
+    Files changed:
+      M auth/auth:_performance_profiling_no.py
+
+commit 46abea8370fee4ec4d275cac41c7be56e12416b8
+Author: Riya <riya@campuseventapp.example>
+Date:   Sun Mar 01 10:00:00 2026 +0530
+
+    Auth: add metrics endpoint
+
+    Files changed:
+      M auth/auth:_add_metrics_endpoint.py
+
+commit 5bca27a034913bca296f7d229541566d90089317
+Author: Riya <riya@campuseventapp.example>
+Date:   Wed Mar 04 10:00:00 2026 +0530
+
+    Auth: cleanup after PR review
+
+    Files changed:
+      M auth/auth:_cleanup_after_pr_review.py
+
+commit 4d0992f2908ced733fd4b6633db32c0f3739a17d
+Author: Kabir <kabir@campuseventapp.example>
+Date:   Thu Mar 05 10:00:00 2026 +0530
+
+    Payments: minor UI integration
+
+    Files changed:
+      M payments/ui_helpers.py
+
+commit f63669180e759acbc086fa2e0227571b645f7f45
+Author: Dev <dev@campuseventapp.example>
+Date:   Thu Mar 05 10:00:00 2026 +0530
+
+    events-api: fix endpoint 6
+
+    Files changed:
+      M events-api/endpoint_18.py
+
+commit 6e4de862b7f8ea73027271e77f871b2534dbd9a3
+Author: Kabir <kabir@campuseventapp.example>
+Date:   Thu Mar 12 10:00:00 2026 +0530
+
+    Payments: minor UI integration
+
+    Files changed:
+      M payments/ui_helpers.py
+
+commit f0c2e37154f15e1507b7a4a5097ffec2dc4cb891
+Author: Kabir <kabir@campuseventapp.example>
+Date:   Thu Mar 12 10:00:00 2026 +0530
+
+    docs: update section 5
+
+    Files changed:
+      M docs/section_1.md
+
+commit 43c60366af24cbee9515376491652a18faabe8a1
+Author: Riya <riya@campuseventapp.example>
+Date:   Fri Mar 13 10:00:00 2026 +0530
+
+    Auth: final pre-cutoff cleanup
+
+    Files changed:
+      M auth/auth:_final_pre-cutoff_cleanup.py
+
+commit 71c4fa43698e8867bd59c0b7cd06b5bc7c5ec31f
+Author: Riya <riya@campuseventapp.example>
+Date:   Fri Mar 13 10:00:00 2026 +0530
+
+    Deploy: pre-cutoff production config
+
+    Files changed:
+      M deploy/deploy:_pre-cutoff_production_.sh
+
+commit 4a6060a76abb4d9bfac123db30723dd81c261eb7
+Author: Kabir <kabir@campuseventapp.example>
+Date:   Sun Mar 15 10:00:00 2026 +0530
+
+    Payments: minor UI integration
+
+    Files changed:
+      M payments/ui_helpers.py
+
+commit 70734d651d6679bf068beed300984ae19a762b77
+Author: Meena <meena@campuseventapp.example>
+Date:   Sun Mar 15 10:00:00 2026 +0530
+
+    web-ui: add component 15
+
+    Files changed:
+      M web-ui/components/comp_13.tsx

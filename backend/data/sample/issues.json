@@ -1,0 +1,454 @@
+[
+  {
+    "id": 1,
+    "title": "Set up project repository and CI",
+    "body": "Create the GitHub repo, add CI pipeline, branch protection.",
+    "author": "Dev",
+    "created_at": "2025-10-02T10:00:00",
+    "status": "closed",
+    "labels": [],
+    "comments": []
+  },
+  {
+    "id": 2,
+    "title": "Design auth module architecture",
+    "body": "Decide on auth approach: JWT vs sessions. Riya to lead.",
+    "author": "Riya",
+    "created_at": "2025-10-05T10:00:00",
+    "status": "closed",
+    "labels": [],
+    "comments": [
+      {
+        "author": "Riya",
+        "body": "Going with JWT \u2014 sessions had issues in demo.",
+        "date": "2025-10-07T10:00:00"
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "title": "Implement event listing endpoint",
+    "body": "GET /events should return paginated event list.",
+    "author": "Dev",
+    "created_at": "2025-10-10T10:00:00",
+    "status": "closed",
+    "labels": [],
+    "comments": []
+  },
+  {
+    "id": 4,
+    "title": "Add user registration flow",
+    "body": "POST /auth/register with email verification.",
+    "author": "Riya",
+    "created_at": "2025-10-12T10:00:00",
+    "status": "closed",
+    "labels": [],
+    "comments": []
+  },
+  {
+    "id": 5,
+    "title": "Design payments module",
+    "body": "Research payment gateways. Riya to evaluate Stripe vs Razorpay.",
+    "author": "Kabir",
+    "created_at": "2025-10-18T10:00:00",
+    "status": "closed",
+    "labels": [],
+    "comments": [
+      {
+        "author": "Riya",
+        "body": "Going with Stripe for now \u2014 better docs.",
+        "date": "2025-10-20T10:00:00"
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "title": "Add event creation form (web-ui)",
+    "body": "Build the React form for creating events.",
+    "author": "Sara",
+    "created_at": "2025-10-22T10:00:00",
+    "status": "closed",
+    "labels": [],
+    "comments": []
+  },
+  {
+    "id": 7,
+    "title": "Notifications: scaffold email sender",
+    "body": "Set up SendGrid integration for transactional emails.",
+    "author": "Meena",
+    "created_at": "2025-11-01T10:00:00",
+    "status": "closed",
+    "labels": [],
+    "comments": []
+  },
+  {
+    "id": 8,
+    "title": "Deploy: Dockerfile for backend",
+    "body": "Containerise the FastAPI backend.",
+    "author": "Riya",
+    "created_at": "2025-11-05T10:00:00",
+    "status": "closed",
+    "labels": [],
+    "comments": []
+  },
+  {
+    "id": 9,
+    "title": "Events API: add search endpoint",
+    "body": "Full-text search over event titles and descriptions.",
+    "author": "Dev",
+    "created_at": "2025-11-10T10:00:00",
+    "status": "closed",
+    "labels": [],
+    "comments": []
+  },
+  {
+    "id": 10,
+    "title": "Auth: add token refresh",
+    "body": "Implement sliding-window token refresh.",
+    "author": "Riya",
+    "created_at": "2025-11-14T10:00:00",
+    "status": "closed",
+    "labels": [],
+    "comments": []
+  },
+  {
+    "id": 11,
+    "title": "Web-UI: event detail page",
+    "body": "Show event details, ticket count, and registration button.",
+    "author": "Sara",
+    "created_at": "2025-11-20T10:00:00",
+    "status": "closed",
+    "labels": [],
+    "comments": []
+  },
+  {
+    "id": 12,
+    "title": "Notifications: websocket experiment",
+    "body": "Try websocket-based real-time notifications.",
+    "author": "Meena",
+    "created_at": "2025-11-25T10:00:00",
+    "status": "closed",
+    "labels": [],
+    "comments": [
+      {
+        "author": "Riya",
+        "body": "Websockets broke on campus wifi in testing \u2014 reverting to polling.",
+        "date": "2025-12-02T10:00:00"
+      },
+      {
+        "author": "Meena",
+        "body": "Confirmed. Polling is more reliable here.",
+        "date": "2025-12-03T10:00:00"
+      }
+    ]
+  },
+  {
+    "id": 13,
+    "title": "Payments: add refund endpoint",
+    "body": "POST /payments/refund \u2014 only event organisers can trigger.",
+    "author": "Kabir",
+    "created_at": "2025-12-01T10:00:00",
+    "status": "closed",
+    "labels": [],
+    "comments": []
+  },
+  {
+    "id": 14,
+    "title": "Docs: API reference",
+    "body": "Write OpenAPI descriptions for all endpoints.",
+    "author": "Kabir",
+    "created_at": "2025-12-05T10:00:00",
+    "status": "closed",
+    "labels": [],
+    "comments": []
+  },
+  {
+    "id": 15,
+    "title": "Auth: multi-role support",
+    "body": "Support student, organiser, admin roles.",
+    "author": "Riya",
+    "created_at": "2025-12-10T10:00:00",
+    "status": "closed",
+    "labels": [],
+    "comments": []
+  },
+  {
+    "id": 16,
+    "title": "Events API: RSVP endpoint",
+    "body": "POST /events/{id}/rsvp \u2014 idempotent.",
+    "author": "Dev",
+    "created_at": "2025-12-15T10:00:00",
+    "status": "closed",
+    "labels": [],
+    "comments": []
+  },
+  {
+    "id": 17,
+    "title": "Web-UI: ticket purchase flow",
+    "body": "Integrate payments into the event page.",
+    "author": "Sara",
+    "created_at": "2025-12-20T10:00:00",
+    "status": "closed",
+    "labels": [],
+    "comments": []
+  },
+  {
+    "id": 18,
+    "title": "Deploy: staging environment",
+    "body": "Set up a staging server on the university VM.",
+    "author": "Riya",
+    "created_at": "2026-01-05T10:00:00",
+    "status": "closed",
+    "labels": [],
+    "comments": []
+  },
+  {
+    "id": 19,
+    "title": "Notifications: push notification setup",
+    "body": "Integrate FCM for mobile push.",
+    "author": "Meena",
+    "created_at": "2026-01-08T10:00:00",
+    "status": "open",
+    "labels": [],
+    "comments": []
+  },
+  {
+    "id": 20,
+    "title": "Payments: webhook reliability",
+    "body": "Handle Stripe webhook retries gracefully.",
+    "author": "Kabir",
+    "created_at": "2026-01-12T10:00:00",
+    "status": "closed",
+    "labels": [],
+    "comments": []
+  },
+  {
+    "id": 21,
+    "title": "Auth: password reset flow",
+    "body": "Email-based password reset with time-limited tokens.",
+    "author": "Riya",
+    "created_at": "2026-01-15T10:00:00",
+    "status": "closed",
+    "labels": [],
+    "comments": []
+  },
+  {
+    "id": 22,
+    "title": "Docs: deployment guide",
+    "body": "Document how to deploy to production.",
+    "author": "Dev",
+    "created_at": "2026-01-18T10:00:00",
+    "status": "open",
+    "labels": [],
+    "comments": [
+      {
+        "author": "Dev",
+        "body": "Riya \u2014 can you write up the deploy steps? Only you know the full flow.",
+        "date": "2026-01-20T10:00:00"
+      }
+    ]
+  },
+  {
+    "id": 23,
+    "title": "Events API: cancellation endpoint",
+    "body": "POST /events/{id}/cancel with refund trigger.",
+    "author": "Dev",
+    "created_at": "2026-01-22T10:00:00",
+    "status": "closed",
+    "labels": [],
+    "comments": []
+  },
+  {
+    "id": 24,
+    "title": "Web-UI: organiser dashboard",
+    "body": "Show registration counts, revenue, attendee list.",
+    "author": "Sara",
+    "created_at": "2026-01-28T10:00:00",
+    "status": "closed",
+    "labels": [],
+    "comments": []
+  },
+  {
+    "id": 25,
+    "title": "Auth: audit log viewer",
+    "body": "Admin UI to review auth failure logs.",
+    "author": "Meena",
+    "created_at": "2026-02-01T10:00:00",
+    "status": "open",
+    "labels": [],
+    "comments": []
+  },
+  {
+    "id": 26,
+    "title": "Payments: currency support",
+    "body": "Add INR and USD support.",
+    "author": "Kabir",
+    "created_at": "2026-02-03T10:00:00",
+    "status": "closed",
+    "labels": [],
+    "comments": []
+  },
+  {
+    "id": 27,
+    "title": "Deploy: SSL certificates",
+    "body": "Set up Let's Encrypt for campuseventapp.example.",
+    "author": "Riya",
+    "created_at": "2026-02-05T10:00:00",
+    "status": "closed",
+    "labels": [],
+    "comments": []
+  },
+  {
+    "id": 28,
+    "title": "Notifications: delivery report",
+    "body": "Track email open rates via SendGrid webhooks.",
+    "author": "Meena",
+    "created_at": "2026-02-08T10:00:00",
+    "status": "open",
+    "labels": [],
+    "comments": []
+  },
+  {
+    "id": 29,
+    "title": "Events API: recurring events",
+    "body": "Support weekly/monthly recurring events.",
+    "author": "Dev",
+    "created_at": "2026-02-10T10:00:00",
+    "status": "open",
+    "labels": [],
+    "comments": []
+  },
+  {
+    "id": 30,
+    "title": "Web-UI: mobile responsiveness",
+    "body": "Ensure all pages work on 375px viewport.",
+    "author": "Sara",
+    "created_at": "2026-02-12T10:00:00",
+    "status": "closed",
+    "labels": [],
+    "comments": []
+  },
+  {
+    "id": 31,
+    "title": "Payments: gateway migration",
+    "body": "Migrate from Stripe v2 to new Stripe v3 SDK.",
+    "author": "Kabir",
+    "created_at": "2026-02-14T10:00:00",
+    "status": "open",
+    "labels": [],
+    "comments": [
+      {
+        "author": "Kabir",
+        "body": "Per meeting-06, migration planned for 20 Feb.",
+        "date": "2026-02-15T10:00:00"
+      },
+      {
+        "author": "Riya",
+        "body": "Migration postponed to next sprint \u2014 not enough time to test.",
+        "date": "2026-02-21T10:00:00"
+      }
+    ]
+  },
+  {
+    "id": 32,
+    "title": "Auth: GDPR data deletion",
+    "body": "Implement /auth/delete endpoint for user data removal.",
+    "author": "Riya",
+    "created_at": "2026-02-18T10:00:00",
+    "status": "open",
+    "labels": [],
+    "comments": []
+  },
+  {
+    "id": 33,
+    "title": "Deploy: secrets management",
+    "body": "Move hardcoded configs to environment variables.",
+    "author": "Riya",
+    "created_at": "2026-02-20T10:00:00",
+    "status": "closed",
+    "labels": [],
+    "comments": []
+  },
+  {
+    "id": 34,
+    "title": "Events API: search optimisation",
+    "body": "Add full-text index for event search.",
+    "author": "Dev",
+    "created_at": "2026-02-22T10:00:00",
+    "status": "open",
+    "labels": [],
+    "comments": []
+  },
+  {
+    "id": 35,
+    "title": "Notifications: set up push notification keys",
+    "body": "FCM server key needs to be configured. Blocked on key provisioning.",
+    "author": "Meena",
+    "created_at": "2026-02-25T10:00:00",
+    "status": "open",
+    "labels": [],
+    "comments": [
+      {
+        "author": "Meena",
+        "body": "No one has access to the FCM console. This is blocked.",
+        "date": "2026-02-26T10:00:00"
+      }
+    ]
+  },
+  {
+    "id": 36,
+    "title": "Web-UI: accessibility audit",
+    "body": "Run axe-core and fix critical a11y issues.",
+    "author": "Sara",
+    "created_at": "2026-03-01T10:00:00",
+    "status": "open",
+    "labels": [],
+    "comments": []
+  },
+  {
+    "id": 37,
+    "title": "Payments: add payment history export",
+    "body": "CSV export for event organisers.",
+    "author": "Kabir",
+    "created_at": "2026-03-03T10:00:00",
+    "status": "open",
+    "labels": [],
+    "comments": []
+  },
+  {
+    "id": 38,
+    "title": "Auth: session cleanup job",
+    "body": "Cron job to purge expired tokens from DB.",
+    "author": "Riya",
+    "created_at": "2026-03-05T10:00:00",
+    "status": "open",
+    "labels": [],
+    "comments": []
+  },
+  {
+    "id": 39,
+    "title": "Deploy: production go-live checklist",
+    "body": "Final checklist before go-live on 1 Apr.",
+    "author": "Riya",
+    "created_at": "2026-03-10T10:00:00",
+    "status": "open",
+    "labels": [],
+    "comments": [
+      {
+        "author": "Dev",
+        "body": "Riya \u2014 please hand off the deploy runbook before you leave.",
+        "date": "2026-03-12T10:00:00"
+      }
+    ]
+  },
+  {
+    "id": 40,
+    "title": "Docs: onboarding guide for new devs",
+    "body": "Write a getting-started guide.",
+    "author": "Dev",
+    "created_at": "2026-03-13T10:00:00",
+    "status": "open",
+    "labels": [],
+    "comments": []
+  }
+]
