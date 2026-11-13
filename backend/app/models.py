@@ -168,10 +168,10 @@ class Claim(SQLModel, table=True):
         sa_relationship=relationship("Project", back_populates="claims")
     )
     versions: list[ClaimVersion] = Relationship(
-        sa_relationship=relationship("ClaimVersion", back_populates="claim", uselist=True)
+        sa_relationship=relationship("ClaimVersion", back_populates="claim", cascade="all, delete-orphan", uselist=True)
     )
     audit_logs: list[AuditLog] = Relationship(
-        sa_relationship=relationship("AuditLog", back_populates="claim", uselist=True)
+        sa_relationship=relationship("AuditLog", back_populates="claim", cascade="all, delete-orphan", uselist=True)
     )
 
     def evidence(self) -> list[dict[str, Any]]:
@@ -199,8 +199,9 @@ class ClaimVersion(SQLModel, table=True):
 
 class AuditLog(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    claim_id: int = Field(foreign_key="claim.id", index=True)
-    action: str                      # e.g. "review_approved", "access_denied"
+    claim_id: Optional[int] = Field(default=None, foreign_key="claim.id", index=True, nullable=True)
+    project_id: Optional[int] = Field(default=None, index=True, nullable=True)
+    action: str                      # e.g. "review_approved", "access_denied", "handover_acknowledged"
     actor_role: str
     detail: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)

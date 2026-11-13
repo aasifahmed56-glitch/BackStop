@@ -1,173 +1,143 @@
-import { useState } from "react";
-
-const ROLES = ["incoming_dev", "incoming_pm", "lead", "admin"];
-
-const ROLE_LABELS = {
-  incoming_dev: "Incoming Dev",
-  incoming_pm: "Incoming PM",
-  lead: "Lead",
-  admin: "Admin",
-};
+import React, { useState, useEffect } from "react";
+import Navbar, { ROLES } from "./components/Navbar";
+import HomePage from "./components/HomePage";
+import ReviewQueuePage from "./components/ReviewQueuePage";
+import HandoverPage from "./components/HandoverPage";
+import BacktestPage from "./components/BacktestPage";
+import { api } from "./api";
 
 export default function App() {
+  const [activeTab, setActiveTab] = useState("home");
   const [role, setRole] = useState("incoming_dev");
-  const [page, setPage] = useState("handover");
+
+  // Project and Stats states
+  const [project, setProject] = useState(null);
+  const [stats, setStats] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [actionStatus, setActionStatus] = useState(null);
+
+  // Initial load
+  const loadInitialData = async () => {
+    try {
+      const [projData, statsData] = await Promise.all([
+        api.getProject(1).catch(() => null),
+        api.getClaimStats({ projectId: 1, role }).catch(() => null),
+      ]);
+      setProject(projData);
+      setStats(statsData);
+    } catch (err) {
+      console.error("Initial load failed", err);
+    }
+  };
+
+  useEffect(() => {
+    loadInitialData();
+  }, [role]);
+
+  // Handler: Full reset & re-generation
+  const handleResetSample = async () => {
+    setIsLoading(true);
+    setActionStatus("Resetting database, ingesting sample data, and compiling verified claims...");
+    try {
+      const result = await api.resetSample();
+      await loadInitialData();
+      setActionStatus(`Sample project successfully reloaded! Derived: ${result.derived_claims}, LLM Extracted: ${result.extracted_claims}.`);
+      setTimeout(() => setActionStatus(null), 5000);
+    } catch (err) {
+      alert("Reset failed: " + err.message);
+      setActionStatus(null);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handler: Re-run deterministic derivations
+  const handleDerive = async () => {
+    setIsLoading(true);
+    setActionStatus("Executing deterministic Python derivations from git logs and tasks...");
+    try {
+      const result = await api.deriveClaims(1);
+      await loadInitialData();
+      setActionStatus(`Plain-code derivation complete! Created ${result.claims_created} verified claims.`);
+      setTimeout(() => setActionStatus(null), 5000);
+    } catch (err) {
+      alert("Derivation failed: " + err.message);
+      setActionStatus(null);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handler: Re-run LLM extraction
+  const handleExtract = async () => {
+    setIsLoading(true);
+    setActionStatus("Running LLM extraction with substring quote checks and support validation...");
+    try {
+      const result = await api.extractClaims(1);
+      await loadInitialData();
+      setActionStatus(`LLM extraction complete! Verified: ${result.verified}, Inferred: ${result.inferred}, Rejected: ${result.rejected_by_quote_check + result.rejected_by_support_check}.`);
+      setTimeout(() => setActionStatus(null), 5000);
+    } catch (err) {
+      alert("Extraction failed: " + err.message);
+      setActionStatus(null);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900 font-sans">
-      {/* Demo banner */}
-      <div className="bg-amber-400 text-amber-950 text-sm text-center py-1.5 px-4 font-semibold tracking-wide shadow-sm">
-        ⚠️ DEMO MODE — Roles are simulated via role switcher. No login system.
-      </div>
+    <div className="min-h-screen bg-slate-50 text-gray-900 font-sans flex flex-col antialiased">
+      {/* Top Navbar */}
+      <Navbar
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        role={role}
+        setRole={setRole}
+        onResetSample={handleResetSample}
+        isResetting={isLoading}
+      />
 
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-6xl mx-auto px-4 py-3.5 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="text-2xl font-black text-indigo-700 tracking-tight">Backstop</span>
-            <span className="text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 px-2.5 py-0.5 rounded-full">
-              Handover Ledger
-            </span>
-          </div>
-          {/* Role switcher */}
-          <div className="flex items-center gap-2">
-            <span className="text-xs uppercase tracking-wider text-gray-500 font-medium">Viewing as:</span>
-            <select
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              className="border border-gray-300 rounded-md px-3 py-1.5 text-sm font-medium text-gray-800 bg-white hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            >
-              {ROLES.map((r) => (
-                <option key={r} value={r}>{ROLE_LABELS[r]}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-      </header>
+      {/* Main Page Content */}
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {activeTab === "home" && (
+          <HomePage
+            project={project}
+            stats={stats}
+            onResetSample={handleResetSample}
+            onDerive={handleDerive}
+            onExtract={handleExtract}
+            setActiveTab={setActiveTab}
+            isLoading={isLoading}
+            actionStatus={actionStatus}
+          />
+        )}
 
-      {/* Nav */}
-      <nav className="bg-white border-b border-gray-200">
-        <div className="max-w-6xl mx-auto px-4 flex gap-6">
-          {[
-            { id: "handover", label: "Handover" },
-            { id: "claims", label: "Claims Ledger" },
-            { id: "backtest", label: "Backtest" },
-          ].map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setPage(item.id)}
-              className={`py-3 px-1 text-sm font-semibold border-b-2 transition-colors cursor-pointer ${
-                page === item.id
-                  ? "border-indigo-600 text-indigo-700"
-                  : "border-transparent text-gray-500 hover:text-gray-800"
-              }`}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
-      </nav>
+        {activeTab === "review" && (
+          <ReviewQueuePage
+            role={role}
+            stats={stats}
+            onRefreshStats={loadInitialData}
+          />
+        )}
 
-      {/* Content */}
-      <main className="max-w-6xl mx-auto px-4 py-8">
-        {page === "handover" && <HandoverPage role={role} />}
-        {page === "claims" && <ClaimsPage role={role} />}
-        {page === "backtest" && <BacktestPage />}
+        {activeTab === "handover" && (
+          <HandoverPage
+            role={role}
+            setRole={setRole}
+            setActiveTab={setActiveTab}
+          />
+        )}
+
+        {activeTab === "backtest" && <BacktestPage />}
       </main>
-    </div>
-  );
-}
 
-function HandoverPage({ role }) {
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Handover Document</h1>
-        <p className="text-sm text-gray-600 mt-1">
-          Project: <strong>Campus Event App</strong> · Leaver: <strong>Riya</strong> (Departure: 15 Mar 2026) · Viewing as <strong>{role}</strong>
-        </p>
-      </div>
-
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 text-center text-gray-500 space-y-3">
-        <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-indigo-50 text-indigo-600 font-bold text-xl">
-          📋
+      {/* Footer */}
+      <footer className="border-t border-gray-200 bg-white py-6 text-center text-xs text-gray-400 no-print">
+        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+          <span>Backstop · Hackathon Transition Ledger</span>
+          <span>Zero Uncited Claims · Plain-Code Derivations · Pre-LLM Masking</span>
         </div>
-        <h3 className="text-lg font-semibold text-gray-800">Permission-Aware Handover Ready</h3>
-        <p className="text-sm max-w-md mx-auto text-gray-600">
-          Handovers are constructed exclusively from <strong>Approved Claims</strong>. Access control ensures restricted and confidential items remain withheld for lower-privilege roles.
-        </p>
-        <div className="pt-2">
-          <code className="text-xs bg-gray-100 text-gray-700 px-3 py-1.5 rounded border border-gray-200">
-            GET /api/projects/1/handover?role={role}
-          </code>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function ClaimsPage({ role }) {
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Claims Ledger</h1>
-        <p className="text-sm text-gray-600 mt-1">
-          Ledger of DERIVED (deterministic code) and INTERPRETED (LLM quote-backed) claims across all sources.
-        </p>
-      </div>
-
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[
-          { label: "Verified", count: "—", desc: "Exact source citation" },
-          { label: "Inferred", count: "—", desc: "Single source corroboration" },
-          { label: "Conflicting", count: "—", desc: "Contradiction found" },
-          { label: "Missing evidence", count: "—", desc: "No ground citation" },
-        ].map(({ label, count, desc }) => (
-          <div key={label} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
-            <div className="text-xs uppercase tracking-wider text-gray-500 font-semibold">{label}</div>
-            <div className="text-2xl font-bold text-gray-900 my-1">{count}</div>
-            <div className="text-xs text-gray-500">{desc}</div>
-          </div>
-        ))}
-      </div>
-
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 text-center text-gray-500">
-        <p className="text-sm">Human Review interface: Approve, Correct, or Reject claims. Only Approved claims feed into handovers.</p>
-      </div>
-    </div>
-  );
-}
-
-function BacktestPage() {
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Handover Backtest</h1>
-        <p className="text-sm text-gray-600 mt-1">
-          Evaluates the handover against synthetic post-departure ground truth (hidden from LLMs).
-        </p>
-      </div>
-
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[
-            "Sole Knowledge Modules",
-            "Key Decisions (JWT, etc.)",
-            "Critical Contacts",
-            "Open Risks & Conflicts",
-            "False Positives Check",
-          ].map((label) => (
-            <div key={label} className="border border-gray-200 rounded-lg p-4 bg-gray-50/50">
-              <div className="text-xs font-semibold text-gray-600 mb-1">{label}</div>
-              <div className="text-2xl font-bold text-gray-400">— / 1.0</div>
-              <div className="text-xs text-gray-500 mt-1">F1 metric vs ground truth</div>
-            </div>
-          ))}
-        </div>
-        <p className="text-xs text-center text-gray-500">
-          Ground truth file: <code className="bg-gray-100 px-1 py-0.5 rounded">backend/data/sample/ground_truth.json</code>
-        </p>
-      </div>
+      </footer>
     </div>
   );
 }
