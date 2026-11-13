@@ -1,134 +1,72 @@
 import React, { useState, useEffect } from "react";
 import {
-  CheckCircle, AlertCircle, HelpCircle, Shield, Edit3, XCircle,
-  Check, Search, History, FileCode, ChevronRight, Sparkles, Lock,
-  Flame, AlertTriangle, ChevronDown, ChevronUp, ArrowRight,
+  CheckCircle,
+  AlertCircle,
+  HelpCircle,
+  Clock,
+  Shield,
+  Edit3,
+  XCircle,
+  Check,
+  Search,
+  Filter,
+  History,
+  FileCode,
+  ExternalLink,
+  ChevronRight,
+  Sparkles,
+  Lock,
+  ArrowUpDown,
+  Flame,
+  AlertTriangle,
 } from "lucide-react";
 import { api } from "../api";
 
-// ── Status chip with tooltip ────────────────────────────────────────────────
-const STATUS_META = {
-  verified: {
-    color: "bg-emerald-100 text-emerald-900 border-emerald-300",
-    icon: <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />,
-    tip: "Verified: Quote found verbatim in source file and confirmed by an independent verification check.",
-  },
-  inferred: {
-    color: "bg-amber-100 text-amber-900 border-amber-300",
-    icon: <AlertCircle className="w-3.5 h-3.5 text-amber-600" />,
-    tip: "Inferred: Quote found in source, but support check only partially agreed. Treat with caution.",
-  },
-  conflicting: {
-    color: "bg-rose-100 text-rose-900 border-rose-300",
-    icon: <AlertTriangle className="w-3.5 h-3.5 text-rose-600" />,
-    tip: "Conflicting: Two sources disagree on this topic. Both citations are preserved.",
-  },
-  missing: {
-    color: "bg-gray-100 text-gray-800 border-gray-300",
-    icon: <HelpCircle className="w-3.5 h-3.5 text-gray-500" />,
-    tip: "Missing evidence: No direct source quote could be verified. Phrased as a question for the leaver.",
-  },
-};
+export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
+  const [claims, setClaims] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-function StatusChip({ status }) {
-  const m = STATUS_META[status] || STATUS_META.missing;
-  const label = status === "missing" ? "Missing evidence" : status.charAt(0).toUpperCase() + status.slice(1);
-  return (
-    <span
-      title={m.tip}
-      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold border cursor-help transition-all hover:scale-105 ${m.color}`}
-    >
-      {m.icon} {label}
-    </span>
-  );
-}
-
-function ReviewStateBadge({ state }) {
-  const map = {
-    approved:  "bg-emerald-50 text-emerald-700 border-emerald-200",
-    corrected: "bg-sky-50 text-sky-700 border-sky-200",
-    rejected:  "bg-rose-50 text-rose-700 border-rose-200",
-    pending:   "bg-amber-50 text-amber-700 border-amber-200",
-  };
-  const cls = map[state] || map.pending;
-  return (
-    <span className={`px-2 py-0.5 rounded text-[11px] font-bold border uppercase tracking-wider ${cls}`}>
-      {state || "pending"}
-    </span>
-  );
-}
-
-function AccessBadge({ level }) {
-  const map = {
-    confidential: "bg-purple-100 text-purple-900 border-purple-300",
-    restricted:   "bg-amber-100 text-amber-900 border-amber-300",
-    team:         "bg-blue-100 text-blue-900 border-blue-200",
-    public:       "bg-gray-100 text-gray-700 border-gray-200",
-  };
-  return (
-    <span className={`px-2 py-0.5 rounded text-[11px] font-bold border uppercase tracking-wider ${map[level] || map.public}`}>
-      {level || "public"}
-    </span>
-  );
-}
-
-function HelpPanel({ children }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className="border border-gray-200 rounded-2xl bg-white shadow-xs overflow-hidden">
-      <button
-        onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center justify-between px-5 py-3.5 text-[15px] font-semibold text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-colors cursor-pointer"
-      >
-        <span className="flex items-center gap-2">
-          <HelpCircle className="w-4 h-4 text-indigo-600" />
-          What am I looking at?
-        </span>
-        {open ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-      </button>
-      {open && (
-        <div className="px-5 pb-5 text-[15px] text-gray-600 leading-relaxed border-t border-gray-100 pt-3">
-          {children}
-        </div>
-      )}
-    </div>
-  );
-}
-
-export default function ReviewQueuePage({ stats, onRefreshStats, setActiveTab }) {
-  const role = "lead"; // Check-claims page is always "Reviewer (lead)"
-
-  const [claims, setClaims]           = useState([]);
-  const [isLoading, setIsLoading]     = useState(false);
-  const [error, setError]             = useState(null);
-
-  const [statusFilter, setStatusFilter]           = useState("all");
-  const [typeFilter, setTypeFilter]               = useState("all");
+  // Filters
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [typeFilter, setTypeFilter] = useState("all");
   const [reviewStateFilter, setReviewStateFilter] = useState("all");
-  const [searchTerm, setSearchTerm]               = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const [selectedClaim, setSelectedClaim]   = useState(null);
-  const [claimContext, setClaimContext]      = useState(null);
-  const [claimVersions, setClaimVersions]   = useState([]);
+  // Selected claim for detail panel
+  const [selectedClaim, setSelectedClaim] = useState(null);
+  const [claimContext, setClaimContext] = useState(null);
+  const [claimVersions, setClaimVersions] = useState([]);
   const [isDetailLoading, setIsDetailLoading] = useState(false);
 
+  // Modals / Action States
   const [rejectModalOpen, setRejectModalOpen] = useState(false);
-  const [rejectReason, setRejectReason]       = useState("");
-  const [editModalOpen, setEditModalOpen]     = useState(false);
-  const [editText, setEditText]               = useState("");
-  const [editNote, setEditNote]               = useState("");
+  const [rejectReason, setRejectReason] = useState("");
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editText, setEditText] = useState("");
+  const [editNote, setEditNote] = useState("");
   const [isSubmittingAction, setIsSubmittingAction] = useState(false);
   const [actionSuccessMessage, setActionSuccessMessage] = useState(null);
+
   const [isBulkApproving, setIsBulkApproving] = useState(false);
 
+  // Load claims
   const loadClaims = async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const data = await api.getClaims({ projectId: 1, role, status: statusFilter, type: typeFilter, reviewState: reviewStateFilter });
+      const data = await api.getClaims({
+        projectId: 1,
+        role,
+        status: statusFilter,
+        type: typeFilter,
+        reviewState: reviewStateFilter,
+      });
       setClaims(data || []);
-      if (data && data.length > 0 && !selectedClaim) selectClaim(data[0]);
-      else if (selectedClaim) {
+      if (data && data.length > 0 && !selectedClaim) {
+        selectClaim(data[0]);
+      } else if (selectedClaim) {
+        // Refresh selected claim if it exists in the updated list
         const updated = data.find((c) => c.id === selectedClaim.id);
         if (updated) setSelectedClaim(updated);
       }
@@ -139,13 +77,17 @@ export default function ReviewQueuePage({ stats, onRefreshStats, setActiveTab })
     }
   };
 
-  useEffect(() => { loadClaims(); }, [role, statusFilter, typeFilter, reviewStateFilter]);
+  useEffect(() => {
+    loadClaims();
+  }, [role, statusFilter, typeFilter, reviewStateFilter]);
 
+  // Load context and versions when a claim is selected
   const selectClaim = async (claim) => {
     setSelectedClaim(claim);
     setClaimContext(null);
     setClaimVersions([]);
     if (claim.withheld) return;
+
     setIsDetailLoading(true);
     try {
       const [ctx, vers] = await Promise.all([
@@ -154,281 +96,437 @@ export default function ReviewQueuePage({ stats, onRefreshStats, setActiveTab })
       ]);
       setClaimContext(ctx);
       setClaimVersions(vers);
+    } catch (err) {
+      console.error("Failed to load claim detail context", err);
     } finally {
       setIsDetailLoading(false);
     }
   };
 
-  const toast = (msg) => { setActionSuccessMessage(msg); setTimeout(() => setActionSuccessMessage(null), 4000); };
-
+  // Actions: Approve
   const handleApprove = async () => {
     if (!selectedClaim) return;
     setIsSubmittingAction(true);
     try {
-      await api.approveClaim(selectedClaim.id, { role, note: "Approved by Reviewer (lead)" });
-      toast(`Claim #${selectedClaim.id} approved!`);
-      await loadClaims(); onRefreshStats();
+      await api.approveClaim(selectedClaim.id, { role, note: `Approved via Review Queue UI by ${role}` });
+      setActionSuccessMessage(`Claim #${selectedClaim.id} approved!`);
+      setTimeout(() => setActionSuccessMessage(null), 3500);
+      await loadClaims();
+      onRefreshStats();
+      // Reload detail
       const vers = await api.getClaimVersions(selectedClaim.id).catch(() => []);
       setClaimVersions(vers);
-    } catch (err) { alert("Approve failed: " + err.message); }
-    finally { setIsSubmittingAction(false); }
+    } catch (err) {
+      alert("Approve failed: " + err.message);
+    } finally {
+      setIsSubmittingAction(false);
+    }
   };
 
+  // Actions: Reject
   const handleRejectConfirm = async () => {
     if (!selectedClaim || !rejectReason.trim()) return;
     setIsSubmittingAction(true);
     try {
       await api.rejectClaim(selectedClaim.id, { role, reason: rejectReason.trim() });
-      setRejectModalOpen(false); setRejectReason("");
-      toast(`Claim #${selectedClaim.id} rejected.`);
-      await loadClaims(); onRefreshStats();
-    } catch (err) { alert("Reject failed: " + err.message); }
-    finally { setIsSubmittingAction(false); }
+      setRejectModalOpen(false);
+      setRejectReason("");
+      setActionSuccessMessage(`Claim #${selectedClaim.id} rejected.`);
+      setTimeout(() => setActionSuccessMessage(null), 3500);
+      await loadClaims();
+      onRefreshStats();
+    } catch (err) {
+      alert("Reject failed: " + err.message);
+    } finally {
+      setIsSubmittingAction(false);
+    }
   };
 
+  // Actions: Edit
   const handleEditConfirm = async () => {
     if (!selectedClaim || !editText.trim()) return;
     setIsSubmittingAction(true);
     try {
-      await api.editClaim(selectedClaim.id, { role, correctedText: editText.trim(), note: editNote.trim() || undefined });
+      await api.editClaim(selectedClaim.id, {
+        role,
+        correctedText: editText.trim(),
+        note: editNote.trim() || undefined,
+      });
       setEditModalOpen(false);
-      toast(`Claim #${selectedClaim.id} corrected (new version saved).`);
-      await loadClaims(); onRefreshStats();
+      setActionSuccessMessage(`Claim #${selectedClaim.id} corrected (Version incremented).`);
+      setTimeout(() => setActionSuccessMessage(null), 3500);
+      await loadClaims();
+      onRefreshStats();
+      // Reload detail context and versions
       const vers = await api.getClaimVersions(selectedClaim.id).catch(() => []);
       setClaimVersions(vers);
-    } catch (err) { alert("Edit failed: " + err.message); }
-    finally { setIsSubmittingAction(false); }
+    } catch (err) {
+      alert("Edit failed: " + err.message);
+    } finally {
+      setIsSubmittingAction(false);
+    }
   };
 
+  // Actions: Bulk Approve Verified (demo shortcut)
   const handleBulkApproveVerified = async () => {
     if (!window.confirm("Approve all Verified claims? Conflicting and Missing claims will be skipped.")) return;
     setIsBulkApproving(true);
     try {
       const result = await api.bulkApproveVerified({ projectId: 1, role });
       const count = result?.approved_count ?? 0;
-      toast(`Bulk approved ${count} Verified claim${count !== 1 ? "s" : ""} (Conflicting & Missing skipped).`);
-      await loadClaims(); onRefreshStats();
-    } catch (err) { alert("Bulk approve failed: " + err.message); }
-    finally { setIsBulkApproving(false); }
+      setActionSuccessMessage(`Bulk approved ${count} Verified claim${count !== 1 ? "s" : ""} (Conflicting & Missing skipped).`);
+      setTimeout(() => setActionSuccessMessage(null), 5000);
+      await loadClaims();
+      onRefreshStats();
+    } catch (err) {
+      alert("Bulk approve failed: " + err.message);
+    } finally {
+      setIsBulkApproving(false);
+    }
   };
 
+  // Helper chips styling
+  const getStatusBadge = (status) => {
+    switch (status) {
+      case "verified":
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-semibold bg-[#ecfdf5] text-[#059669] border border-[#a7f3d0]">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#059669]" />
+            Verified
+          </span>
+        );
+      case "inferred":
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-semibold bg-[#fffbeb] text-[#d97706] border border-[#fde68a]">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#d97706]" />
+            Inferred
+          </span>
+        );
+      case "conflicting":
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-semibold bg-[#fef2f2] text-[#dc2626] border border-[#fecaca]">
+            <AlertTriangle className="w-3 h-3 text-[#dc2626]" />
+            Conflicting
+          </span>
+        );
+      case "missing":
+      default:
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-semibold bg-[#f1f5f9] text-[#64748b] border border-[#e2e8f0]">
+            <HelpCircle className="w-3 h-3 text-[#64748b]" />
+            Missing evidence
+          </span>
+        );
+    }
+  };
+
+  const getReviewStateBadge = (state) => {
+    switch (state) {
+      case "approved":
+        return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#ecfdf5] text-[#059669] border border-[#a7f3d0] uppercase tracking-wider">Approved</span>;
+      case "corrected":
+        return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#f0f9ff] text-[#0284c7] border border-[#bae6fd] uppercase tracking-wider">Corrected</span>;
+      case "rejected":
+        return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#fef2f2] text-[#dc2626] border border-[#fecaca] uppercase tracking-wider">Rejected</span>;
+      case "pending":
+      default:
+        return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#fffbeb] text-[#b45309] border border-[#fde68a] uppercase tracking-wider">Pending Review</span>;
+    }
+  };
+
+  const getAccessBadge = (level) => {
+    switch (level) {
+      case "confidential":
+        return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#faf5ff] text-[#6b21a8] border border-[#e9d5ff] uppercase tracking-wider">Confidential</span>;
+      case "restricted":
+        return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#fffbeb] text-[#92400e] border border-[#fde68a] uppercase tracking-wider">Restricted</span>;
+      case "team":
+        return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#eff6ff] text-[#1e40af] border border-[#bfdbfe] uppercase tracking-wider">Team</span>;
+      case "public":
+      default:
+        return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#f8fafc] text-[#475569] border border-[#e2e8f0] uppercase tracking-wider">Public</span>;
+    }
+  };
+
+  // Filtered by search
   const filteredClaims = claims.filter((c) => {
     if (!searchTerm.trim()) return true;
-    const t = searchTerm.toLowerCase();
-    return (c.text?.toLowerCase().includes(t) || c.type?.toLowerCase().includes(t) || c.status?.toLowerCase().includes(t));
+    const term = searchTerm.toLowerCase();
+    return (
+      (c.text && c.text.toLowerCase().includes(term)) ||
+      (c.type && c.type.toLowerCase().includes(term)) ||
+      (c.status && c.status.toLowerCase().includes(term))
+    );
   });
 
-  const verifiedCount   = stats?.status_breakdown?.verified ?? 0;
-  const approvedCount   = stats?.approved_count ?? 0;
-  const pendingApproval = claims.filter((c) => c.status === "verified" && c.review_state === "pending").length;
-
   return (
-    <div className="space-y-6 max-w-7xl mx-auto py-4">
-
-      {/* Page heading with NEXT STEP main button */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight">Check the claims</h1>
-          <p className="text-[15px] text-gray-600 mt-1">
-            Simulated role: <span className="font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-lg border border-indigo-200">Reviewer (lead)</span>. Inspect source quotes before approving claims into the handover dossier.
-          </p>
-        </div>
-
-        {/* ONE OBVIOUS MAIN BUTTON FOR NEXT STEP */}
-        <button
-          onClick={() => setActiveTab?.("handover")}
-          className="flex items-center gap-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 py-3 rounded-xl text-[15px] shadow-sm hover:shadow-md transition-all transform active:scale-95 cursor-pointer shrink-0"
-        >
-          <span>Next: Handover for the new person</span>
-          <ArrowRight className="w-4 h-4" />
-        </button>
-      </div>
-
-      {actionSuccessMessage && (
-        <div className="bg-emerald-50 border border-emerald-300 text-emerald-950 text-[15px] font-semibold px-4 py-2.5 rounded-xl flex items-center gap-2">
-          <Check className="w-4 h-4 text-emerald-600" />
-          {actionSuccessMessage}
-        </div>
-      )}
-
-      {/* Collapsible Help Panel */}
-      <HelpPanel>
-        <p>
-          This ledger holds every claim extracted from git history and meeting notes, sorted by risk score.
-          You can inspect exact source quotes and approve claims so they are included in the final handover plan.
-        </p>
-      </HelpPanel>
-
-      {/* Stats row */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {[
-          { label: "Total claims", value: stats?.total_claims ?? claims.length, color: "text-gray-900" },
-          { label: "Verified claims", value: verifiedCount, color: "text-emerald-700" },
-          { label: "Approved claims", value: approvedCount, color: "text-indigo-700" },
-          { label: "Rejection rate", value: `${stats?.rejection_rate_percent ?? 0}%`, color: "text-rose-600" },
-        ].map((s) => (
-          <div key={s.label} className="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs">
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{s.label}</p>
-            <p className={`text-2xl font-black mt-1 ${s.color}`}>{s.value}</p>
+    <div className="space-y-6 max-w-7xl mx-auto py-2">
+      {/* Header & Stats Bar */}
+      <div>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="px-2 py-0.5 rounded bg-[#dbe1ff] text-[#00174b] font-mono text-[10px] font-bold uppercase tracking-wider">
+                Auditable Ledger
+              </span>
+              <span className="text-xs text-[#737686]">Step 2 of 4</span>
+            </div>
+            <h1 className="text-2xl md:text-3xl font-extrabold text-[#0b1c30] tracking-tight">Human Review Queue</h1>
+            <p className="text-xs md:text-sm text-[#434655] mt-1">
+              Ledger of claims extracted from team activity. Verify source citations before promoting claims to the Handover Dossier.
+            </p>
           </div>
-        ))}
-      </div>
-
-      {/* Bulk approve demo shortcut */}
-      {pendingApproval > 0 && (
-        <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <p className="text-[15px] text-indigo-900 leading-normal">
-            <strong>{pendingApproval} Verified claims</strong> are waiting for approval. Approve all at once for demo speed, or review individually below.
-          </p>
-          <button
-            onClick={handleBulkApproveVerified}
-            disabled={isBulkApproving}
-            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm px-5 py-2.5 rounded-xl transition-all shadow-xs cursor-pointer disabled:opacity-50 shrink-0"
-          >
-            <Check className="w-4 h-4" />
-            {isBulkApproving ? "Approving..." : `Approve all ${pendingApproval} Verified`}
-          </button>
+          {actionSuccessMessage && (
+            <div className="bg-[#ecfdf5] border border-[#a7f3d0] text-[#065f46] text-xs font-semibold px-4 py-2 rounded-lg flex items-center gap-2 shadow-2xs animate-fade-in">
+              <Check className="w-4 h-4 text-[#059669]" />
+              {actionSuccessMessage}
+            </div>
+          )}
         </div>
-      )}
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mt-4">
+          <div className="bg-white p-3.5 rounded-xl border border-[#e2e8f0] shadow-2xs">
+            <span className="text-[11px] font-bold text-[#737686] uppercase tracking-wider">Total Claims</span>
+            <div className="text-2xl font-black text-[#0b1c30] mt-0.5">{stats?.total_claims ?? claims.length}</div>
+            <span className="text-[10px] text-[#737686]">Risk-ordered ledger</span>
+          </div>
+
+          <div className="bg-white p-3.5 rounded-xl border border-[#e2e8f0] shadow-2xs">
+            <span className="text-[11px] font-bold text-[#059669] uppercase tracking-wider flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#059669]" /> Verified
+            </span>
+            <div className="text-2xl font-black text-[#059669] mt-0.5">
+              {stats?.status_breakdown?.verified ?? 0}
+            </div>
+            <span className="text-[10px] text-[#059669]/70">Substring cited</span>
+          </div>
+
+          <div className="bg-white p-3.5 rounded-xl border border-[#e2e8f0] shadow-2xs">
+            <span className="text-[11px] font-bold text-[#d97706] uppercase tracking-wider flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#d97706]" /> Inferred
+            </span>
+            <div className="text-2xl font-black text-[#d97706] mt-0.5">
+              {stats?.status_breakdown?.inferred ?? 0}
+            </div>
+            <span className="text-[10px] text-[#d97706]/70">Partially supported</span>
+          </div>
+
+          <div className="bg-white p-3.5 rounded-xl border border-[#e2e8f0] shadow-2xs">
+            <span className="text-[11px] font-bold text-[#dc2626] uppercase tracking-wider flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#dc2626]" /> Conflicting
+            </span>
+            <div className="text-2xl font-black text-[#dc2626] mt-0.5">
+              {stats?.status_breakdown?.conflicting ?? 0}
+            </div>
+            <span className="text-[10px] text-[#dc2626]/70">Disagreement flagged</span>
+          </div>
+
+          <div className="bg-white p-3.5 rounded-xl border border-[#e2e8f0] shadow-2xs">
+            <span className="text-[11px] font-bold text-[#64748b] uppercase tracking-wider flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#64748b]" /> Missing
+            </span>
+            <div className="text-2xl font-black text-[#64748b] mt-0.5">
+              {stats?.status_breakdown?.missing ?? 0}
+            </div>
+            <span className="text-[10px] text-[#64748b]/70">Needs leaver debrief</span>
+          </div>
+
+          <div className="bg-[#ecfdf5]/40 p-3.5 rounded-xl border border-[#a7f3d0] shadow-2xs">
+            <span className="text-[11px] font-bold text-[#065f46] uppercase tracking-wider">Approved</span>
+            <div className="text-2xl font-black text-[#059669] mt-0.5">{stats?.approved_count ?? 0}</div>
+            <span className="text-[10px] text-[#065f46]/80">Rejection: {stats?.rejection_rate_percent ?? 0}%</span>
+          </div>
+        </div>
+      </div>
 
       {/* Filter and Search Bar */}
-      <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs flex flex-wrap items-center gap-3">
-        <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-xl text-sm">
-          {["all", "verified", "inferred", "conflicting", "missing"].map((st) => (
-            <button
-              key={st}
-              onClick={() => setStatusFilter(st)}
-              className={`px-3 py-1.5 rounded-lg font-semibold capitalize transition-all cursor-pointer ${
-                statusFilter === st ? "bg-white text-gray-900 shadow-xs" : "text-gray-500 hover:text-gray-900"
-              }`}
-            >
-              {st === "missing" ? "Missing evidence" : st}
-            </button>
-          ))}
+      <div className="bg-white p-3.5 rounded-xl border border-[#e2e8f0] shadow-2xs flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Status filter */}
+          <div className="flex items-center gap-1 bg-[#f1f5f9] p-1 rounded-lg text-xs">
+            {["all", "verified", "inferred", "conflicting", "missing"].map((st) => (
+              <button
+                key={st}
+                onClick={() => setStatusFilter(st)}
+                className={`px-2.5 py-1 rounded-md font-semibold capitalize transition-all cursor-pointer ${
+                  statusFilter === st
+                    ? "bg-white text-[#004ac6] shadow-2xs border border-[#cbd5e1]/60"
+                    : "text-[#475569] hover:text-[#0b1c30]"
+                }`}
+              >
+                {st}
+              </button>
+            ))}
+          </div>
+
+          {/* Type filter */}
+          <select
+            value={typeFilter}
+            onChange={(e) => setTypeFilter(e.target.value)}
+            className="text-xs font-semibold bg-[#f8f9ff] border border-[#e2e8f0] rounded-lg px-2.5 py-1.5 text-[#0b1c30] focus:outline-none focus:ring-2 focus:ring-[#004ac6] cursor-pointer"
+          >
+            <option value="all">All Types</option>
+            <option value="owner">Owner</option>
+            <option value="decision">Decision</option>
+            <option value="blocker">Blocker</option>
+            <option value="risk">Risk</option>
+            <option value="dependency">Dependency</option>
+            <option value="open_question">Open Question</option>
+            <option value="next_action">Next Action</option>
+            <option value="contact">Contact</option>
+          </select>
+
+          {/* Review state filter */}
+          <select
+            value={reviewStateFilter}
+            onChange={(e) => setReviewStateFilter(e.target.value)}
+            className="text-xs font-semibold bg-[#f8f9ff] border border-[#e2e8f0] rounded-lg px-2.5 py-1.5 text-[#0b1c30] focus:outline-none focus:ring-2 focus:ring-[#004ac6] cursor-pointer"
+          >
+            <option value="all">All Review States</option>
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="corrected">Corrected</option>
+            <option value="rejected">Rejected</option>
+          </select>
         </div>
 
-        <select
-          value={typeFilter}
-          onChange={(e) => setTypeFilter(e.target.value)}
-          className="text-sm font-semibold bg-gray-50 border border-gray-300 rounded-xl px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
-        >
-          <option value="all">All types</option>
-          {["owner","decision","blocker","risk","dependency","open_question","next_action","contact"].map((t) => (
-            <option key={t} value={t}>{t.replace("_", " ")}</option>
-          ))}
-        </select>
+        {/* Search & Bulk Action */}
+        <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
+          <div className="relative flex-1 sm:w-60">
+            <Search className="w-3.5 h-3.5 text-[#737686] absolute left-3 top-2.5" />
+            <input
+              type="text"
+              placeholder="Search claims or quotes..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-8.5 pr-3 py-1.5 text-xs bg-[#f8f9ff] border border-[#e2e8f0] rounded-lg text-[#0b1c30] focus:outline-none focus:ring-2 focus:ring-[#004ac6]"
+            />
+          </div>
 
-        <select
-          value={reviewStateFilter}
-          onChange={(e) => setReviewStateFilter(e.target.value)}
-          className="text-sm font-semibold bg-gray-50 border border-gray-300 rounded-xl px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
-        >
-          <option value="all">All review states</option>
-          {["pending","approved","corrected","rejected"].map((s) => (
-            <option key={s} value={s}>{s}</option>
-          ))}
-        </select>
-
-        <div className="relative ml-auto w-full sm:w-64">
-          <Search className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
-          <input
-            type="text"
-            placeholder="Search claims or quotes..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-sm bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
+          {/* Bulk Approve Demo Shortcut */}
+          {(role === "lead" || role === "admin") && (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleBulkApproveVerified}
+                disabled={isBulkApproving}
+                title="Approves only Verified claims. Conflicting and Missing are always skipped."
+                className="flex items-center gap-1.5 text-xs font-bold bg-[#ecfdf5] hover:bg-[#d1fae5] text-[#065f46] border border-[#a7f3d0] px-3 py-1.5 rounded-lg transition-all cursor-pointer shadow-2xs disabled:opacity-50"
+              >
+                <Check className="w-3.5 h-3.5 text-[#059669]" />
+                {isBulkApproving ? "Approving..." : "✓ Approve all Verified"}
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Split layout: Claims List + Detail Panel */}
+      {/* Main Split Layout: Claims List (Left) + Detail Panel (Right) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-
-        {/* Claims List */}
+        {/* Claims List Column */}
         <div className="lg:col-span-5 space-y-2.5">
-          <div className="flex items-center justify-between text-sm text-gray-500 px-1 font-medium">
-            <span>Showing {filteredClaims.length} claims</span>
-            <span className="flex items-center gap-1 text-gray-400 text-xs">
-              <Flame className="w-3.5 h-3.5 text-amber-500" /> Ordered by risk score
+          <div className="flex items-center justify-between text-xs text-[#737686] px-1 font-medium">
+            <span>Showing {filteredClaims.length} candidate records</span>
+            <span className="flex items-center gap-1 font-mono text-[11px] text-[#004ac6] bg-[#dbe1ff] px-2 py-0.5 rounded font-semibold">
+              <Flame className="w-3 h-3 text-[#004ac6]" />
+              Ordered by Risk (Kar-Score)
             </span>
           </div>
 
           {isLoading ? (
-            <div className="bg-white p-12 text-center rounded-2xl border border-gray-200">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-indigo-600 border-t-transparent" />
-              <p className="mt-3 text-sm text-gray-500 font-medium">Loading claims ledger...</p>
-            </div>
-          ) : error ? (
-            <div className="bg-rose-50 border border-rose-200 p-6 rounded-2xl text-[15px] text-rose-800 text-center space-y-2">
-              <p className="font-semibold">Could not load claims</p>
-              <p className="text-xs">{error}</p>
-              <button onClick={loadClaims} className="text-indigo-600 font-bold hover:underline text-sm cursor-pointer">Retry</button>
+            <div className="bg-white p-12 text-center rounded-xl border border-[#e2e8f0]">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-3 border-[#004ac6] border-t-transparent" />
+              <p className="mt-2 text-xs font-semibold text-[#434655]">Loading claims ledger...</p>
             </div>
           ) : filteredClaims.length === 0 ? (
-            <div className="bg-white p-12 text-center rounded-2xl border border-gray-200 space-y-4">
-              <p className="text-[15px] font-semibold text-gray-700">No claims match the selected filters.</p>
-              <div className="flex items-center justify-center gap-3">
-                <button
-                  onClick={() => { setStatusFilter("all"); setTypeFilter("all"); setReviewStateFilter("all"); setSearchTerm(""); }}
-                  className="text-sm text-indigo-600 font-bold hover:underline cursor-pointer"
-                >
-                  Clear all filters
-                </button>
-                <span className="text-gray-300">·</span>
-                <button
-                  onClick={() => setActiveTab?.("handover")}
-                  className="inline-flex items-center gap-1.5 bg-indigo-600 text-white text-sm font-bold px-4 py-2 rounded-xl cursor-pointer hover:bg-indigo-700 transition-colors"
-                >
-                  Go to Step 3: Handover →
-                </button>
-              </div>
+            <div className="bg-white p-12 text-center rounded-xl border border-[#e2e8f0] space-y-3">
+              <p className="text-sm font-semibold text-[#0b1c30]">No claims match the selected filters.</p>
+              <button
+                onClick={() => {
+                  setStatusFilter("all");
+                  setTypeFilter("all");
+                  setReviewStateFilter("all");
+                  setSearchTerm("");
+                }}
+                className="text-xs text-[#004ac6] font-bold hover:underline cursor-pointer"
+              >
+                Reset all filters
+              </button>
             </div>
           ) : (
-            <div className="space-y-2.5 max-h-[720px] overflow-y-auto pr-1">
+            <div className="space-y-2 max-h-[780px] overflow-y-auto pr-1">
               {filteredClaims.map((claim) => {
                 const isSelected = selectedClaim?.id === claim.id;
+
                 if (claim.withheld) {
                   return (
-                    <div key={claim.id} className="p-4 rounded-xl border border-dashed border-gray-300 bg-gray-50">
-                      <div className="flex items-center gap-2">
-                        <Lock className="w-4 h-4 text-gray-400" />
-                        <span className="text-sm font-semibold text-gray-500">Hidden: you don't have access</span>
+                    <div
+                      key={claim.id}
+                      className="p-3.5 rounded-xl border border-dashed border-[#cbd5e1] bg-[#f8f9ff] text-[#64748b] opacity-80"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="flex items-center gap-1.5 text-xs font-bold text-[#475569]">
+                          <Lock className="w-3.5 h-3.5 text-[#d97706]" />
+                          Claim #{claim.id} Withheld
+                        </span>
+                        {getAccessBadge(claim.access_level)}
                       </div>
-                      <p className="text-xs text-gray-400 mt-1">Requires {claim.access_level} access — ask your lead</p>
+                      <p className="text-xs text-[#64748b] mt-1">
+                        Requires {claim.access_level} access — request from lead
+                      </p>
                     </div>
                   );
                 }
+
                 return (
                   <div
                     key={claim.id}
                     onClick={() => selectClaim(claim)}
-                    className={`p-4 rounded-2xl border transition-all cursor-pointer ${
+                    className={`p-4 rounded-xl border transition-all cursor-pointer text-left relative ${
                       isSelected
-                        ? "bg-indigo-50/60 border-indigo-500 ring-2 ring-indigo-200 shadow-sm"
-                        : "bg-white border-gray-200 hover:border-indigo-300 hover:shadow-xs"
+                        ? "bg-[#eff4ff]/40 border-[#004ac6] ring-2 ring-[#004ac6] shadow-xs"
+                        : "bg-white border-[#e2e8f0] hover:border-[#cbd5e1] hover:shadow-2xs"
                     }`}
                   >
-                    <div className="flex items-center gap-2 mb-2 flex-wrap">
-                      <StatusChip status={claim.status} />
-                      <span className={`px-2 py-0.5 rounded text-[11px] font-bold border ${
-                        claim.kind === "derived" ? "bg-blue-100 text-blue-800 border-blue-200" : "bg-purple-100 text-purple-800 border-purple-200"
-                      }`}>{claim.kind}</span>
-                      <span className="text-[11px] font-bold text-gray-500 uppercase px-1.5 py-0.5 rounded bg-gray-100">{claim.type}</span>
-                      <span className="ml-auto"><ReviewStateBadge state={claim.review_state} /></span>
+                    {/* Header Chips */}
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        {getStatusBadge(claim.status)}
+                        <span
+                          className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                            claim.kind === "derived"
+                              ? "bg-[#e2dfff] text-[#0f0069] border border-[#c3c0ff]"
+                              : "bg-[#f5f3ff] text-[#7c3aed] border border-[#ddd6fe]"
+                          }`}
+                        >
+                          {claim.kind}
+                        </span>
+                        <span className="text-[10px] font-bold text-[#475569] uppercase px-1.5 py-0.5 rounded bg-[#f1f5f9] border border-[#e2e8f0]">
+                          {claim.type}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        {getAccessBadge(claim.access_level)}
+                        {getReviewStateBadge(claim.review_state)}
+                      </div>
                     </div>
 
-                    <p className="text-[15px] font-semibold text-gray-900 leading-snug">{claim.text}</p>
+                    {/* Claim Text */}
+                    <h4 className="text-xs font-bold text-[#0b1c30] leading-snug line-clamp-2">
+                      {claim.text}
+                    </h4>
 
-                    {claim.evidence?.[0]?.quote && (
-                      <p className="mt-2 text-xs text-gray-600 italic bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-200 line-clamp-1">
+                    {/* Source citation snippet */}
+                    {claim.evidence && claim.evidence.length > 0 && claim.evidence[0].quote && (
+                      <div className="mt-2 text-[11px] text-[#434655] italic bg-[#f8f9ff] px-2.5 py-1.5 rounded border border-[#e2e8f0] line-clamp-1 font-mono">
                         "{claim.evidence[0].quote}"
-                      </p>
+                      </div>
                     )}
 
-                    <div className="mt-2.5 flex items-center justify-between text-xs text-gray-400">
-                      <span>#{claim.id} · v{claim.current_version}</span>
-                      <span className="text-indigo-600 font-semibold flex items-center gap-0.5">
-                        Inspect quote <ChevronRight className="w-3.5 h-3.5" />
+                    <div className="mt-2.5 flex items-center justify-between text-[10px] text-[#737686]">
+                      <span className="font-mono">Claim #{claim.id} · v{claim.current_version}</span>
+                      <span className="font-semibold text-[#004ac6] hover:underline flex items-center gap-0.5">
+                        Inspect citation <ChevronRight className="w-3 h-3" />
                       </span>
                     </div>
                   </div>
@@ -438,206 +536,294 @@ export default function ReviewQueuePage({ stats, onRefreshStats, setActiveTab })
           )}
         </div>
 
-        {/* Detail Panel */}
+        {/* Detail Panel Column */}
         <div className="lg:col-span-7">
           {selectedClaim && !selectedClaim.withheld ? (
-            <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-xs space-y-6 sticky top-28">
-              {/* Header + Review Actions */}
-              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 border-b border-gray-100 pb-4">
-                <div className="space-y-1.5 flex-1">
-                  <div className="flex items-center gap-2 flex-wrap text-xs text-gray-400 font-medium">
-                    <span>Claim #{selectedClaim.id} · v{selectedClaim.current_version}</span>
-                    <AccessBadge level={selectedClaim.access_level} />
-                    <ReviewStateBadge state={selectedClaim.review_state} />
+            <div className="bg-white rounded-xl border border-[#e2e8f0] p-6 shadow-xs space-y-5 sticky top-24">
+              {/* Detail Header */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#f1f5f9] pb-4">
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <span className="text-xs font-bold font-mono text-[#737686] uppercase tracking-wider">
+                      Claim #{selectedClaim.id} · Version {selectedClaim.current_version}
+                    </span>
+                    {getAccessBadge(selectedClaim.access_level)}
+                    {getReviewStateBadge(selectedClaim.review_state)}
                   </div>
-                  <h3 className="text-lg font-bold text-gray-900 leading-snug">{selectedClaim.text}</h3>
-                  <div className="pt-0.5">
-                    <StatusChip status={selectedClaim.status} />
-                  </div>
+                  <h3 className="text-base font-bold text-[#0b1c30] leading-snug">
+                    {selectedClaim.text}
+                  </h3>
                 </div>
 
+                {/* Review Action Buttons */}
                 <div className="flex items-center gap-2 shrink-0">
                   <button
                     onClick={handleApprove}
                     disabled={isSubmittingAction || selectedClaim.review_state === "approved"}
-                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition-colors disabled:opacity-40 cursor-pointer"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-[#059669] hover:bg-[#047857] text-white shadow-2xs transition-colors disabled:opacity-40 cursor-pointer"
+                    title="Approve for inclusion in the handover dossier"
                   >
-                    <Check className="w-4 h-4" /> Approve
+                    <Check className="w-3.5 h-3.5 text-white" />
+                    Approve
                   </button>
+
                   <button
-                    onClick={() => { setEditText(selectedClaim.text); setEditNote(""); setEditModalOpen(true); }}
+                    onClick={() => {
+                      setEditText(selectedClaim.text);
+                      setEditNote("");
+                      setEditModalOpen(true);
+                    }}
                     disabled={isSubmittingAction}
-                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-bold bg-gray-100 hover:bg-gray-200 text-gray-800 border border-gray-300 transition-colors disabled:opacity-40 cursor-pointer"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-[#f8f9ff] text-[#0b1c30] border border-[#e2e8f0] transition-colors disabled:opacity-40 cursor-pointer shadow-2xs"
                   >
-                    <Edit3 className="w-4 h-4" /> Edit
+                    <Edit3 className="w-3.5 h-3.5 text-[#004ac6]" />
+                    Edit
                   </button>
+
                   <button
-                    onClick={() => { setRejectReason(""); setRejectModalOpen(true); }}
+                    onClick={() => {
+                      setRejectReason("");
+                      setRejectModalOpen(true);
+                    }}
                     disabled={isSubmittingAction || selectedClaim.review_state === "rejected"}
-                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-bold bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 transition-colors disabled:opacity-40 cursor-pointer"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-[#fef2f2] hover:bg-[#fee2e2] text-[#dc2626] border border-[#fecaca] transition-colors disabled:opacity-40 cursor-pointer"
                   >
-                    <XCircle className="w-4 h-4" /> Reject
+                    <XCircle className="w-3.5 h-3.5 text-[#dc2626]" />
+                    Reject
                   </button>
                 </div>
               </div>
 
-              {/* Verification checks */}
+              {/* Verification & Substring Status Checks */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="p-3.5 bg-gray-50 rounded-xl border border-gray-200">
-                  <div className="flex items-center justify-between text-sm font-bold text-gray-700 mb-1">
-                    <span className="flex items-center gap-1.5"><FileCode className="w-4 h-4 text-indigo-600" /> 1. Substring check</span>
-                    {claimContext?.quote_found_in_original
-                      ? <span className="text-emerald-700 text-xs font-black bg-emerald-100 px-2 py-0.5 rounded">Exact match</span>
-                      : <span className="text-gray-500 text-xs font-semibold bg-gray-200 px-2 py-0.5 rounded">
-                          {selectedClaim.kind === "derived" ? "Derived by code" : "No match"}
-                        </span>
-                    }
+                <div className="p-3.5 bg-[#f8f9ff] rounded-xl border border-[#e2e8f0]">
+                  <div className="flex items-center justify-between text-xs font-bold text-[#0b1c30]">
+                    <span className="flex items-center gap-1.5">
+                      <FileCode className="w-4 h-4 text-[#004ac6]" />
+                      1. Substring Quote Check
+                    </span>
+                    {claimContext?.quote_found_in_original ? (
+                      <span className="text-[#059669] font-bold text-[11px] bg-[#ecfdf5] border border-[#a7f3d0] px-2 py-0.5 rounded">
+                        PASSED (Exact)
+                      </span>
+                    ) : (
+                      <span className="text-[#64748b] font-semibold text-[11px] bg-[#f1f5f9] border border-[#e2e8f0] px-2 py-0.5 rounded">
+                        {selectedClaim.kind === "derived" ? "Deterministic AST" : "No citation match"}
+                      </span>
+                    )}
                   </div>
-                  <p className="text-xs text-gray-500">Character-by-character search against unredacted source file.</p>
+                  <p className="text-[11px] text-[#737686] mt-1">
+                    Normalized character-by-character search against original unredacted file.
+                  </p>
                 </div>
-                <div className="p-3.5 bg-gray-50 rounded-xl border border-gray-200">
-                  <div className="flex items-center justify-between text-sm font-bold text-gray-700 mb-1">
-                    <span className="flex items-center gap-1.5"><Shield className="w-4 h-4 text-purple-600" /> 2. Support check</span>
-                    <span className="text-indigo-800 text-xs font-bold bg-indigo-100 px-2 py-0.5 rounded capitalize">
+
+                <div className="p-3.5 bg-[#f8f9ff] rounded-xl border border-[#e2e8f0]">
+                  <div className="flex items-center justify-between text-xs font-bold text-[#0b1c30]">
+                    <span className="flex items-center gap-1.5">
+                      <Shield className="w-4 h-4 text-[#4b41e1]" />
+                      2. Support Check Status
+                    </span>
+                    <span className="text-[#004ac6] font-bold text-[11px] bg-[#e5eeff] border border-[#dce9ff] px-2 py-0.5 rounded capitalize">
                       {selectedClaim.status} ({Math.round(selectedClaim.confidence * 100)}%)
                     </span>
                   </div>
-                  <p className="text-xs text-gray-500">Independent claim corroboration check.</p>
+                  <p className="text-[11px] text-[#737686] mt-1">
+                    Corroborated by independent claim verification audit.
+                  </p>
                 </div>
               </div>
 
-              {/* Source quote highlighted */}
+              {/* Exact Source Citation & Highlighting Context */}
               <div className="space-y-2">
-                <div className="flex items-center justify-between text-sm font-bold text-gray-800">
-                  <span className="flex items-center gap-1.5"><Sparkles className="w-4 h-4 text-amber-500" /> Exact quote in source chunk</span>
+                <div className="flex items-center justify-between text-xs font-bold text-[#0b1c30]">
+                  <span className="flex items-center gap-1.5">
+                    <Sparkles className="w-4 h-4 text-[#d97706]" />
+                    Exact Quote Highlighted in Source Chunk
+                  </span>
                   {claimContext && (
-                    <span className="text-xs text-gray-500 font-mono">
-                      {claimContext.source_name} · chunk #{claimContext.chunk_id}
+                    <span className="text-[11px] text-[#737686] font-mono">
+                      {claimContext.source_name} (Chunk #{claimContext.chunk_id}, L{claimContext.line_start}-{claimContext.line_end})
                     </span>
                   )}
                 </div>
+
                 {isDetailLoading ? (
-                  <div className="p-8 bg-gray-50 rounded-xl border border-gray-200 text-center">
-                    <div className="inline-block animate-spin rounded-full h-6 w-6 border-2 border-indigo-600 border-t-transparent" />
+                  <div className="p-8 bg-[#f8f9ff] rounded-xl border border-[#e2e8f0] text-center">
+                    <div className="inline-block animate-spin rounded-full h-6 w-6 border-2 border-[#004ac6] border-t-transparent" />
                   </div>
-                ) : claimContext?.original_text ? (
-                  <div className="p-4 bg-slate-900 text-slate-100 rounded-xl font-mono text-sm leading-relaxed overflow-x-auto max-h-56 border border-slate-800">
-                    {claimContext.quote && claimContext.original_text.includes(claimContext.quote) ? (() => {
-                      const q = claimContext.quote;
-                      const i = claimContext.original_text.indexOf(q);
-                      return (
-                        <span>
-                          {claimContext.original_text.slice(0, i)}
-                          <mark className="bg-amber-400 text-slate-950 px-1 py-0.5 rounded font-bold">{q}</mark>
-                          {claimContext.original_text.slice(i + q.length)}
-                        </span>
-                      );
-                    })() : <span>{claimContext.original_text}</span>}
+                ) : claimContext && claimContext.original_text ? (
+                  <div className="p-4 bg-[#0b1c30] text-[#eaf1ff] rounded-xl font-mono text-xs leading-relaxed overflow-x-auto max-h-64 border border-[#213145]">
+                    {/* Render with quote highlighted */}
+                    {claimContext.quote && claimContext.original_text.includes(claimContext.quote) ? (
+                      (() => {
+                        const quote = claimContext.quote;
+                        const idx = claimContext.original_text.indexOf(quote);
+                        const before = claimContext.original_text.slice(0, idx);
+                        const after = claimContext.original_text.slice(idx + quote.length);
+                        return (
+                          <span>
+                            <span>{before}</span>
+                            <mark className="bg-[#facc15] text-[#0b1c30] px-1 py-0.5 rounded font-semibold font-mono">
+                              {quote}
+                            </mark>
+                            <span>{after}</span>
+                          </span>
+                        );
+                      })()
+                    ) : (
+                      <span>{claimContext.original_text}</span>
+                    )}
                   </div>
                 ) : (
-                  <div className="p-4 bg-gray-50 rounded-xl border border-gray-200 text-sm text-gray-500 italic">
+                  <div className="p-4 bg-[#f8f9ff] rounded-xl border border-[#e2e8f0] text-xs text-[#737686] italic">
                     {selectedClaim.kind === "derived"
-                      ? "Derived by plain Python code from git logs without an LLM."
-                      : "Source chunk preview not available."}
+                      ? "Derived mathematically by plain Python code from git commit logs. Direct commit chunks stored as evidence."
+                      : "Source chunk context not available."}
                   </div>
                 )}
               </div>
 
-              {/* Version history */}
-              <div className="space-y-2 pt-3 border-t border-gray-100">
-                <p className="flex items-center gap-1.5 text-sm font-bold text-gray-700">
-                  <History className="w-4 h-4 text-gray-400" /> Version history
-                </p>
-                {claimVersions.length === 0
-                  ? <p className="text-xs text-gray-400 italic">Version 1 (Initial extraction). No edits yet.</p>
-                  : (
-                    <div className="space-y-2 max-h-36 overflow-y-auto">
-                      {claimVersions.map((v) => (
-                        <div key={v.id} className="p-2.5 bg-gray-50 rounded-xl border border-gray-200 text-sm space-y-1">
-                          <div className="flex items-center justify-between text-xs text-gray-400">
-                            <span className="font-bold text-gray-700">v{v.version_number}</span>
-                            <span>{new Date(v.created_at).toLocaleString()}</span>
-                          </div>
-                          <p className="text-gray-800 font-medium text-xs">{v.text}</p>
-                          {v.edit_note && <p className="text-[11px] text-indigo-600 italic">Note: {v.edit_note}</p>}
+              {/* Evidence Array Breakdown */}
+              {selectedClaim.evidence && selectedClaim.evidence.length > 0 && (
+                <div className="space-y-2">
+                  <div className="text-xs font-bold text-[#0b1c30]">All Evidence Citations ({selectedClaim.evidence.length})</div>
+                  <div className="space-y-1.5 max-h-40 overflow-y-auto">
+                    {selectedClaim.evidence.map((ev, i) => (
+                      <div key={i} className="text-[11px] bg-[#f8f9ff] p-2.5 rounded-lg border border-[#e2e8f0] text-[#0b1c30] font-mono">
+                        {ev.quote ? (
+                          <div className="text-[#004ac6] font-semibold mb-1">"{ev.quote}"</div>
+                        ) : null}
+                        <div className="text-[10px] text-[#737686]">
+                          Source #{ev.source_id} · Chunk #{ev.chunk_id} · Lines {ev.line_start}-{ev.line_end}
                         </div>
-                      ))}
-                    </div>
-                  )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Version History Audit Trail */}
+              <div className="space-y-2 pt-3 border-t border-[#f1f5f9]">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-[#0b1c30]">
+                  <History className="w-4 h-4 text-[#737686]" />
+                  Version History &amp; Audit Trail
+                </div>
+
+                {claimVersions.length === 0 ? (
+                  <p className="text-xs text-[#737686] italic">Version 1 (Initial extraction). No edits recorded.</p>
+                ) : (
+                  <div className="space-y-2 max-h-40 overflow-y-auto">
+                    {claimVersions.map((v) => (
+                      <div key={v.id} className="p-2.5 bg-[#f8f9ff] rounded-lg border border-[#e2e8f0] text-xs space-y-1">
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="font-bold text-[#0b1c30]">Version {v.version_number}</span>
+                          <span className="text-[#737686]">{new Date(v.created_at).toLocaleString()}</span>
+                        </div>
+                        <p className="text-[#334155] text-[11px] font-medium">{v.text}</p>
+                        {v.edit_note && (
+                          <p className="text-[10px] text-[#004ac6] italic">Note: {v.edit_note}</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           ) : (
-            <div className="bg-white rounded-2xl border border-gray-200 p-12 text-center space-y-4">
-              <Shield className="w-10 h-10 mx-auto text-gray-300" />
-              <div>
-                <h4 className="text-base font-bold text-gray-700">Select a claim to review</h4>
-                <p className="text-sm text-gray-400 mt-1 max-w-sm mx-auto">
-                  Click any claim on the left to inspect its substring quote, review check results, or approve it.
-                </p>
-              </div>
-              <button
-                onClick={() => setActiveTab?.("handover")}
-                className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-[15px] font-bold px-6 py-3 rounded-xl cursor-pointer transition-colors shadow-xs"
-              >
-                Next: Handover for the new person <ArrowRight className="w-4 h-4" />
-              </button>
+            <div className="bg-white rounded-xl border border-[#e2e8f0] p-12 text-center text-[#737686] space-y-2">
+              <Shield className="w-10 h-10 mx-auto text-[#cbd5e1]" />
+              <h4 className="text-sm font-bold text-[#0b1c30]">Select a claim to inspect citation details</h4>
+              <p className="text-xs max-w-sm mx-auto text-[#737686]">
+                Inspect character-by-character substring quotes, verify corroborating evidence, and approve or reject claims.
+              </p>
             </div>
           )}
         </div>
       </div>
 
-      {/* Reject modal */}
+      {/* Reject Modal */}
       {rejectModalOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-gray-200">
-            <div className="flex items-center gap-2 text-rose-600 font-bold text-base">
-              <AlertCircle className="w-5 h-5" /> Reject Claim #{selectedClaim?.id}
+        <div className="fixed inset-0 bg-[#0b1c30]/40 backdrop-blur-2xs flex items-center justify-center p-4 z-50 animate-fade-in">
+          <div className="bg-white rounded-xl max-w-md w-full p-6 space-y-4 shadow-xl border border-[#cbd5e1]">
+            <div className="flex items-center gap-2 text-[#ba1a1a] font-bold text-base">
+              <AlertCircle className="w-5 h-5" />
+              Reject Claim #{selectedClaim?.id}
             </div>
-            <p className="text-sm text-gray-600">The rejection reason is permanently stored in the audit log.</p>
+            <p className="text-xs text-[#434655]">
+              Rejections require an explicit reason for the audit log. The claim will be excluded from all handovers.
+            </p>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Reason *</label>
-              <textarea rows={3} value={rejectReason} onChange={(e) => setRejectReason(e.target.value)}
-                placeholder="e.g. Outdated information or disputed by lead."
-                className="w-full text-sm p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-rose-500 focus:outline-none"
+              <label className="block text-xs font-semibold text-[#0b1c30] mb-1">Rejection Reason *</label>
+              <textarea
+                rows={3}
+                value={rejectReason}
+                onChange={(e) => setRejectReason(e.target.value)}
+                placeholder="e.g. Outdated information, disputed by lead, or unsupported speculation."
+                className="w-full text-xs p-2.5 bg-[#f8f9ff] border border-[#e2e8f0] rounded-lg focus:ring-2 focus:ring-[#ba1a1a] focus:outline-none text-[#0b1c30]"
               />
             </div>
-            <div className="flex justify-end gap-2">
-              <button onClick={() => setRejectModalOpen(false)} className="px-4 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-100 rounded-xl cursor-pointer">Cancel</button>
-              <button onClick={handleRejectConfirm} disabled={!rejectReason.trim() || isSubmittingAction}
-                className="px-4 py-2 text-sm font-bold bg-rose-600 hover:bg-rose-700 text-white rounded-xl disabled:opacity-40 cursor-pointer">
-                Confirm rejection
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                onClick={() => setRejectModalOpen(false)}
+                className="px-3.5 py-1.5 text-xs font-semibold text-[#434655] hover:bg-[#f1f5f9] rounded-lg cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleRejectConfirm}
+                disabled={!rejectReason.trim() || isSubmittingAction}
+                className="px-4 py-1.5 text-xs font-bold bg-[#ba1a1a] hover:bg-[#93000a] text-white rounded-lg disabled:opacity-40 shadow-2xs cursor-pointer"
+              >
+                Confirm Rejection
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Edit modal */}
+      {/* Edit Modal */}
       {editModalOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl border border-gray-200">
-            <div className="flex items-center gap-2 text-indigo-700 font-bold text-base">
-              <Edit3 className="w-5 h-5" /> Correct Claim #{selectedClaim?.id}
+        <div className="fixed inset-0 bg-[#0b1c30]/40 backdrop-blur-2xs flex items-center justify-center p-4 z-50 animate-fade-in">
+          <div className="bg-white rounded-xl max-w-lg w-full p-6 space-y-4 shadow-xl border border-[#cbd5e1]">
+            <div className="flex items-center gap-2 text-[#004ac6] font-bold text-base">
+              <Edit3 className="w-5 h-5" />
+              Correct Claim #{selectedClaim?.id}
             </div>
-            <p className="text-sm text-gray-600">Editing saves an updated version and logs the change in the audit trail.</p>
+            <p className="text-xs text-[#434655]">
+              Editing increments the claim version and changes review state to <strong>corrected</strong>. An audit log record will be permanently saved.
+            </p>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Corrected text *</label>
-              <textarea rows={3} value={editText} onChange={(e) => setEditText(e.target.value)}
-                className="w-full text-sm p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+              <label className="block text-xs font-semibold text-[#0b1c30] mb-1">Corrected Text *</label>
+              <textarea
+                rows={3}
+                value={editText}
+                onChange={(e) => setEditText(e.target.value)}
+                className="w-full text-xs p-2.5 bg-[#f8f9ff] border border-[#e2e8f0] rounded-lg focus:ring-2 focus:ring-[#004ac6] focus:outline-none text-[#0b1c30]"
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Edit note (optional)</label>
-              <input type="text" value={editNote} onChange={(e) => setEditNote(e.target.value)}
-                placeholder="e.g. Clarified the exact service name"
-                className="w-full text-sm p-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+              <label className="block text-xs font-semibold text-[#0b1c30] mb-1">Edit Note / Explanation</label>
+              <input
+                type="text"
+                value={editNote}
+                onChange={(e) => setEditNote(e.target.value)}
+                placeholder="e.g. Clarified the exact service endpoint"
+                className="w-full text-xs p-2 bg-[#f8f9ff] border border-[#e2e8f0] rounded-lg focus:ring-2 focus:ring-[#004ac6] focus:outline-none text-[#0b1c30]"
               />
             </div>
-            <div className="flex justify-end gap-2">
-              <button onClick={() => setEditModalOpen(false)} className="px-4 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-100 rounded-xl cursor-pointer">Cancel</button>
-              <button onClick={handleEditConfirm} disabled={!editText.trim() || isSubmittingAction}
-                className="px-4 py-2 text-sm font-bold bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl disabled:opacity-40 cursor-pointer">
-                Save correction
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                onClick={() => setEditModalOpen(false)}
+                className="px-3.5 py-1.5 text-xs font-semibold text-[#434655] hover:bg-[#f1f5f9] rounded-lg cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleEditConfirm}
+                disabled={!editText.trim() || isSubmittingAction}
+                className="px-4 py-1.5 text-xs font-bold bg-[#004ac6] hover:bg-[#003ea8] text-white rounded-lg disabled:opacity-40 shadow-2xs cursor-pointer"
+              >
+                Save Correction
               </button>
             </div>
           </div>
@@ -646,3 +832,4 @@ export default function ReviewQueuePage({ stats, onRefreshStats, setActiveTab })
     </div>
   );
 }
+
