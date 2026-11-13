@@ -86,7 +86,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8f9ff] text-[#0b1c30] flex flex-col antialiased">
+    <div className="min-h-screen bg-background font-body-md text-on-surface flex flex-col antialiased">
       {/* Top Navbar & Step Bar */}
       <Navbar
         activeTab={activeTab}
@@ -98,54 +98,55 @@ export default function App() {
       />
 
       {/* Main Page Content */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {activeTab === "home" && (
-          <HomePage
-            project={project}
-            stats={stats}
-            onResetSample={handleResetSample}
-            onDerive={handleDerive}
-            onExtract={handleExtract}
-            setActiveTab={setActiveTab}
-            isLoading={isLoading}
-            actionStatus={actionStatus}
-          />
-        )}
+      <main className="w-full flex-1 pt-[104px] bg-background">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 min-h-[calc(100vh-168px)]">
+          {activeTab === "home" && (
+            <HomePage
+              project={project}
+              stats={stats}
+              onResetSample={handleResetSample}
+              onDerive={handleDerive}
+              onExtract={handleExtract}
+              setActiveTab={setActiveTab}
+              isLoading={isLoading}
+              actionStatus={actionStatus}
+            />
+          )}
 
-        {activeTab === "review" && (
-          <ReviewQueuePage
-            role={role}
-            stats={stats}
-            onRefreshStats={loadInitialData}
-          />
-        )}
+          {activeTab === "review" && (
+            <ReviewQueuePage
+              role={role}
+              stats={stats}
+              onRefreshStats={loadInitialData}
+            />
+          )}
 
-        {activeTab === "handover" && (
-          <HandoverPage
-            role={role}
-            setRole={setRole}
-            setActiveTab={setActiveTab}
-          />
-        )}
+          {activeTab === "handover" && (
+            <HandoverPage
+              role={role}
+              setRole={setRole}
+              setActiveTab={setActiveTab}
+            />
+          )}
 
-        {activeTab === "backtest" && <BacktestPage />}
+          {activeTab === "backtest" && <BacktestPage />}
+        </div>
       </main>
 
       {/* Engineering-Grade Footer */}
-      <footer className="border-t border-[#e2e8f0] bg-white py-4 text-xs text-[#737686] no-print mt-auto shadow-[0_-1px_4px_rgba(11,28,48,0.02)]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
-          <div className="flex items-center gap-2 flex-wrap justify-center sm:justify-start">
-            <span className="font-bold text-[#0b1c30]">Backstop</span>
-            <span className="text-[#c3c6d7]">•</span>
-            <span>Deterministic Developer Handover Ledger</span>
-            <span className="text-[#c3c6d7]">•</span>
-            <span>Source-cited Claims · Plain-Code Derivations · Pre-LLM Masking</span>
+      <footer className="w-full bg-surface-container-lowest shadow-[0_-1px_6px_rgba(0,0,0,0.03)] py-space-md border-t border-surface-container no-print mt-auto">
+        <div className="max-w-7xl mx-auto px-gutter flex flex-col sm:flex-row items-center justify-between gap-space-sm text-center sm:text-left">
+          <div className="flex items-center gap-space-sm flex-wrap justify-center sm:justify-start">
+            <span className="font-label-md text-label-md text-on-surface font-bold">Backstop</span>
+            <span className="text-outline-variant">•</span>
+            <span className="font-body-sm text-body-sm text-on-surface-variant">
+              Deterministic Developer Handover Ledger. Dual-track verification with plain-code derivations and strict verbatim quotes.
+            </span>
           </div>
-          <div className="flex items-center gap-3">
-            <span className="font-mono text-[11px] text-[#737686]">SHA256:VERIFIED_LEDGER</span>
-            <span className="inline-flex items-center gap-1.5 font-semibold text-[#006243] text-[11px]">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#007d57]"></span>
-              Operational
+          <div className="flex items-center gap-space-md shrink-0">
+            <span className="font-code-sm text-code-sm text-outline">SHA256:VERIFIED_LEDGER</span>
+            <span className="font-label-sm text-label-sm text-tertiary flex items-center gap-1 font-semibold">
+              <span className="w-2 h-2 rounded-full bg-tertiary"></span>Operational
             </span>
           </div>
         </div>
