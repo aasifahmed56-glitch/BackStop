@@ -1,6 +1,6 @@
 # Backstop
 
-**Zero-Guesswork Team Handover. Verified Claim by Claim.**
+**Every claim shows its source quote and a status. A human approves before handover.**
 
 > ⚠️ **Demo Disclaimer:** No authentication / login system is present. Roles are simulated via an in-UI role switcher. All sample data (people, commits, issues, notes) is 100% synthetic and fictional.
 
@@ -16,7 +16,7 @@ When a core team member departs, teams typically face an information cliff: stal
   - `INTERPRETED`: Extracted by an LLM, strictly backed by an **exact substring quote** from the original source chunk.
 - **Strict Verification**: Claims are double-checked (substring verification against unredacted text + independent support validation). If evidence is missing, it is marked as `Missing evidence` and phrased as a debrief question.
 - **Privacy Barrier**: Secrets (API keys, tokens, passwords) and PII (emails, phone numbers) are masked before any LLM processing.
-- **Permission-Aware Output**: Claims take the strictest access level of their underlying citations. Lower roles (`incoming_dev`, `incoming_pm`) receive locked placeholders (`Requires <level> access — Request access from lead`) with **zero** leaked text or quotes.
+- **Permission-Aware Output**: Claims take the strictest access level of their underlying citations. Lower roles (`incoming_dev`, `incoming_pm`) receive locked placeholders (`Requires <level> access — Request access from lead`) with no text or quote disclosed.
 - **Empirical Backtesting**: Scores the derived knowledge risk rankings against air-gapped post-departure ground truth (`precision@k` and `recall@k` for $k=1..5$).
 
 ---

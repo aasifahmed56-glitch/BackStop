@@ -1,0 +1,30 @@
+{
+  "decisions": [],
+  "reasons": [],
+  "owners": [
+    {
+      "quote": "Dev will own after 15 Mar.",
+      "chunk_id": "2123",
+      "conflict": false
+    },
+    {
+      "quote": "[Dev] Confirm access to production servers.",
+      "chunk_id": "2125",
+      "conflict": false
+    },
+    {
+      "quote": "[Kabir] Own payments migration in April sprint.",
+      "chunk_id": "2125",
+      "conflict": false
+    }
+  ],
+  "blockers": [
+    {
+      "quote": "Migration blocked on testing.",
+      "chunk_id": "2123",
+      "conflict": false
+    }
+  ],
+  "dependencies": [],
+  "open_questions": []
+}

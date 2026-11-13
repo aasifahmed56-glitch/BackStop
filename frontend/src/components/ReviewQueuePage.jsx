@@ -48,6 +48,8 @@ export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
   const [isSubmittingAction, setIsSubmittingAction] = useState(false);
   const [actionSuccessMessage, setActionSuccessMessage] = useState(null);
 
+  const [isBulkApproving, setIsBulkApproving] = useState(false);
+
   // Load claims
   const loadClaims = async () => {
     setIsLoading(true);
@@ -162,6 +164,24 @@ export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
       alert("Edit failed: " + err.message);
     } finally {
       setIsSubmittingAction(false);
+    }
+  };
+
+  // Actions: Bulk Approve Verified (demo shortcut)
+  const handleBulkApproveVerified = async () => {
+    if (!window.confirm("Approve all Verified claims? Conflicting and Missing claims will be skipped.")) return;
+    setIsBulkApproving(true);
+    try {
+      const result = await api.bulkApproveVerified({ projectId: 1, role });
+      const count = result?.approved_count ?? 0;
+      setActionSuccessMessage(`Bulk approved ${count} Verified claim${count !== 1 ? "s" : ""} (Conflicting & Missing skipped).`);
+      setTimeout(() => setActionSuccessMessage(null), 5000);
+      await loadClaims();
+      onRefreshStats();
+    } catch (err) {
+      alert("Bulk approve failed: " + err.message);
+    } finally {
+      setIsBulkApproving(false);
     }
   };
 
@@ -292,6 +312,7 @@ export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
             <span className="text-[10px] text-indigo-600">Rejection: {stats?.rejection_rate_percent ?? 0}%</span>
           </div>
         </div>
+
       </div>
 
       {/* Filter and Search Bar */}
@@ -356,6 +377,22 @@ export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
             className="w-full pl-9 pr-3 py-1.5 text-xs bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
         </div>
+
+        {/* Bulk Approve Demo Shortcut */}
+        {(role === "lead" || role === "admin") && (
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleBulkApproveVerified}
+              disabled={isBulkApproving}
+              title="Approves only Verified claims. Conflicting and Missing are always skipped."
+              className="flex items-center gap-1.5 text-xs font-bold bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 px-3 py-1.5 rounded-lg transition-all cursor-pointer disabled:opacity-50"
+            >
+              <Check className="w-3.5 h-3.5" />
+              {isBulkApproving ? "Approving..." : "✓ Approve all Verified"}
+            </button>
+            <span className="text-[10px] text-gray-400 hidden sm:block">Demo shortcut · skips Conflicting &amp; Missing</span>
+          </div>
+        )}
       </div>
 
       {/* Main Split Layout: Claims List (Left) + Detail Panel (Right) */}

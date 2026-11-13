@@ -135,7 +135,7 @@ export default function App() {
       <footer className="border-t border-gray-200 bg-white py-6 text-center text-xs text-gray-400 no-print">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <span>Backstop · Hackathon Transition Ledger</span>
-          <span>Zero Uncited Claims · Plain-Code Derivations · Pre-LLM Masking</span>
+          <span>Source-cited Claims · Plain-Code Derivations · Pre-LLM Masking</span>
         </div>
       </footer>
     </div>

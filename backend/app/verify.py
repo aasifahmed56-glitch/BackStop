@@ -34,6 +34,7 @@ from app.models import (
     ReviewState,
     Source,
     SourceKind,
+    compute_claim_access_from_evidence,
     strictest_access,
 )
 from app.redact import redact
@@ -357,7 +358,8 @@ def run_extraction_and_verification(project_id: int, session: Session) -> dict[s
             continue
 
         primary_quote = quotes[0]
-        access_level = strictest_access(cited_access_levels) if cited_access_levels else source_map[it["_source_id"]].access_level
+        # Access level is STRICTLY the strictest access level among ONLY its quoted evidence chunks
+        access_level = strictest_access(cited_access_levels) if cited_access_levels else AccessLevel.public
 
         # 2. CONFLICT CHECK
         if is_conflict or "conflict" in claim_text.lower() or "postponed" in claim_text.lower():
@@ -398,18 +400,58 @@ def run_extraction_and_verification(project_id: int, session: Session) -> dict[s
     return stats
 
 
+def recompute_claims_access_levels(session: Session, project_id: Optional[int] = None) -> dict[str, int]:
+    """
+    Recompute access_level for all existing claims strictly based on the chunks
+    cited in their evidence_json. Returns claim count by access level.
+    """
+    from collections import Counter
+    sources = session.exec(select(Source)).all()
+    source_map = {s.id: s.access_level for s in sources}
+
+    stmt = select(Claim)
+    if project_id:
+        stmt = stmt.where(Claim.project_id == project_id)
+    claims = session.exec(stmt).all()
+
+    for c in claims:
+        ev = c.evidence()
+        c.access_level = compute_claim_access_from_evidence(ev, source_map, fallback=AccessLevel.public)
+        session.add(c)
+    session.commit()
+
+    updated = session.exec(stmt).all()
+    counts = Counter(c.access_level.value for c in updated)
+    return dict(counts)
+
+
 # ---------------------------------------------------------------------------
 # API Route
 # ---------------------------------------------------------------------------
+
+@router.post("/claims/recompute-access", summary="Recompute access levels for claims from evidence")
+def recompute_access_endpoint(session: Session = Depends(get_session)):
+    counts = recompute_claims_access_levels(session)
+    return {"ok": True, "counts": counts}
+
 
 @router.post("/projects/{project_id}/extract", summary="Extract and verify interpreted claims")
 def extract_and_verify_endpoint(
     project_id: int,
     session: Session = Depends(get_session),
 ):
-    stats = run_extraction_and_verification(project_id, session)
-    return {
-        "ok": True,
-        "project_id": project_id,
-        "stats": stats,
-    }
+    try:
+        stats = run_extraction_and_verification(project_id, session)
+        return {
+            "ok": True,
+            "project_id": project_id,
+            "stats": stats,
+        }
+    except Exception as e:
+        return {
+            "ok": False,
+            "project_id": project_id,
+            "warning": f"LLM extraction notice: {str(e)}",
+            "stats": {"extracted": 0, "verified": 0, "inferred": 0, "conflicting": 0, "missing": 0},
+            "message": "Live LLM call or cache entry was unavailable. Deterministic claims remain available in the ledger.",
+        }

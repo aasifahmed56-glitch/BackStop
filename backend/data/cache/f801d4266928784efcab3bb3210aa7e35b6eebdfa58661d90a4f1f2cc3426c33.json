@@ -1,0 +1,38 @@
+[
+  {
+    "type": "decision",
+    "quote": "Migration to v3 SDK planned.",
+    "chunk_id": "2100",
+    "conflict": false
+  },
+  {
+    "type": "decision",
+    "quote": "Production deploy planned for 1 Apr.",
+    "chunk_id": "2100",
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "quote": "- [Riya] Write deploy runbook.",
+    "chunk_id": "2103",
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "quote": "- [Meena] Resolve FCM key access.",
+    "chunk_id": "2103",
+    "conflict": false
+  },
+  {
+    "type": "blocker",
+    "quote": "Deploy process is only fully known to Riya.",
+    "chunk_id": "2102",
+    "conflict": false
+  },
+  {
+    "type": "blocker",
+    "quote": "Push notification keys: no one has FCM console access.",
+    "chunk_id": "2102",
+    "conflict": false
+  }
+]

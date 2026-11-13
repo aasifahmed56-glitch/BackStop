@@ -102,6 +102,25 @@ def strictest_access(levels: list[AccessLevel]) -> AccessLevel:
     return max(levels, key=lambda a: a.rank())
 
 
+def compute_claim_access_from_evidence(
+    evidence_list: list[dict[str, Any]],
+    source_access_map: dict[int, AccessLevel],
+    fallback: AccessLevel = AccessLevel.public,
+) -> AccessLevel:
+    """
+    A claim's access level is the strictest level among ONLY the chunks it actually
+    cites in evidence_json (its quoted chunks), never the whole extraction batch.
+    """
+    cited_levels = []
+    for ev in evidence_list:
+        src_id = ev.get("source_id")
+        if src_id in source_access_map:
+            cited_levels.append(source_access_map[src_id])
+    if not cited_levels:
+        return fallback
+    return strictest_access(cited_levels)
+
+
 # ---------------------------------------------------------------------------
 # Tables
 # ---------------------------------------------------------------------------

@@ -1,0 +1,22 @@
+{
+  "decisions": [],
+  "reasons": [],
+  "owners": [
+    {
+      "quote": "- [Riya] Write deploy runbook.",
+      "chunk_id": "2530"
+    },
+    {
+      "quote": "- [Meena] Resolve FCM key access.",
+      "chunk_id": "2530"
+    }
+  ],
+  "blockers": [
+    {
+      "quote": "- Push notification keys: no one has FCM console access.",
+      "chunk_id": "2529"
+    }
+  ],
+  "dependencies": [],
+  "open_questions": []
+}

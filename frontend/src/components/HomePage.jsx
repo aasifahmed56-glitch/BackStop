@@ -35,7 +35,7 @@ export default function HomePage({
             Deterministic & LLM-Powered Transition System
           </div>
           <h1 className="text-3xl md:text-5xl font-black tracking-tight leading-tight">
-            Zero-Guesswork Team Handover. Verified Claim by Claim.
+            Every claim shows its source quote and a status. A human approves before handover.
           </h1>
           <p className="text-base md:text-lg text-indigo-100 font-normal leading-relaxed">
             Backstop turns messy git logs, issues, meeting notes, tasks, and chat exports into an auditable ledger of claims.
@@ -188,7 +188,7 @@ export default function HomePage({
             </div>
             <div className="mt-4 pt-3 border-t border-gray-100 text-[11px] text-indigo-600 font-semibold flex items-center gap-1.5">
               <CheckCircle2 className="w-3.5 h-3.5" />
-              Zero guesses tolerated
+              Checks reduce errors; a human approves
             </div>
           </div>
 

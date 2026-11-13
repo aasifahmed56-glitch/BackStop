@@ -1,0 +1,101 @@
+[
+  {
+    "type": "decision",
+    "quote": "Stripe wins.",
+    "chunk": "1990",
+    "reason": null,
+    "owner": "Kabir",
+    "blockers": null,
+    "dependencies": null,
+    "open_questions": null,
+    "conflict": false
+  },
+  {
+    "type": "decision",
+    "quote": "JWT is stateless so it scales horizontally.",
+    "chunk": "1999",
+    "reason": "Sessions failed under load in the demo \u2014 the server couldn't keep up with concurrent requests.",
+    "owner": "Riya",
+    "blockers": null,
+    "dependencies": null,
+    "open_questions": null,
+    "conflict": false
+  },
+  {
+    "type": "decision",
+    "quote": "Reverting to polling.",
+    "chunk": "2013",
+    "reason": "Websockets broke on campus wifi during testing.",
+    "owner": "Meena",
+    "blockers": null,
+    "dependencies": null,
+    "open_questions": null,
+    "conflict": false
+  },
+  {
+    "type": "decision",
+    "quote": "Polling it is.",
+    "chunk": "2015",
+    "reason": "websockets need persistent connections \u2014 campus wifi drops them.",
+    "owner": "Dev",
+    "blockers": null,
+    "dependencies": null,
+    "open_questions": null,
+    "conflict": false
+  },
+  {
+    "type": "decision",
+    "quote": "Let's target 20 Feb as per the sprint plan.",
+    "chunk": "2035",
+    "reason": null,
+    "owner": "Riya",
+    "blockers": null,
+    "dependencies": null,
+    "open_questions": null,
+    "conflict": false
+  },
+  {
+    "type": "blocker",
+    "quote": "FCM push key still blocked \u2014 no one has console access.",
+    "chunk": "2050",
+    "reason": null,
+    "owner": "Meena",
+    "blockers": "no one has console access.",
+    "dependencies": null,
+    "open_questions": null,
+    "conflict": false
+  },
+  {
+    "type": "open_question",
+    "quote": "Quick question \u2014 why JWT and not server sessions?",
+    "chunk": "1998",
+    "reason": null,
+    "owner": "Dev",
+    "blockers": null,
+    "dependencies": null,
+    "open_questions": "why JWT and not server sessions?",
+    "conflict": false
+  },
+  {
+    "type": "open_question",
+    "quote": "Will the notifications PR be ready today?",
+    "chunk": "2029",
+    "reason": null,
+    "owner": "Meena",
+    "blockers": null,
+    "dependencies": null,
+    "open_questions": "Will the notifications PR be ready today?",
+    "conflict": false
+  },
+  {
+    "type": "open_question",
+    "quote": "Who's taking over deploy after Riya leaves?",
+    "chunk": "2056",
+    "reason": null,
+    "owner": "Dev",
+    "blockers": null,
+    "dependencies": null,
+    "open_questions": "Who's taking over deploy after Riya leaves?",
+    "conflict": false
+  }
+]

@@ -1,0 +1,68 @@
+[
+  {
+    "category": "decisions",
+    "quote": "JWT is the auth mechanism. Sessions were rejected due to load failures in the Oct demo.",
+    "chunk_id": "2129",
+    "reason": "Sessions were rejected due to load failures in the Oct demo.",
+    "owner": null,
+    "blockers": null,
+    "dependencies": null,
+    "open_questions": null,
+    "conflict": false
+  },
+  {
+    "category": "decisions",
+    "quote": "Migration to v3 is planned but postponed.",
+    "chunk_id": "2130",
+    "reason": null,
+    "owner": null,
+    "blockers": null,
+    "dependencies": null,
+    "open_questions": null,
+    "conflict": false
+  },
+  {
+    "category": "decisions",
+    "quote": "Run all tests before any production deploy.",
+    "chunk_id": "2133",
+    "reason": null,
+    "owner": null,
+    "blockers": null,
+    "dependencies": null,
+    "open_questions": null,
+    "conflict": false
+  },
+  {
+    "category": "owners",
+    "quote": "Remaining: GDPR deletion endpoint (hand to Meena).",
+    "chunk_id": "2129",
+    "reason": null,
+    "owner": "Meena",
+    "blockers": null,
+    "dependencies": null,
+    "open_questions": null,
+    "conflict": false
+  },
+  {
+    "category": "owners",
+    "quote": "Kabir has context on the gateway.",
+    "chunk_id": "2130",
+    "reason": null,
+    "owner": "Kabir",
+    "blockers": null,
+    "dependencies": null,
+    "open_questions": null,
+    "conflict": false
+  },
+  {
+    "category": "blockers",
+    "quote": "Push notification setup is fully blocked.",
+    "chunk_id": "2134",
+    "reason": null,
+    "owner": null,
+    "blockers": "Push notification setup is fully blocked.",
+    "dependencies": null,
+    "open_questions": null,
+    "conflict": false
+  }
+]

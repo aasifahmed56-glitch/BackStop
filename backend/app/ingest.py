@@ -88,7 +88,29 @@ def load_sample(session: Session = Depends(get_session)):
     manifest = _load_manifest(_SAMPLE_DIR)
     summary = _ingest_all(session, project, _SAMPLE_DIR, manifest)
     session.commit()
-    return {"project_id": project.id, "project_name": project.name, **summary}
+
+    # Automatically derive claims and load cached LLM claims so Ledger is never empty
+    from app.derived import derive_claims
+    from app.verify import run_extraction_and_verification
+
+    derive_res = derive_claims(project.id, session)
+    try:
+        extract_res = run_extraction_and_verification(project.id, session)
+    except Exception as e:
+        extract_res = {"error": str(e)}
+
+    return {
+        "project_id": project.id,
+        "project_name": project.name,
+        "derived_claims": derive_res.get("claims_created", 0),
+        "extracted_claims": (
+            extract_res.get("verified", 0)
+            + extract_res.get("inferred", 0)
+            + extract_res.get("conflicting", 0)
+            + extract_res.get("missing", 0)
+        ) if isinstance(extract_res, dict) else 0,
+        **summary,
+    }
 
 
 @router.get("/projects/{project_id}", summary="Project detail with source/chunk counts")

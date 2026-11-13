@@ -1,0 +1,82 @@
+[
+  {
+    "decision": "Payment gateway research done. Stripe wins.",
+    "reason": null,
+    "owner": "Kabir",
+    "blockers": null,
+    "dependencies": null,
+    "open_questions": null,
+    "chunk_id": "2417",
+    "conflict": false
+  },
+  {
+    "decision": "JWT is stateless so it scales horizontally.",
+    "reason": "Sessions failed under load in the demo \u2014 the server couldn't keep up with concurrent requests.",
+    "owner": "Riya",
+    "blockers": null,
+    "dependencies": null,
+    "open_questions": null,
+    "chunk_id": "2426",
+    "conflict": false
+  },
+  {
+    "decision": "Reverting to polling.",
+    "reason": "Websockets broke on campus wifi during testing.",
+    "owner": "Meena",
+    "blockers": null,
+    "dependencies": null,
+    "open_questions": null,
+    "chunk_id": "2440",
+    "conflict": false
+  },
+  {
+    "decision": "Polling is safer.",
+    "reason": "websockets need persistent connections \u2014 campus wifi drops them.",
+    "owner": "Riya",
+    "blockers": null,
+    "dependencies": null,
+    "open_questions": null,
+    "chunk_id": "2441",
+    "conflict": false
+  },
+  {
+    "decision": "Migration postponed \u2014 not enough testing time. Per issue #31.",
+    "reason": "not enough testing time",
+    "owner": "Kabir",
+    "blockers": null,
+    "dependencies": null,
+    "open_questions": null,
+    "chunk_id": "2467",
+    "conflict": false
+  },
+  {
+    "decision": "Pushing to next sprint.",
+    "reason": null,
+    "owner": "Riya",
+    "blockers": null,
+    "dependencies": null,
+    "open_questions": null,
+    "chunk_id": "2468",
+    "conflict": false
+  },
+  {
+    "decision": null,
+    "reason": null,
+    "owner": "Meena",
+    "blockers": "FCM push key still blocked \u2014 no one has console access.",
+    "dependencies": null,
+    "open_questions": null,
+    "chunk_id": "2477",
+    "conflict": false
+  },
+  {
+    "decision": null,
+    "reason": null,
+    "owner": "Dev",
+    "blockers": null,
+    "dependencies": null,
+    "open_questions": "Who's taking over deploy after Riya leaves?",
+    "chunk_id": "2483",
+    "conflict": false
+  }
+]

@@ -169,3 +169,4 @@ def test_run_ranking_benchmark_backstop_vs_baseline():
     assert backstop_k2["recall"] == 1.0
     assert baseline_k2["precision"] == 0.5
     assert baseline_k2["recall"] == 0.5
+

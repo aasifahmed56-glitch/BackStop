@@ -1,0 +1,41 @@
+{
+  "decisions": [
+    {
+      "quote": "Payments migration to the new gateway is on 20 Feb 2026.",
+      "chunk_id": "2107",
+      "conflict": false
+    },
+    {
+      "quote": "Kabir leads testing. Riya to review the PR before merging.",
+      "chunk_id": "2107",
+      "conflict": false
+    },
+    {
+      "quote": "Rollback: revert to v2 SDK branch if issues arise.",
+      "chunk_id": "2107",
+      "conflict": false
+    }
+  ],
+  "reasons": [
+    {
+      "quote": "The v3 SDK has breaking changes in the webhook handler. Plan extra time.",
+      "chunk_id": "2108",
+      "conflict": false
+    }
+  ],
+  "owners": [
+    {
+      "quote": "Kabir leads testing.",
+      "chunk_id": "2107",
+      "conflict": false
+    },
+    {
+      "quote": "Riya to review the PR before merging.",
+      "chunk_id": "2107",
+      "conflict": false
+    }
+  ],
+  "blockers": [],
+  "dependencies": [],
+  "open_questions": []
+}

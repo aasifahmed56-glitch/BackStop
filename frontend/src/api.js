@@ -62,6 +62,12 @@ export const api = {
       body: JSON.stringify({ role, note }),
     }),
 
+  bulkApproveVerified: ({ projectId = 1, role = "lead" } = {}) =>
+    request(`/claims/bulk-approve-verified?project_id=${projectId}`, {
+      method: "POST",
+      body: JSON.stringify({ role }),
+    }),
+
   rejectClaim: (claimId, { role = "lead", reason }) =>
     request(`/claims/${claimId}/reject`, {
       method: "POST",

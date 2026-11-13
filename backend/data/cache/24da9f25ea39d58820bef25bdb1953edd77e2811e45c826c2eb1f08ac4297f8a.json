@@ -1,0 +1,35 @@
+[
+  {
+    "type": "decision",
+    "quote": "Use PostgreSQL for production, SQLite for dev/test.",
+    "chunk_id": "2086",
+    "conflict": false
+  },
+  {
+    "type": "decision",
+    "quote": "Follow trunk-based development (short-lived branches).",
+    "chunk_id": "2086",
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "quote": "Complete Stripe integration by 10 Nov.",
+    "owner": "Riya",
+    "chunk_id": "2087",
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "quote": "RSVP endpoint by 15 Nov.",
+    "owner": "Dev",
+    "chunk_id": "2087",
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "quote": "Event creation form by 1 Nov.",
+    "owner": "Sara",
+    "chunk_id": "2087",
+    "conflict": false
+  }
+]

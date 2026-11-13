@@ -1,0 +1,13 @@
+[
+  {
+    "type": "decision",
+    "quote": "This information is confidential and must not be shared with team members outside the project lead and advisor.",
+    "chunk_id": 2503,
+    "reason": null,
+    "owner": null,
+    "blocker": null,
+    "dependency": null,
+    "open_question": null,
+    "conflict": false
+  }
+]

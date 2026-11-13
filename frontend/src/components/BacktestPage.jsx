@@ -112,8 +112,14 @@ export default function BacktestPage() {
 
             <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-2xs space-y-2">
               <span className="text-[11px] font-bold text-emerald-600 uppercase tracking-wider">Backstop Top-Ranked Modules</span>
-              <div className="text-2xl font-black text-emerald-700">100% Precision@1..4</div>
-              <p className="text-xs text-emerald-600/80">Every top-4 predicted module was an exact ground-truth risk</p>
+              <div className="text-2xl font-black text-emerald-700">
+                {backtestData.backstop?.metrics?.["precision@4"] === backtestData.baseline?.metrics?.["precision@4"]
+                  ? `Equal P@4 with baseline`
+                  : backtestData.backstop?.metrics?.["precision@4"] != null
+                  ? `P@4: ${(backtestData.backstop.metrics["precision@4"] * 100).toFixed(0)}%`
+                  : "See table →"}
+              </div>
+              <p className="text-xs text-emerald-600/80">Same hits at k=1..4; Backstop ranks deploy first, baseline ranks it third</p>
             </div>
           </div>
 
@@ -312,13 +318,24 @@ export default function BacktestPage() {
               </div>
 
               <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
-                <span className="text-xs font-bold text-slate-900 uppercase">Why Backstop Outperforms Raw Counts</span>
+                <span className="text-xs font-bold text-slate-900 uppercase">What the Rankings Show</span>
                 <p className="text-xs text-slate-700 leading-relaxed">
-                  Raw commit counts ranked <em>deploy</em> as only #3 because Riya had fewer absolute commits there than in <em>auth</em>.
-                  However, Backstop factored in that Riya held <strong>93% sole knowledge</strong> in deploy with only 1 other contributor, correctly boosting it to #1 where post-cutoff failures actually occurred.
+                  Same hits at k=1..4; Backstop ranks <em>deploy</em> first, baseline ranks it third.
+                  Both reach 100% recall at k=4. The score formula (leaver share × staleness × 1/others)
+                  shifts ordering but does not change the total number of hits on this dataset.
                 </p>
               </div>
             </div>
+          </div>
+
+          {/* Limitations Note */}
+          <div className="p-4 bg-amber-50 rounded-xl border border-amber-200 flex gap-3 items-start">
+            <span className="text-amber-500 mt-0.5 shrink-0">⚠️</span>
+            <p className="text-xs text-amber-900 leading-relaxed">
+              <strong>Limitations:</strong> Tiny synthetic dataset of 7 modules; 4 of 7 (57%) are positives, so high recall is expected by chance.
+              These results are a <strong>demonstration only</strong> and do not reflect real-world performance.
+              If Backstop and the baseline produce equal precision/recall at a given k, that is noted plainly above.
+            </p>
           </div>
 
           {/* Module Rankings Detail */}

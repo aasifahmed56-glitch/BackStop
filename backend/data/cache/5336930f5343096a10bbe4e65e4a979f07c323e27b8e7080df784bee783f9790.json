@@ -1,0 +1,38 @@
+[
+  {
+    "type": "decision",
+    "quote": "Auth: token refresh and multi-role support complete.",
+    "chunk_id": "2517",
+    "conflict": false
+  },
+  {
+    "type": "decision",
+    "quote": "Payments: Stripe integration done. Webhooks tested.",
+    "chunk_id": "2517",
+    "conflict": false
+  },
+  {
+    "type": "decision",
+    "quote": "Events API: RSVP endpoint live.",
+    "chunk_id": "2517",
+    "conflict": false
+  },
+  {
+    "type": "decision",
+    "quote": "Deploy: Dockerfile and CI pipeline in place.",
+    "chunk_id": "2517",
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "quote": "[Meena] Websocket experiment \u2014 report by 1 Dec.",
+    "chunk_id": "2519",
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "quote": "[Riya] Start password reset flow.",
+    "chunk_id": "2519",
+    "conflict": false
+  }
+]

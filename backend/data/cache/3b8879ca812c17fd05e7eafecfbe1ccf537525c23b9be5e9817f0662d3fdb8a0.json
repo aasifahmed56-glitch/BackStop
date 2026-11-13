@@ -1,0 +1,46 @@
+{
+  "decisions": [],
+  "reasons": [],
+  "owners": [
+    {
+      "owner": "Riya",
+      "quote": "Deploy runbook: 70% done. Riya pushing final version by 12 Mar.",
+      "chunk_id": "2550",
+      "conflict": false
+    },
+    {
+      "owner": "Dev",
+      "quote": "Deploy: Dev will own after 15 Mar.",
+      "chunk_id": "2550",
+      "conflict": false
+    },
+    {
+      "owner": "Riya",
+      "quote": "- [Riya] Push runbook to docs/ by 12 Mar.",
+      "chunk_id": "2552",
+      "conflict": false
+    },
+    {
+      "owner": "Dev",
+      "quote": "- [Dev] Confirm access to production servers.",
+      "chunk_id": "2552",
+      "conflict": false
+    },
+    {
+      "owner": "Kabir",
+      "quote": "- [Kabir] Own payments migration in April sprint.",
+      "chunk_id": "2552",
+      "conflict": false
+    }
+  ],
+  "blockers": [
+    {
+      "blocker": "Migration blocked on testing.",
+      "quote": "Migration blocked on testing.",
+      "chunk_id": "2550",
+      "conflict": false
+    }
+  ],
+  "dependencies": [],
+  "open_questions": []
+}

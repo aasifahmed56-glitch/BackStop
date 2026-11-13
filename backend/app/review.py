@@ -60,6 +60,11 @@ class EditRequest(BaseModel):
     note: Optional[str] = None
 
 
+class BulkApproveRequest(BaseModel):
+    role: Role = Role.lead
+    note: Optional[str] = None
+
+
 # ---------------------------------------------------------------------------
 # Risk Sorting Helper
 # ---------------------------------------------------------------------------
@@ -214,6 +219,56 @@ def approve_claim(
     session.commit()
     session.refresh(claim)
     return {"ok": True, "claim_id": claim.id, "review_state": claim.review_state}
+
+
+@router.post("/claims/bulk-approve-verified", summary="Bulk approve all verified claims (demo shortcut)")
+@router.post("/projects/{project_id}/claims/bulk-approve-verified", summary="Bulk approve all verified claims for project")
+def bulk_approve_verified(
+    project_id: int = 1,
+    req: BulkApproveRequest = BulkApproveRequest(),
+    session: Session = Depends(get_session),
+):
+    """
+    Approve all claims with status == 'verified' that are not already approved.
+    NEVER auto-approves Conflicting or Missing claims.
+    Logged in AuditLog as 'bulk approve (demo shortcut)'.
+    """
+    if req.role not in _REVIEWER_ROLES:
+        raise HTTPException(403, "Only lead or admin roles may approve claims.")
+
+    stmt = (
+        select(Claim)
+        .where(Claim.project_id == project_id)
+        .where(Claim.status == ClaimStatus.verified)
+        .where(Claim.review_state != ReviewState.approved)
+    )
+    verified_claims = session.exec(stmt).all()
+    count = 0
+
+    for claim in verified_claims:
+        if role_can_see(req.role, claim.access_level):
+            _save_version(session, claim, req.role.value, req.note or "bulk approve (demo shortcut)")
+            claim.review_state = ReviewState.approved
+            session.add(claim)
+            count += 1
+
+    # Log in audit log with exact action "bulk approve (demo shortcut)"
+    audit = AuditLog(
+        project_id=project_id,
+        claim_id=None,
+        action="bulk approve (demo shortcut)",
+        actor_role=req.role.value,
+        detail=f"Bulk approved {count} verified claims for handover.",
+    )
+    session.add(audit)
+    session.commit()
+
+    return {
+        "ok": True,
+        "approved_count": count,
+        "action": "bulk approve (demo shortcut)",
+        "message": f"Successfully approved {count} verified claims.",
+    }
 
 
 @router.post("/claims/{claim_id}/reject", summary="Reject claim with reason")
