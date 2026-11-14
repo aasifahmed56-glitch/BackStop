@@ -148,10 +148,21 @@ class TestReviewExperience:
 class TestHandoverAndRoleSecurity:
     @pytest.fixture(autouse=True)
     def setup_approved_claims(self, client):
-        # Create a restricted claim and approve several claims across levels
+        # Create two approved restricted claims and keep confidential unapproved
         with Session(engine) as s:
-            # Restricted claim
-            c_restricted = Claim(
+            # Clean up any previous test-injected restricted/confidential claims
+            existing_test_claims = s.exec(
+                select(Claim).where(
+                    Claim.text.like("%Private advisor observation%")
+                    | Claim.text.like("%Vendor contract with FictionalCloud%")
+                )
+            ).all()
+            for c in existing_test_claims:
+                s.delete(c)
+            s.flush()
+
+            # Two approved restricted claims
+            c_restricted1 = Claim(
                 project_id=1,
                 kind=ClaimKind.derived,
                 type=ClaimType.risk,
@@ -162,7 +173,18 @@ class TestHandoverAndRoleSecurity:
                 access_level=AccessLevel.restricted,
                 review_state=ReviewState.approved,
             )
-            # Confidential claim
+            c_restricted2 = Claim(
+                project_id=1,
+                kind=ClaimKind.derived,
+                type=ClaimType.decision,
+                text="Private advisor observation: key contributor planning departure next quarter.",
+                evidence_json=json.dumps([{"source_id": 1, "quote": "departure next quarter"}]),
+                status=ClaimStatus.verified,
+                confidence=1.0,
+                access_level=AccessLevel.restricted,
+                review_state=ReviewState.approved,
+            )
+            # Confidential claim - MUST be unapproved
             c_confidential = Claim(
                 project_id=1,
                 kind=ClaimKind.derived,
@@ -172,18 +194,38 @@ class TestHandoverAndRoleSecurity:
                 status=ClaimStatus.verified,
                 confidence=1.0,
                 access_level=AccessLevel.confidential,
-                review_state=ReviewState.approved,
+                review_state=ReviewState.pending,
             )
-            s.add(c_restricted)
+            s.add(c_restricted1)
+            s.add(c_restricted2)
             s.add(c_confidential)
 
-            # Ensure some team claims are approved
-            team_claims = s.exec(
-                select(Claim).where(Claim.access_level == AccessLevel.team)
+            # Ensure team claims of distinct types are approved
+            for c_type in [
+                ClaimType.dependency,
+                ClaimType.blocker,
+                ClaimType.decision,
+                ClaimType.owner,
+                ClaimType.risk,
+                ClaimType.open_question,
+            ]:
+                tc = s.exec(
+                    select(Claim)
+                    .where(Claim.access_level == AccessLevel.team)
+                    .where(Claim.type == c_type)
+                ).first()
+                if tc:
+                    tc.review_state = ReviewState.approved
+                    s.add(tc)
+
+            # Ensure all other confidential claims remain unapproved
+            conf_claims = s.exec(
+                select(Claim).where(Claim.access_level == AccessLevel.confidential)
             ).all()
-            for c in team_claims[:10]:
-                c.review_state = ReviewState.approved
-                s.add(c)
+            for cc in conf_claims:
+                cc.review_state = ReviewState.pending
+                s.add(cc)
+
             s.commit()
 
     def test_handover_only_returns_approved_claims(self, client):
@@ -205,6 +247,7 @@ class TestHandoverAndRoleSecurity:
 
             # 1. Sensitive text must NEVER appear anywhere in the response string
             assert "performance concern" not in raw_json_str
+            assert "departure next quarter" not in raw_json_str
             assert "FictionalCloud" not in raw_json_str
             assert "1,20,000" not in raw_json_str
             assert "sk_test_FAKE_0000000000EXAMPLE" not in raw_json_str
@@ -212,7 +255,7 @@ class TestHandoverAndRoleSecurity:
             # 2. Check withheld claim structure: must NOT have text or quotes
             data = resp.json()
             withheld_items = [c for c in data["claims"] if c.get("withheld")]
-            assert len(withheld_items) >= 2  # restricted and confidential items
+            assert len(withheld_items) >= 2  # The 2 approved restricted claims are withheld
 
             for w in withheld_items:
                 assert "text" not in w
@@ -221,6 +264,87 @@ class TestHandoverAndRoleSecurity:
                 assert w["withheld"] is True
                 assert "Requires" in w["reason"]
                 assert w["request_access_from"] == "lead"
+
+    def test_role_handover_differences_and_access_ceilings(self, client):
+        """
+        Verify:
+        1. Two approved restricted claims: Lead response includes their text.
+        2. Developer and PM responses contain only withheld placeholders (no text).
+        3. Developer vs PM visible types differ according to role emphasis.
+        4. Confidential claims remain unapproved and are never shown to any role.
+        """
+        resp_lead = client.get("/api/projects/1/handover?role=lead")
+        resp_dev = client.get("/api/projects/1/handover?role=incoming_dev")
+        resp_pm = client.get("/api/projects/1/handover?role=incoming_pm")
+
+        assert resp_lead.status_code == 200
+        assert resp_dev.status_code == 200
+        assert resp_pm.status_code == 200
+
+        data_lead = resp_lead.json()
+        data_dev = resp_dev.json()
+        data_pm = resp_pm.json()
+
+        # --- Rule a & b: Lead ceiling includes restricted; dev & PM ceiling is team ---
+        # 1. Lead includes full text of the two approved restricted claims
+        lead_claim_texts = [c["text"] for c in data_lead["claims"] if not c.get("withheld")]
+        assert any("performance concern regarding contributor" in t for t in lead_claim_texts)
+        assert any("key contributor planning departure next quarter" in t for t in lead_claim_texts)
+        assert data_lead["claims_withheld"] == 0
+
+        # 2. Developer response: restricted claims withheld, NO text leaked
+        assert "performance concern" not in resp_dev.text
+        assert "departure next quarter" not in resp_dev.text
+        dev_withheld = [c for c in data_dev["claims"] if c.get("withheld")]
+        assert len(dev_withheld) >= 2
+        for w in dev_withheld:
+            assert "text" not in w
+            assert "evidence" not in w
+            assert w["withheld"] is True
+            assert w["access_level"] == "restricted"
+
+        # PM response: restricted claims withheld, NO text leaked
+        assert "performance concern" not in resp_pm.text
+        assert "departure next quarter" not in resp_pm.text
+        pm_withheld = [c for c in data_pm["claims"] if c.get("withheld")]
+        assert len(pm_withheld) >= 2
+        for w in pm_withheld:
+            assert "text" not in w
+            assert "evidence" not in w
+            assert w["withheld"] is True
+            assert w["access_level"] == "restricted"
+
+        # --- Rule c: Developer vs PM visible types differ ---
+        dev_visible = [c for c in data_dev["claims"] if not c.get("withheld")]
+        pm_visible = [c for c in data_pm["claims"] if not c.get("withheld")]
+
+        dev_visible_types = set(c["type"] for c in dev_visible)
+        pm_visible_types = set(c["type"] for c in pm_visible)
+
+        # Developer emphasis: owner, decision, risk, dependency, contact
+        dev_allowed_types = {"owner", "decision", "risk", "dependency", "contact"}
+        assert dev_visible_types.issubset(dev_allowed_types)
+
+        # PM emphasis: owner, open_question, blocker, risk, next_action
+        pm_allowed_types = {"owner", "open_question", "blocker", "risk", "next_action"}
+        assert pm_visible_types.issubset(pm_allowed_types)
+
+        # Visible types MUST differ
+        assert dev_visible_types != pm_visible_types
+        # Specifically: dependency visible to dev, blocker/open_question visible to PM
+        if "dependency" in dev_visible_types:
+            assert "dependency" not in pm_visible_types
+        if "blocker" in pm_visible_types:
+            assert "blocker" not in dev_visible_types
+
+        # --- Confidential claims: unapproved and NEVER shown to ANY role ---
+        for raw_resp in [resp_lead.text, resp_dev.text, resp_pm.text]:
+            assert "FictionalCloud" not in raw_resp
+            assert "1,20,000" not in raw_resp
+
+        for data in [data_lead, data_dev, data_pm]:
+            for c in data["claims"]:
+                assert c["access_level"] != "confidential"
 
     def test_handover_plan_phases(self, client):
         resp = client.get("/api/projects/1/handover?role=lead")

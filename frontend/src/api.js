@@ -82,8 +82,14 @@ export const api = {
 
   // Handover & Acknowledge
   getHandover: ({ projectId = 1, role = "incoming_dev" } = {}) => {
-    const params = new URLSearchParams({ role });
-    return request(`/projects/${projectId}/handover?${params.toString()}`);
+    const params = new URLSearchParams({ role, _ts: Date.now().toString() });
+    return request(`/projects/${projectId}/handover?${params.toString()}`, {
+      cache: "no-store",
+      headers: {
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        Pragma: "no-cache",
+      },
+    });
   },
 
   acknowledgeHandover: (projectId = 1, { role = "incoming_dev", recipientName = "Team Member", note } = {}) =>

@@ -132,11 +132,40 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
             <span id="role-caption">
               Current view: <strong className="text-on-surface">{currentRoleObj.label}</strong>.{" "}
               {role === "lead"
-                ? "Full unrestricted access enabled for this tier."
-                : "Claims citing restricted or confidential documents are withheld."}
+                ? "Full unrestricted access enabled for this tier (sees restricted items)."
+                : "Claims citing restricted documents are withheld as locked placeholders."}
             </span>
           </div>
         </div>
+
+        {/* Visible line: Hides N approved items that need higher access */}
+        {handoverData && handoverData.claims_withheld > 0 && (
+          <div
+            id="withheld-notice-line"
+            className="p-space-md rounded-xl bg-surface-container-high border border-outline-variant/60 flex items-center justify-between text-on-surface shadow-xs"
+          >
+            <div className="flex items-center gap-space-sm">
+              <span className="material-symbols-outlined text-outline text-[20px]">visibility_off</span>
+              <span className="font-headline-sm text-headline-sm text-on-surface font-semibold">
+                This view hides {handoverData.claims_withheld} approved items that need higher access
+              </span>
+            </div>
+            <span className="font-code-sm text-code-sm text-on-surface-variant">
+              Role ceiling: {currentRoleObj.access}
+            </span>
+          </div>
+        )}
+
+        {/* Lead View confirmation banner */}
+        {role === "lead" && handoverData && (
+          <div
+            id="lead-full-access-line"
+            className="p-space-sm rounded-xl bg-tertiary-fixed text-on-tertiary-fixed flex items-center gap-2 font-headline-sm text-sm font-semibold"
+          >
+            <span className="material-symbols-outlined text-tertiary text-[18px]">verified_user</span>
+            <span>Lead view: full access to restricted items enabled. Restricted claims are shown in full below.</span>
+          </div>
+        )}
 
         {/* Acknowledgement Toast */}
         {ackSuccess && (
@@ -344,6 +373,65 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
             </div>
           </section>
 
+          {/* Role-Tailored Focus Modules Section (from role_sections) */}
+          {handoverData?.role_sections && Object.keys(handoverData.role_sections).length > 0 && (
+            <section className="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm border border-surface-container flex flex-col gap-space-md">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-code-sm text-code-sm text-primary uppercase font-bold">
+                      Role Tailored Focus // {handoverData.role}
+                    </span>
+                  </div>
+                  <h3 className="font-headline-md text-headline-md text-on-surface font-semibold">
+                    {currentRoleObj.label} Priority Scope
+                  </h3>
+                  <p className="font-body-sm text-body-sm text-on-surface-variant">
+                    Displaying claims matching this role's scope ({handoverData.role_emphasis?.join(", ")}).
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-space-md">
+                {Object.entries(handoverData.role_sections).map(([typeKey, items]) => {
+                  const lockedCount = items.filter((i) => i.withheld).length;
+                  return (
+                    <div
+                      key={typeKey}
+                      className="p-space-md bg-surface-container-low rounded-lg border border-surface-container/60 flex flex-col gap-2"
+                    >
+                      <div className="flex items-center justify-between pb-1 border-b border-surface-container">
+                        <span className="font-headline-sm text-xs font-bold uppercase text-primary">
+                          {typeKey} ({items.length})
+                        </span>
+                        <span className="font-code-sm text-[10px] text-outline">
+                          {lockedCount > 0 ? `${lockedCount} locked` : "All visible"}
+                        </span>
+                      </div>
+                      <div className="space-y-1.5 max-h-48 overflow-y-auto">
+                        {items.map((it) => (
+                          <div
+                            key={it.id}
+                            className="text-xs p-1.5 rounded bg-surface-container-lowest border border-surface-container/40"
+                          >
+                            {it.withheld ? (
+                              <span className="text-outline italic flex items-center gap-1">
+                                <span className="material-symbols-outlined text-[12px]">lock</span>
+                                Locked item (Requires {it.access_level} access)
+                              </span>
+                            ) : (
+                              <span className="line-clamp-2 text-on-surface">{it.text}</span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          )}
+
           {/* Approved Claims Detailed Table */}
           <section className="bg-surface-container-lowest rounded-xl shadow-sm border border-surface-container overflow-hidden">
             <div className="p-space-lg flex items-center justify-between bg-surface-container-low border-b border-surface-container/60">
@@ -378,20 +466,33 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
                       </td>
                       <td className="py-3 px-4">
                         {claim.withheld ? (
-                          <span className="text-outline italic">
+                          <span className="text-outline italic flex items-center gap-1.5">
+                            <span className="material-symbols-outlined text-[14px]">lock</span>
                             Withheld ({claim.reason}) — request access from lead
                           </span>
                         ) : (
                           <span>{claim.text}</span>
                         )}
                       </td>
-                      <td className="py-3 px-4 font-code-sm text-xs text-on-surface-variant uppercase">
-                        {claim.access_level}
+                      <td className="py-3 px-4 font-code-sm text-xs uppercase">
+                        {claim.access_level === "restricted" ? (
+                          <span className="px-1.5 py-0.5 rounded bg-error-container text-on-error-container font-bold">
+                            RESTRICTED
+                          </span>
+                        ) : (
+                          <span className="text-on-surface-variant">{claim.access_level}</span>
+                        )}
                       </td>
                       <td className="py-3 px-4 text-right">
-                        <span className="px-2 py-0.5 rounded bg-tertiary-fixed text-on-tertiary-fixed font-code-sm text-xs font-semibold capitalize">
-                          {claim.status || "approved"}
-                        </span>
+                        {claim.withheld ? (
+                          <span className="px-2 py-0.5 rounded bg-surface-container-high text-outline font-code-sm text-xs font-semibold uppercase">
+                            WITHHELD
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded bg-tertiary-fixed text-on-tertiary-fixed font-code-sm text-xs font-semibold capitalize">
+                            {claim.status || "approved"}
+                          </span>
+                        )}
                       </td>
                     </tr>
                   ))}

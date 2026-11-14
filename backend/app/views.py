@@ -67,7 +67,7 @@ class AcknowledgeRequest(BaseModel):
 # Handover Plan Generator (Rules only — NO LLM)
 # ---------------------------------------------------------------------------
 
-def build_handover_plan(approved_claims: list[Claim], role: Role) -> dict[str, list[dict[str, Any]]]:
+def build_handover_plan(rendered_claims: list[dict[str, Any]], role: Role) -> dict[str, list[dict[str, Any]]]:
     """
     Constructs a phased handover roadmap exclusively via deterministic rules:
       - Day 1: Blockers and sole-knowledge risks
@@ -81,34 +81,48 @@ def build_handover_plan(approved_claims: list[Claim], role: Role) -> dict[str, l
         "month_1": [],
     }
 
-    for c in approved_claims:
-        can_see = role_can_see(role, c.access_level)
+    for rc in rendered_claims:
+        if rc.get("withheld"):
+            item = {
+                "claim_id": rc["id"],
+                "type": rc["type"],
+                "status": rc.get("status", "approved"),
+                "access_level": rc["access_level"],
+                "withheld": True,
+                "title": f"Locked [{rc['type'].upper()}] item",
+                "description": f"Requires {rc['access_level']} access — request access from lead",
+                "evidence": [],
+                "priority": "High",
+                "action_prompt": f"Requires {rc['access_level']} clearance from Lead",
+            }
+            if rc["type"] in ("blocker", "risk"):
+                plan["day_1"].append(item)
+            elif rc["type"] in ("decision", "open_question"):
+                plan["week_1"].append(item)
+            else:
+                plan["month_1"].append(item)
+            continue
 
         item = {
-            "claim_id": c.id,
-            "type": c.type.value,
-            "status": c.status.value,
-            "access_level": c.access_level.value,
-            "withheld": not can_see,
+            "claim_id": rc["id"],
+            "type": rc["type"],
+            "status": rc["status"],
+            "access_level": rc["access_level"],
+            "withheld": False,
+            "title": f"[{rc['type'].upper()}] {rc['text'][:80]}...",
+            "description": rc["text"],
+            "evidence": rc.get("evidence", []),
         }
 
-        if not can_see:
-            item["title"] = f"Locked [{c.type.value.upper()}] item"
-            item["description"] = f"Requires {c.access_level.value} access — request access from lead"
-            item["evidence"] = []
-        else:
-            item["title"] = f"[{c.type.value.upper()}] {c.text[:80]}..."
-            item["description"] = c.text
-            item["evidence"] = c.evidence()
-
         # Rule Assignment
-        text_lower = c.text.lower() if can_see else ""
+        text_lower = rc["text"].lower()
+        claim_type = rc["type"]
 
         # Day 1: Blockers & Sole Knowledge
         if (
-            c.type == ClaimType.blocker
+            claim_type == "blocker"
             or "sole knowledge" in text_lower
-            or (c.type == ClaimType.risk and "sole" in text_lower)
+            or (claim_type == "risk" and "sole" in text_lower)
         ):
             item["priority"] = "Critical"
             item["action_prompt"] = "Immediate debrief required with leaver on Day 1"
@@ -116,8 +130,8 @@ def build_handover_plan(approved_claims: list[Claim], role: Role) -> dict[str, l
 
         # Week 1: Decisions & Conflicts
         elif (
-            c.status == ClaimStatus.conflicting
-            or c.type == ClaimType.decision
+            rc.get("status") == "conflicting"
+            or claim_type == "decision"
             or "conflict" in text_lower
         ):
             item["priority"] = "High"
@@ -147,7 +161,7 @@ def get_handover(
     if not project:
         raise HTTPException(404, "Project not found.")
 
-    # ONLY approved claims are included in the handover
+    # ONLY approved claims are included in the handover.
     stmt = (
         select(Claim)
         .where(Claim.project_id == project_id)
@@ -155,9 +169,12 @@ def get_handover(
     )
     approved_claims = session.exec(stmt).all()
 
+    emphasis_types = ROLE_EMPHASIS.get(role, list(ClaimType))
     rendered_claims = []
+
     for c in approved_claims:
-        if not role_can_see(role, c.access_level):
+        can_see = role_can_see(role, c.access_level)
+        if not can_see:
             # Strict redaction: NO text or quotes leaked
             rendered_claims.append({
                 "id": c.id,
@@ -167,31 +184,35 @@ def get_handover(
                 "access_level": c.access_level.value,
                 "type": c.type.value,
                 "kind": c.kind.value,
+                "status": c.status.value,
             })
         else:
-            rendered_claims.append({
-                "id": c.id,
-                "withheld": False,
-                "kind": c.kind.value,
-                "type": c.type.value,
-                "text": c.text,
-                "status": c.status.value,
-                "confidence": c.confidence,
-                "access_level": c.access_level.value,
-                "evidence": c.evidence(),
-            })
+            # Role emphasis filter: only include claims matching role's scope
+            if c.type in emphasis_types:
+                rendered_claims.append({
+                    "id": c.id,
+                    "withheld": False,
+                    "kind": c.kind.value,
+                    "type": c.type.value,
+                    "text": c.text,
+                    "status": c.status.value,
+                    "confidence": c.confidence,
+                    "access_level": c.access_level.value,
+                    "evidence": c.evidence(),
+                })
 
     # Group claims by role emphasis
-    emphasis_types = ROLE_EMPHASIS.get(role, list(ClaimType))
     role_sections: dict[str, list[dict[str, Any]]] = {}
-
     for t in emphasis_types:
         matching = [rc for rc in rendered_claims if rc["type"] == t.value]
         if matching:
             role_sections[t.value] = matching
 
-    # Rule-based plan
-    plan = build_handover_plan(approved_claims, role)
+    # Rule-based plan built from rendered claims
+    plan = build_handover_plan(rendered_claims, role)
+
+    visible_count = sum(1 for c in rendered_claims if not c.get("withheld"))
+    withheld_count = sum(1 for c in rendered_claims if c.get("withheld"))
 
     return {
         "project": {
@@ -204,7 +225,8 @@ def get_handover(
         "role_emphasis": [t.value for t in emphasis_types],
         "disclaimer": "⚠️ Roles are simulated for demo purposes. No login system.",
         "claims_total": len(rendered_claims),
-        "claims_withheld": sum(1 for c in rendered_claims if c.get("withheld")),
+        "claims_visible": visible_count,
+        "claims_withheld": withheld_count,
         "role_sections": role_sections,
         "claims": rendered_claims,
         "plan": plan,
