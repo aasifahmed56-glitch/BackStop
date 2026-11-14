@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import Navbar, { ROLES } from "./components/Navbar";
+import Navbar from "./components/Navbar";
 import HomePage from "./components/HomePage";
 import ReviewQueuePage from "./components/ReviewQueuePage";
 import HandoverPage from "./components/HandoverPage";
@@ -21,7 +21,7 @@ export default function App() {
     try {
       const [projData, statsData] = await Promise.all([
         api.getProject(1).catch(() => null),
-        api.getClaimStats({ projectId: 1, role }).catch(() => null),
+        api.getClaimStats({ projectId: 1, role: "lead" }).catch(() => null),
       ]);
       setProject(projData);
       setStats(statsData);
@@ -32,7 +32,7 @@ export default function App() {
 
   useEffect(() => {
     loadInitialData();
-  }, [role]);
+  }, []);
 
   // Handler: Full reset & re-generation
   const handleResetSample = async () => {
@@ -41,7 +41,7 @@ export default function App() {
     try {
       const result = await api.resetSample();
       await loadInitialData();
-      setActionStatus(`Sample project successfully reloaded! Derived: ${result.derived_claims}, LLM Extracted: ${result.extracted_claims}.`);
+      setActionStatus(`Sample project successfully reloaded! Derived: ${result.derived_claims}, Extracted: ${result.extracted_claims}.`);
       setTimeout(() => setActionStatus(null), 5000);
     } catch (err) {
       alert("Reset failed: " + err.message);
@@ -51,14 +51,14 @@ export default function App() {
     }
   };
 
-  // Handler: Re-run deterministic derivations
+  // Handler: Re-run derivations
   const handleDerive = async () => {
     setIsLoading(true);
-    setActionStatus("Executing deterministic Python derivations from git logs and tasks...");
+    setActionStatus("Executing derivations from git logs and tasks...");
     try {
       const result = await api.deriveClaims(1);
       await loadInitialData();
-      setActionStatus(`Plain-code derivation complete! Created ${result.claims_created} verified claims.`);
+      setActionStatus(`Plain-code derivation complete! Created ${result.claims_created} claims.`);
       setTimeout(() => setActionStatus(null), 5000);
     } catch (err) {
       alert("Derivation failed: " + err.message);
@@ -68,14 +68,14 @@ export default function App() {
     }
   };
 
-  // Handler: Re-run LLM extraction
+  // Handler: Re-run extraction
   const handleExtract = async () => {
     setIsLoading(true);
-    setActionStatus("Running LLM extraction with substring quote checks and support validation...");
+    setActionStatus("Running extraction with substring quote checks and support validation...");
     try {
       const result = await api.extractClaims(1);
       await loadInitialData();
-      setActionStatus(`LLM extraction complete! Verified: ${result.verified}, Inferred: ${result.inferred}, Rejected: ${result.rejected_by_quote_check + result.rejected_by_support_check}.`);
+      setActionStatus(`Extraction complete! Verified: ${result.verified}, Inferred: ${result.inferred}, Rejected: ${result.rejected_by_quote_check + result.rejected_by_support_check}.`);
       setTimeout(() => setActionStatus(null), 5000);
     } catch (err) {
       alert("Extraction failed: " + err.message);
@@ -87,12 +87,10 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-background font-body-md text-on-surface flex flex-col antialiased">
-      {/* Top Navbar & Step Bar */}
+      {/* Top Navbar */}
       <Navbar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
-        role={role}
-        setRole={setRole}
         onResetSample={handleResetSample}
         isResetting={isLoading}
       />
@@ -115,7 +113,7 @@ export default function App() {
 
           {activeTab === "review" && (
             <ReviewQueuePage
-              role={role}
+              role="lead"
               stats={stats}
               onRefreshStats={loadInitialData}
             />
@@ -140,11 +138,11 @@ export default function App() {
             <span className="font-label-md text-label-md text-on-surface font-bold">Backstop</span>
             <span className="text-outline-variant">•</span>
             <span className="font-body-sm text-body-sm text-on-surface-variant">
-              Deterministic Developer Handover Ledger. Dual-track verification with plain-code derivations and strict verbatim quotes.
+              Developer Handover Assistant. Dual-track verification with plain-code derivations and strict verbatim quotes. Automated checks reduce errors and a human approves.
             </span>
           </div>
           <div className="flex items-center gap-space-md shrink-0">
-            <span className="font-code-sm text-code-sm text-outline">SHA256:VERIFIED_LEDGER</span>
+            <span className="font-code-sm text-code-sm text-outline">AUDIT_LOG_ACTIVE</span>
             <span className="font-label-sm text-label-sm text-tertiary flex items-center gap-1 font-semibold">
               <span className="w-2 h-2 rounded-full bg-tertiary"></span>Operational
             </span>

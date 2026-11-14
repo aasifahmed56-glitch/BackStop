@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 
 export default function HomePage({
   project,
@@ -10,15 +10,14 @@ export default function HomePage({
   isLoading,
   actionStatus,
 }) {
-  const [filterWarningsOnly, setFilterWarningsOnly] = useState(false);
-
-  const derivedCount = stats?.kind_breakdown?.derived ?? 14;
-  const interpretedCount = stats?.kind_breakdown?.interpreted ?? 28;
-  const totalClaims = stats?.total_claims ?? (derivedCount + interpretedCount);
-  const approvedCount = stats?.approved_count ?? 0;
+  const totalClaims = stats?.total ?? 0;
+  const approvedCount = stats?.by_review?.approved ?? 0;
   const approvedPercent = totalClaims > 0 ? Math.round((approvedCount / totalClaims) * 100) : 0;
-  const sourcesCount = stats?.sources_count ?? 16;
-  const chunksCount = stats?.chunks_count ?? 426;
+  const verifiedCount = stats?.by_status?.verified ?? 0;
+  const pendingCount = stats?.by_review?.pending ?? 0;
+  const sourcesCount = project?.source_count ?? 16;
+  const chunksCount = project?.chunk_count ?? 426;
+  const sources = project?.sources || [];
 
   return (
     <div className="flex flex-col w-full">
@@ -29,15 +28,15 @@ export default function HomePage({
             <span className="material-symbols-outlined text-[14px]">info</span>
           </span>
           <span className="font-label-md text-label-md text-on-surface-variant">
-            Synthetic demonstration data. All sample records represent a fictional campus ticketing repository.
+            Synthetic demonstration data. Automated checks reduce errors and a human approves.
           </span>
         </div>
         <div className="flex items-center gap-space-sm text-outline font-code-sm text-code-sm shrink-0">
-          <span>HASH: 8f4c2e99</span>
+          <span>Audit Ledger</span>
           <span className="text-outline-variant">•</span>
           <span className="text-tertiary font-label-sm text-label-sm flex items-center gap-1 font-semibold">
             <span className="w-1.5 h-1.5 rounded-full bg-tertiary animate-pulse"></span>
-            {isLoading ? "Pipeline Active" : "Ledger Idle"}
+            {isLoading ? "Pipeline Active" : "Ledger Ready"}
           </span>
         </div>
       </div>
@@ -47,7 +46,7 @@ export default function HomePage({
         <div className="space-y-space-xs max-w-3xl">
           <div className="flex items-center gap-2">
             <span className="px-2 py-0.5 rounded bg-primary-fixed text-on-primary-fixed font-code-sm text-code-sm uppercase tracking-wider font-semibold">
-              Ledger Pipeline v2.4
+              Ledger Pipeline
             </span>
             <span className="font-label-sm text-label-sm text-on-surface-variant font-medium">
               Stage: Ingestion & Verification
@@ -115,9 +114,9 @@ export default function HomePage({
                 </span>
               </div>
               <p className="font-body-sm text-body-sm text-on-surface-variant">
-                Repository UID:{" "}
+                Target Project ID:{" "}
                 <code className="font-code-sm text-code-sm bg-surface-container px-1 py-0.5 rounded text-on-surface">
-                  gh/campus-events/core-ticketing
+                  project-{project?.id || 1}
                 </code>
               </p>
             </div>
@@ -128,7 +127,7 @@ export default function HomePage({
                 Departing Lead
               </span>
               <span className="font-headline-sm text-headline-sm text-on-surface flex items-center md:justify-end gap-1.5 font-semibold">
-                <span className="w-2 h-2 rounded-full bg-secondary"></span>Riya (Staff Software Engineer)
+                <span className="w-2 h-2 rounded-full bg-secondary"></span>{project?.leaver_name || "Departing Lead"}
               </span>
             </div>
             <div className="text-left md:text-right">
@@ -136,7 +135,7 @@ export default function HomePage({
                 Cutoff Date
               </span>
               <span className="font-headline-sm text-headline-sm text-on-surface flex items-center md:justify-end gap-1 font-semibold">
-                <span className="material-symbols-outlined text-[16px] text-primary">event_busy</span>2026-03-15
+                <span className="material-symbols-outlined text-[16px] text-primary">event_busy</span>{project?.departure_date || "—"}
               </span>
             </div>
           </div>
@@ -151,7 +150,7 @@ export default function HomePage({
                 <span className="font-label-sm text-label-sm uppercase font-semibold text-on-surface-variant">
                   Raw Artifacts
                 </span>
-                <span className="material-symbols-outlined text-outline text-[18px]">folder_zip</span>
+                <span className="material-symbols-outlined text-outline text-[18px]">folder</span>
               </div>
               <div className="flex items-baseline gap-2">
                 <span className="font-display-lg text-display-lg text-on-surface">{sourcesCount}</span>
@@ -160,7 +159,7 @@ export default function HomePage({
             </div>
             <div className="mt-space-md pt-space-xs bg-surface-container-lowest/60 rounded px-2 py-1.5">
               <span className="font-code-sm text-code-sm text-outline truncate block">
-                git_log.txt, issues.json, notes/*.md, tasks.csv
+                {sources.length > 0 ? sources.slice(0, 4).map((s) => s.name).join(", ") : "git_log.txt, issues.json, tasks.csv"}
               </span>
             </div>
           </div>
@@ -180,12 +179,12 @@ export default function HomePage({
               </div>
             </div>
             <div className="mt-space-md flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm">
-              <span>Pre-Masking Redactions</span>
-              <span className="font-code-sm text-code-sm font-semibold text-tertiary">38 Secrets Removed</span>
+              <span>Secret Redaction</span>
+              <span className="font-code-sm text-code-sm font-semibold text-tertiary">Active</span>
             </div>
           </div>
 
-          {/* Metric 3: Extracted Claims Split */}
+          {/* Metric 3: Claims Breakdown */}
           <div className="bg-surface-container-low rounded-xl p-space-md flex flex-col justify-between border border-surface-container/60">
             <div>
               <div className="flex items-center justify-between mb-space-xs">
@@ -203,19 +202,19 @@ export default function HomePage({
               <div className="flex items-center justify-between">
                 <span className="flex items-center gap-1 text-on-surface-variant">
                   <span className="w-1.5 h-1.5 rounded-full bg-secondary"></span>
-                  {derivedCount} Derived (Python AST)
+                  Verified: {verifiedCount}
                 </span>
                 <span className="font-code-sm text-code-sm text-outline">
-                  {totalClaims > 0 ? Math.round((derivedCount / totalClaims) * 100) : 33}%
+                  {totalClaims > 0 ? Math.round((verifiedCount / totalClaims) * 100) : 0}%
                 </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="flex items-center gap-1 text-on-surface-variant">
                   <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
-                  {interpretedCount} Interpreted (LLM)
+                  Pending Review: {pendingCount}
                 </span>
                 <span className="font-code-sm text-code-sm text-outline">
-                  {totalClaims > 0 ? Math.round((interpretedCount / totalClaims) * 100) : 67}%
+                  {totalClaims > 0 ? Math.round((pendingCount / totalClaims) * 100) : 0}%
                 </span>
               </div>
             </div>
@@ -243,7 +242,7 @@ export default function HomePage({
                 ></div>
               </div>
               <span className="font-label-sm text-label-sm text-on-surface-variant block">
-                {approvedCount === 0 ? "Pending peer verification" : `${approvedPercent}% peer verified`}
+                {approvedCount === 0 ? "Pending human review" : `${approvedPercent}% approved by reviewer`}
               </span>
             </div>
           </div>
@@ -255,16 +254,16 @@ export default function HomePage({
             <span className="material-symbols-outlined text-secondary text-[24px] shrink-0">schema</span>
             <div className="min-w-0">
               <p className="font-headline-sm text-headline-sm text-on-surface truncate font-semibold">
-                Dual-Track Ledger Engine Status
+                Dual-Track Pipeline Status
               </p>
               <p className="font-body-sm text-body-sm text-on-surface-variant truncate">
-                All {totalClaims} claims verified against repository state. 14 deterministic git code-ownership proofs matched directly.
+                {totalClaims} claims generated from repository artifacts. Automated checks reduce errors and a human approves.
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <span className="px-2.5 py-1 rounded bg-surface-container text-on-surface font-code-sm text-code-sm font-semibold flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-tertiary"></span>AST Cache Primed
+              <span className="w-2 h-2 rounded-full bg-tertiary"></span>Analysis Cache Ready
             </span>
             <span className="px-2.5 py-1 rounded bg-surface-container text-on-surface font-code-sm text-code-sm font-semibold flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-secondary"></span>Strict Substring Enforced
@@ -279,12 +278,12 @@ export default function HomePage({
           <div>
             <h3 className="font-headline-lg text-headline-lg text-on-surface">Methodology & Operational Pipeline</h3>
             <p className="font-body-md text-body-md text-on-surface-variant">
-              Deterministic verification ensures auditability without hallucinated context.
+              Dual-track verification ensures auditability without ungrounded context.
             </p>
           </div>
           <div className="hidden sm:flex items-center gap-1 text-on-surface-variant font-label-md text-label-md">
             <span className="material-symbols-outlined text-[18px]">verified_user</span>
-            <span>Standard Audit Pipeline RFC-094</span>
+            <span>Standard Review Pipeline</span>
           </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-space-lg">
@@ -310,7 +309,7 @@ export default function HomePage({
                 <span className="font-code-sm text-code-sm text-tertiary font-semibold">Active</span>
               </div>
               <div className="font-code-sm text-code-sm text-outline truncate bg-surface-container-lowest px-2 py-1 rounded">
-                API_KEY=******** [TOKEN_REDACTED]
+                Credentials redacted before ingestion
               </div>
             </div>
           </div>
@@ -328,7 +327,7 @@ export default function HomePage({
                 2. Dual-Track Derivation & Verification
               </h4>
               <p className="font-body-md text-body-md text-on-surface-variant mb-space-md">
-                Code ownership and sole-knowledge risks are calculated by deterministic Python. Qualitative claims require verbatim substring match.
+                Code ownership and sole-knowledge risks are calculated by Python scripts from git history. Qualitative claims require verbatim substring match.
               </p>
             </div>
             <div className="bg-surface-container-low rounded-lg p-space-sm space-y-space-xs border border-surface-container/60">
@@ -337,7 +336,7 @@ export default function HomePage({
                 <span className="font-code-sm text-code-sm text-secondary font-semibold">Dual Trace</span>
               </div>
               <div className="font-code-sm text-code-sm text-outline truncate bg-surface-container-lowest px-2 py-1 rounded">
-                AST Blame (14) + Substring Match (28)
+                Code Ownership + Substring Match
               </div>
             </div>
           </div>
@@ -361,71 +360,45 @@ export default function HomePage({
             <div className="bg-surface-container-low rounded-lg p-space-sm space-y-space-xs border border-surface-container/60">
               <div className="flex items-center justify-between font-label-sm text-label-sm">
                 <span className="text-on-surface-variant">Handover Phasing</span>
-                <span className="font-code-sm text-code-sm text-primary font-semibold">3 Dossiers</span>
+                <span className="font-code-sm text-code-sm text-primary font-semibold">3 Horizons</span>
               </div>
               <div className="font-code-sm text-code-sm text-outline truncate bg-surface-container-lowest px-2 py-1 rounded">
-                Targeting: Onboarding, Architecture, SRE
+                Day 1, Week 1, Month 1
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Interactive Demonstration Sandbox Log Panel */}
+      {/* Ingested Sources Section from Backend */}
       <section className="w-full bg-surface-container-lowest rounded-xl shadow-sm p-space-lg border border-surface-container">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm pb-space-md mb-space-md border-b border-surface-container/60">
           <div className="flex items-center gap-space-sm">
-            <span className="material-symbols-outlined text-primary text-[20px]">terminal</span>
+            <span className="material-symbols-outlined text-primary text-[20px]">folder_open</span>
             <h4 className="font-headline-sm text-headline-sm text-on-surface font-semibold">
-              Extraction Ledger Engine Trace
+              Ingested Repository Artifacts ({sources.length})
             </h4>
           </div>
-          <div className="flex items-center gap-space-sm">
-            <span className="font-code-sm text-code-sm text-on-surface-variant bg-surface-container px-2 py-0.5 rounded">
-              Worker #1: python_ast_evaluator.py
-            </span>
-            <button
-              id="btn-toggle-log"
-              type="button"
-              onClick={() => setFilterWarningsOnly(!filterWarningsOnly)}
-              className="font-label-md text-label-md text-primary hover:underline cursor-pointer"
-            >
-              {filterWarningsOnly ? "Show All Events" : "Filter Warnings"}
-            </button>
-          </div>
+          <span className="font-label-md text-label-md text-on-surface-variant">
+            {chunksCount} indexed chunks across all sources
+          </span>
         </div>
 
-        {/* Terminal-like High Contrast Output Container */}
-        <div className="w-full bg-surface-container-low rounded-xl p-space-md font-code-sm text-code-sm text-on-surface-variant space-y-2 max-h-56 overflow-y-auto border border-surface-container">
-          <div className="flex items-start gap-space-sm">
-            <span className="text-outline">10:42:01.012</span>
-            <span className="text-tertiary font-bold">[INIT]</span>
-            <span>
-              Mounted virtual workspace for <code>gh/campus-events/core-ticketing</code>
-            </span>
-          </div>
-          <div className="flex items-start gap-space-sm">
-            <span className="text-outline">10:42:01.184</span>
-            <span className="text-tertiary font-bold">[MASK]</span>
-            <span>Inspected 16 artifacts. 38 secrets redacted via entropy/regex analyzer. 0 plaintext leaks.</span>
-          </div>
-          <div className="flex items-start gap-space-sm">
-            <span className="text-outline">10:42:02.409</span>
-            <span className="text-secondary font-bold">[DERIVATION]</span>
-            <span>Python git blame analysis extracted 14 ownership metrics (100% deterministic, SHA256 verified).</span>
-          </div>
-          <div className="flex items-start gap-space-sm">
-            <span className="text-outline">10:42:04.912</span>
-            <span className="text-primary font-bold">[INTERPRET]</span>
-            <span>LLM semantic extractor created 28 qualitative claims; all 28 passed verbatim substring verification.</span>
-          </div>
-          <div className="flex items-start gap-space-sm">
-            <span className="text-outline">10:42:05.004</span>
-            <span className="text-tertiary font-bold">[READY]</span>
-            <span className="text-on-surface font-medium">
-              Ready for lead approval. 42 unverified claims awaiting triage in Review Queue.
-            </span>
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-sm">
+          {sources.map((src) => (
+            <div
+              key={src.id}
+              className="p-space-sm bg-surface-container-low rounded-lg border border-surface-container/60 flex items-center justify-between"
+            >
+              <div className="flex items-center gap-2 truncate">
+                <span className="material-symbols-outlined text-[18px] text-outline">description</span>
+                <span className="font-code-sm text-code-sm text-on-surface truncate font-medium">{src.name}</span>
+              </div>
+              <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase bg-surface-container text-on-surface-variant">
+                {src.access_level}
+              </span>
+            </div>
+          ))}
         </div>
       </section>
     </div>

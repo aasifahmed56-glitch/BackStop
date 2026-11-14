@@ -1,15 +1,12 @@
 import React from "react";
 
 export const ROLES = [
-  { id: "incoming_dev", label: "Incoming Dev", access: "Team Level", desc: "Sees dev owners, decisions, risks, dependencies, contacts" },
-  { id: "incoming_pm", label: "Incoming PM", access: "Team Level", desc: "Sees PM owners, questions, blockers, risks, next actions" },
-  { id: "lead", label: "Team Lead", access: "Restricted Level", desc: "Can review/approve/edit claims; sees restricted notes" },
-  { id: "admin", label: "System Admin", access: "Confidential Level", desc: "Unrestricted access including confidential executive data" },
+  { id: "incoming_dev", label: "New developer", access: "Team Level", desc: "Sees dev owners, decisions, risks, dependencies, contacts" },
+  { id: "incoming_pm", label: "New project manager", access: "Team Level", desc: "Sees PM owners, questions, blockers, risks, next actions" },
+  { id: "lead", label: "Lead", access: "Restricted Level", desc: "Can review/approve/edit claims; sees restricted notes" },
 ];
 
-export default function Navbar({ activeTab, setActiveTab, role, setRole, onResetSample, isResetting }) {
-  const currentRoleObj = ROLES.find((r) => r.id === role) || ROLES[0];
-
+export default function Navbar({ activeTab, setActiveTab, onResetSample, isResetting }) {
   const NAV_ITEMS = [
     { id: "home", label: "1. Overview" },
     { id: "review", label: "2. Review Queue" },
@@ -27,7 +24,7 @@ export default function Navbar({ activeTab, setActiveTab, role, setRole, onReset
               SANDBOX PLAYGROUND
             </span>
             <span className="font-label-md text-label-md text-on-surface-variant hidden sm:inline">
-              Synthetic demonstration data. Simulated roles for hackathon evaluation — permissions enforced strictly before rendering.
+              Synthetic demonstration data. Automated checks reduce errors and a human approves.
             </span>
             <span className="font-label-md text-label-md text-on-surface-variant sm:hidden">
               Synthetic demonstration data.
@@ -36,7 +33,7 @@ export default function Navbar({ activeTab, setActiveTab, role, setRole, onReset
           <div className="flex items-center gap-space-sm shrink-0">
             <span className="flex items-center gap-1 font-label-sm text-label-sm text-tertiary">
               <span className="w-1.5 h-1.5 rounded-full bg-tertiary animate-pulse"></span>
-              Deterministic Ledger Active
+              Automated Checks Active
             </span>
           </div>
         </div>
@@ -60,7 +57,7 @@ export default function Navbar({ activeTab, setActiveTab, role, setRole, onReset
               </div>
             </button>
             <span className="hidden lg:inline-flex items-center px-space-sm py-0.5 rounded-full bg-surface-container font-label-sm text-label-sm text-primary font-medium">
-              Deterministic Intelligence
+              Audit & Handover Assistant
             </span>
           </div>
 
@@ -84,7 +81,7 @@ export default function Navbar({ activeTab, setActiveTab, role, setRole, onReset
             })}
           </nav>
 
-          {/* Right Controls: Reset Sample Data + Role Switcher */}
+          {/* Right Controls: Reset Sample Data */}
           <div className="flex items-center gap-space-md">
             <button
               onClick={onResetSample}
@@ -98,39 +95,6 @@ export default function Navbar({ activeTab, setActiveTab, role, setRole, onReset
               </span>
               <span className="hidden sm:inline">{isResetting ? "Resetting..." : "Reset Sample Data"}</span>
             </button>
-
-            {/* Simulated Role Dropdown */}
-            <div className="relative group">
-              <button
-                className="flex items-center gap-1.5 px-space-sm py-1 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md cursor-pointer"
-                title="Switch simulated evaluator role"
-              >
-                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-                  <span className="material-symbols-outlined text-on-primary text-[18px]">person</span>
-                </div>
-                <span className="hidden xl:inline font-semibold">{currentRoleObj.label}</span>
-                <span className="material-symbols-outlined text-[14px] text-outline">expand_more</span>
-              </button>
-              <div className="absolute right-0 mt-1 w-60 bg-surface-container-lowest rounded-xl shadow-lg border border-surface-container p-2 hidden group-hover:block z-50">
-                <div className="px-2 py-1 text-[10px] font-bold text-outline uppercase tracking-wider">
-                  Simulated Role
-                </div>
-                {ROLES.map((r) => (
-                  <button
-                    key={r.id}
-                    onClick={() => setRole(r.id)}
-                    className={`w-full text-left px-2.5 py-2 rounded-lg text-xs font-semibold cursor-pointer flex items-center justify-between ${
-                      role === r.id
-                        ? "bg-secondary-fixed text-on-secondary-fixed"
-                        : "text-on-surface hover:bg-surface-container-low"
-                    }`}
-                  >
-                    <span>{r.label}</span>
-                    <span className="text-[10px] font-normal text-outline">{r.access}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
           </div>
         </div>
 
