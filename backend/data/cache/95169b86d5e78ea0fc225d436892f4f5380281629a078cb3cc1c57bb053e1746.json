@@ -1,0 +1,23 @@
+{
+  "decisions": [],
+  "reasons": [],
+  "owners": [
+    {
+      "owner": "Meena",
+      "task": "Websocket experiment",
+      "quote": "- [Meena] Websocket experiment \u2014 report by 1 Dec.",
+      "chunk_id": "8071",
+      "conflict": false
+    },
+    {
+      "owner": "Riya",
+      "task": "Start password reset flow",
+      "quote": "- [Riya] Start password reset flow.",
+      "chunk_id": "8071",
+      "conflict": false
+    }
+  ],
+  "blockers": [],
+  "dependencies": [],
+  "open_questions": []
+}

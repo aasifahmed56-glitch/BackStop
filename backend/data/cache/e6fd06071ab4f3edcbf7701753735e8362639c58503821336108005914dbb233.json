@@ -1,0 +1,56 @@
+[
+  {
+    "type": "decision",
+    "quote": "JWT is the auth mechanism.",
+    "chunk_id": "8535",
+    "conflict": false
+  },
+  {
+    "type": "decision",
+    "quote": "Sessions were rejected due to load failures in the Oct demo.",
+    "chunk_id": "8535",
+    "conflict": false
+  },
+  {
+    "type": "decision",
+    "quote": "Migration to v3 is planned but postponed.",
+    "chunk_id": "8536",
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "quote": "GDPR deletion endpoint (hand to Meena).",
+    "chunk_id": "8535",
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "quote": "Kabir has context on the gateway.",
+    "chunk_id": "8536",
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "quote": "Dev: please read the nginx and docker-compose configs carefully.",
+    "chunk_id": "8537",
+    "conflict": false
+  },
+  {
+    "type": "blocker",
+    "quote": "Push notification setup is fully blocked.",
+    "chunk_id": "8540",
+    "conflict": false
+  },
+  {
+    "type": "blocker",
+    "quote": "FCM push key is unresolved \u2014 nobody has console access.",
+    "chunk_id": "8538",
+    "conflict": false
+  },
+  {
+    "type": "open_question",
+    "quote": "Vault config is NOT documented. Ask me via email if urgent.",
+    "chunk_id": "8537",
+    "conflict": false
+  }
+]

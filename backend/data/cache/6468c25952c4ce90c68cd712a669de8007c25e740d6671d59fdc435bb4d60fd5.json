@@ -1,0 +1,44 @@
+[
+  {
+    "type": "decision",
+    "content": "Payments migration to the new gateway is on 20 Feb 2026.",
+    "quote": "Payments migration to the new gateway is on 20 Feb 2026.",
+    "chunk_id": "8086",
+    "conflict": false
+  },
+  {
+    "type": "decision",
+    "content": "Kabir leads testing. Riya to review the PR before merging.",
+    "quote": "Kabir leads testing. Riya to review the PR before merging.",
+    "chunk_id": "8086",
+    "conflict": false
+  },
+  {
+    "type": "decision",
+    "content": "Rollback: revert to v2 SDK branch if issues arise.",
+    "quote": "Rollback: revert to v2 SDK branch if issues arise.",
+    "chunk_id": "8086",
+    "conflict": false
+  },
+  {
+    "type": "reason",
+    "content": "The v3 SDK has breaking changes in the webhook handler. Plan extra time.",
+    "quote": "The v3 SDK has breaking changes in the webhook handler. Plan extra time.",
+    "chunk_id": "8087",
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "content": "Kabir leads testing",
+    "quote": "Kabir leads testing.",
+    "chunk_id": "8086",
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "content": "Riya to review the PR before merging",
+    "quote": "Riya to review the PR before merging.",
+    "chunk_id": "8086",
+    "conflict": false
+  }
+]

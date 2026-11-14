@@ -1,0 +1,82 @@
+[
+  {
+    "type": "decision",
+    "quote": "Payment gateway research done. Stripe wins.",
+    "chunk_id": 7969,
+    "reason": null,
+    "owner": null,
+    "blocker": null,
+    "dependency": null,
+    "conflict": false
+  },
+  {
+    "type": "decision",
+    "quote": "JWT is stateless so it scales horizontally.",
+    "chunk_id": 7978,
+    "reason": "Sessions failed under load in the demo \u2014 the server couldn't keep up with concurrent requests.",
+    "owner": null,
+    "blocker": null,
+    "dependency": null,
+    "conflict": false
+  },
+  {
+    "type": "decision",
+    "quote": "Reverting to polling.",
+    "chunk_id": 7992,
+    "reason": "Websockets broke on campus wifi during testing.",
+    "owner": null,
+    "blocker": null,
+    "dependency": null,
+    "conflict": false
+  },
+  {
+    "type": "decision",
+    "quote": "Polling is safer.",
+    "chunk_id": 7993,
+    "reason": "Yeah, websockets need persistent connections \u2014 campus wifi drops them.",
+    "owner": null,
+    "blocker": null,
+    "dependency": null,
+    "conflict": false
+  },
+  {
+    "type": "decision",
+    "quote": "Let's target 20 Feb as per the sprint plan.",
+    "chunk_id": 8014,
+    "reason": null,
+    "owner": null,
+    "blocker": null,
+    "dependency": null,
+    "conflict": false
+  },
+  {
+    "type": "decision",
+    "quote": "Migration postponed \u2014 not enough testing time. Per issue #31.",
+    "chunk_id": 8019,
+    "reason": "not enough testing time",
+    "owner": null,
+    "blocker": null,
+    "dependency": null,
+    "conflict": false
+  },
+  {
+    "type": "blocker",
+    "quote": "FCM push key still blocked \u2014 no one has console access.",
+    "chunk_id": 8029,
+    "reason": null,
+    "owner": null,
+    "blocker": "FCM push key still blocked \u2014 no one has console access.",
+    "dependency": null,
+    "conflict": false
+  },
+  {
+    "type": "open question",
+    "quote": "Who's taking over deploy after Riya leaves?",
+    "chunk_id": 8035,
+    "reason": null,
+    "owner": null,
+    "blocker": null,
+    "dependency": null,
+    "conflict": false
+  }
+]

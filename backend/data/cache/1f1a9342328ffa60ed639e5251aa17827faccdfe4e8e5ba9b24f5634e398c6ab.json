@@ -1,0 +1,32 @@
+[
+  {
+    "type": "decision",
+    "quote": "Payments migration postponed (see issue #31).",
+    "chunk_id": "8518",
+    "conflict": false
+  },
+  {
+    "type": "blocker",
+    "quote": "push notification keys still blocked.",
+    "chunk_id": "8518",
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "quote": "GDPR deletion endpoint in progress. Riya handling.",
+    "chunk_id": "8518",
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "quote": "[Riya] Complete deploy runbook before 15 Mar.",
+    "chunk_id": "8520",
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "quote": "[Dev] Identify who takes over deploy after Riya.",
+    "chunk_id": "8520",
+    "conflict": false
+  }
+]

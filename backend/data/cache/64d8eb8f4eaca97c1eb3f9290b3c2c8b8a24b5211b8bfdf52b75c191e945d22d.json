@@ -1,0 +1,20 @@
+[
+  {
+    "type": "decision",
+    "quote": "Payments migration to the new gateway is on 20 Feb 2026.",
+    "chunk_id": "8513",
+    "conflict": false
+  },
+  {
+    "type": "decision",
+    "quote": "Kabir leads testing. Riya to review the PR before merging.",
+    "chunk_id": "8513",
+    "conflict": false
+  },
+  {
+    "type": "decision",
+    "quote": "Rollback: revert to v2 SDK branch if issues arise.",
+    "chunk_id": "8513",
+    "conflict": false
+  }
+]

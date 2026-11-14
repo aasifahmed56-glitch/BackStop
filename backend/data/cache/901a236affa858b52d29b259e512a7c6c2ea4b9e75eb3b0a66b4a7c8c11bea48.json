@@ -1,0 +1,79 @@
+{
+  "decisions": [],
+  "reasons": [],
+  "owners": [
+    {
+      "owner": "Riya",
+      "responsibility": "Auth",
+      "quote": "Auth: Riya (backend lead)",
+      "chunk_id": "8487",
+      "conflict": false
+    },
+    {
+      "owner": "Riya + Kabir",
+      "responsibility": "Payments",
+      "quote": "Payments: Riya + Kabir",
+      "chunk_id": "8487",
+      "conflict": false
+    },
+    {
+      "owner": "Meena",
+      "responsibility": "Notifications",
+      "quote": "Notifications: Meena",
+      "chunk_id": "8487",
+      "conflict": false
+    },
+    {
+      "owner": "Dev",
+      "responsibility": "Events API",
+      "quote": "Events API: Dev",
+      "chunk_id": "8487",
+      "conflict": false
+    },
+    {
+      "owner": "Sara + Meena",
+      "responsibility": "Web UI",
+      "quote": "Web UI: Sara + Meena",
+      "chunk_id": "8487",
+      "conflict": false
+    },
+    {
+      "owner": "Riya",
+      "responsibility": "Deploy",
+      "quote": "Deploy: Riya",
+      "chunk_id": "8487",
+      "conflict": false
+    },
+    {
+      "owner": "Dev + Kabir",
+      "responsibility": "Docs",
+      "quote": "Docs: Dev + Kabir",
+      "chunk_id": "8487",
+      "conflict": false
+    },
+    {
+      "owner": "Riya",
+      "responsibility": "Set up auth scaffold by 10 Oct.",
+      "quote": "[Riya] Set up auth scaffold by 10 Oct.",
+      "chunk_id": "8488",
+      "conflict": false
+    },
+    {
+      "owner": "Dev",
+      "responsibility": "Create GitHub repo and CI pipeline.",
+      "quote": "[Dev] Create GitHub repo and CI pipeline.",
+      "chunk_id": "8488",
+      "conflict": false
+    },
+    {
+      "owner": "Sara",
+      "responsibility": "Wireframes for event pages by 15 Oct.",
+      "quote": "[Sara] Wireframes for event pages by 15 Oct.",
+      "chunk_id": "8488",
+      "conflict": false
+    }
+  ],
+  "blockers": [],
+  "dependencies": [],
+  "open_questions": []
+}

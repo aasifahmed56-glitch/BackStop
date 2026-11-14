@@ -1,0 +1,17 @@
+{
+  "decisions": [],
+  "reasons": [],
+  "owners": [],
+  "blockers": [
+    {
+      "quote": "Deploy process is only fully known to Riya.",
+      "chunk_id": "8508"
+    },
+    {
+      "quote": "Push notification keys: no one has FCM console access.",
+      "chunk_id": "8508"
+    }
+  ],
+  "dependencies": [],
+  "open_questions": []
+}

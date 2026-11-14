@@ -1,0 +1,35 @@
+[
+  {
+    "type": "decision",
+    "quote": "Push runbook to docs/ by 12 Mar.",
+    "chunk_id": "8531",
+    "owner": "Riya",
+    "conflict": false
+  },
+  {
+    "type": "decision",
+    "quote": "Confirm access to production servers.",
+    "chunk_id": "8531",
+    "owner": "Dev",
+    "conflict": false
+  },
+  {
+    "type": "decision",
+    "quote": "Own payments migration in April sprint.",
+    "chunk_id": "8531",
+    "owner": "Kabir",
+    "conflict": false
+  },
+  {
+    "type": "blocker",
+    "quote": "Migration blocked on testing.",
+    "chunk_id": "8529",
+    "conflict": false
+  },
+  {
+    "type": "open_question",
+    "quote": "Push notification keys: still no owner.",
+    "chunk_id": "8530",
+    "conflict": false
+  }
+]

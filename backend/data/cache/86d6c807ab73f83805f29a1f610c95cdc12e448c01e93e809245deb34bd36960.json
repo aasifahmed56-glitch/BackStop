@@ -1,0 +1,38 @@
+[
+  {
+    "type": "decision",
+    "quote": "Remove test keys from config before go-live.",
+    "chunk_id": "8501",
+    "conflict": false
+  },
+  {
+    "type": "reason",
+    "quote": "idempotency keys are essential for payment retries.",
+    "chunk_id": "8501",
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "quote": "Kabir to implement refund endpoint by 20 Dec.",
+    "chunk_id": "8501",
+    "conflict": false
+  },
+  {
+    "type": "blocker",
+    "quote": "If test key leaks to production there will be issues. Remove immediately.",
+    "chunk_id": "8502",
+    "conflict": false
+  },
+  {
+    "type": "decision",
+    "quote": "[Riya] Rotate Stripe keys before staging deploy.",
+    "chunk_id": "8503",
+    "conflict": false
+  },
+  {
+    "type": "decision",
+    "quote": "[Kabir] Refund endpoint by 20 Dec.",
+    "chunk_id": "8503",
+    "conflict": false
+  }
+]

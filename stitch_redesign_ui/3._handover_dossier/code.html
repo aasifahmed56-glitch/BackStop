@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_standard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/><style>@layer base { html, body { margin: 0; padding: 0; } body { overscroll-behavior: none; } main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; } } ::-webkit-scrollbar { display: none; }</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "secondary-fixed-dim": "#c3c0ff", "primary-container": "#2563eb", "tertiary-fixed": "#85f8c4", "on-secondary-fixed-variant": "#3323cc", "primary": "#004ac6", "on-surface-variant": "#434655", "surface-variant": "#d3e4fe", "surface-bright": "#f8f9ff", "surface-tint": "#0053db", "on-primary-fixed": "#00174b", "on-tertiary": "#ffffff", "primary-fixed": "#dbe1ff", "on-tertiary-container": "#bdffdc", "on-error": "#ffffff", "surface-container-high": "#dce9ff", "primary-fixed-dim": "#b4c5ff", "on-surface": "#0b1c30", "on-primary-container": "#eeefff", "outline-variant": "#c3c6d7", "surface-container": "#e5eeff", "inverse-surface": "#213145", "inverse-primary": "#b4c5ff", "on-primary-fixed-variant": "#003ea8", "error": "#ba1a1a", "tertiary-fixed-dim": "#68dba9", "tertiary": "#006243", "on-error-container": "#93000a", "surface-dim": "#cbdbf5", "surface-container-low": "#eff4ff", "surface": "#f8f9ff", "secondary": "#4b41e1", "on-primary": "#ffffff", "secondary-fixed": "#e2dfff", "secondary-container": "#645efb", "on-background": "#0b1c30", "on-secondary-fixed": "#0f0069", "on-tertiary-fixed": "#002114", "inverse-on-surface": "#eaf1ff", "outline": "#737686", "on-secondary-container": "#fffbff", "tertiary-container": "#007d57", "on-secondary": "#ffffff", "error-container": "#ffdad6", "on-tertiary-fixed-variant": "#005137", "background": "#f8f9ff", "surface-container-highest": "#d3e4fe", "surface-container-lowest": "#ffffff" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "gutter-mobile": "1rem", "space-sm": "0.5rem", "margin": "2rem", "space-2xl": "3rem", "margin-mobile": "1rem", "space-xs": "0.25rem", "gutter": "1.5rem", "space-xl": "2rem", "space-lg": "1.5rem", "space-md": "1rem" }, "fontFamily": { "display-lg-mobile": ["Inter"], "headline-md": ["Inter"], "headline-lg": ["Inter"], "code-sm": ["Inter"], "label-sm": ["Inter"], "display-lg": ["Inter"], "body-md": ["Inter"], "body-lg": ["Inter"], "headline-sm": ["Inter"], "label-md": ["Inter"], "body-sm": ["Inter"] }, "fontSize": { "display-lg-mobile": ["26px", { "lineHeight": "34px", "letterSpacing": "-0.015em", "fontWeight": "600" }], "headline-md": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "600" }], "code-sm": ["12px", { "lineHeight": "18px", "fontWeight": "500" }], "label-sm": ["11px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }], "display-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "600" }], "body-md": ["15px", { "lineHeight": "24px", "fontWeight": "400" }], "body-lg": ["16px", { "lineHeight": "26px", "fontWeight": "400" }], "headline-sm": ["16px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "600" }], "label-md": ["13px", { "lineHeight": "18px", "fontWeight": "500" }], "body-sm": ["13px", { "lineHeight": "20px", "fontWeight": "400" }] } } } };</script></head><body class="bg-background font-body-md text-on-surface min-h-screen flex flex-col"><div class="fixed top-0 left-0 right-0 z-50 bg-surface-container-lowest"><div class="w-full bg-surface-container-low px-gutter py-1 flex items-center justify-between shadow-[0_1px_4px_rgba(0,0,0,0.02)]"><div class="max-w-7xl mx-auto w-full flex items-center justify-between gap-space-md"><div class="flex items-center gap-space-sm"><span class="px-space-sm py-0.5 rounded bg-surface-container-lowest text-on-surface-variant font-code-sm text-code-sm">SANDBOX PLAYGROUND</span><span class="font-label-md text-label-md text-on-surface-variant">Synthetic demonstration data. Simulated roles for hackathon evaluation — permissions enforced strictly before rendering.</span></div><div class="flex items-center gap-space-sm"><span class="flex items-center gap-1 font-label-sm text-label-sm text-tertiary"><span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>Deterministic Ledger Active</span></div></div></div><header class="w-full h-16 bg-surface-container-lowest shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="max-w-7xl mx-auto h-full px-gutter flex items-center justify-between gap-space-md"><div class="flex items-center gap-space-md"><a class="flex items-center gap-space-sm" data-path="overview" href="#"><div class="w-9 h-9 rounded-lg bg-secondary flex items-center justify-center"><span class="material-symbols-outlined text-on-secondary text-[20px]">security</span></div><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-on-surface leading-none">Backstop</span><span class="font-label-sm text-label-sm text-on-surface-variant leading-none mt-1">Handover Ledger</span></div></a><span class="hidden lg:inline-flex items-center px-space-sm py-0.5 rounded-full bg-surface-container font-label-sm text-label-sm text-primary">Deterministic Intelligence</span></div><nav class="hidden md:flex items-center gap-space-xs p-1 bg-surface-container-low rounded-xl" data-active-classes="bg-secondary-fixed text-on-secondary-fixed font-headline-sm rounded-lg shadow-sm"><a class="px-space-md py-1.5 font-label-md text-label-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" data-path="overview" href="#">1. Overview</a><a class="px-space-md py-1.5 font-label-md text-label-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" data-path="review-queue" href="#">2. Review Queue</a><a aria-current="page" class="px-space-md py-1.5 transition-colors bg-secondary-fixed text-on-secondary-fixed font-headline-sm rounded-lg shadow-sm" data-path="handover-dossier" href="#">3. Handover Dossier</a><a class="px-space-md py-1.5 font-label-md text-label-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" data-path="backtest" href="#">4. Backtest</a></nav><div class="flex items-center gap-space-md"><button class="px-space-md py-1.5 rounded-lg bg-surface-container-low font-label-md text-label-md text-on-surface hover:bg-surface-container transition-colors flex items-center gap-1.5" type="button"><span class="material-symbols-outlined text-[16px]">restart_alt</span>Reset Sample Data</button><a class="hidden sm:inline-flex items-center gap-1 font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors" data-path="audit-spec" href="#"><span class="material-symbols-outlined text-[18px]">menu_book</span>Docs</a><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header></div><main class="w-full flex-1 pt-[104px] bg-background"><div class="max-w-7xl mx-auto px-6 py-8 min-h-[calc(100vh-168px)]"><div class="flex flex-col w-full gap-space-xl">
+<!-- Role Security Ribbon & Context -->
+<section class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-md">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-space-md">
+<div>
+<div class="flex items-center gap-space-xs text-primary mb-1">
+<span class="material-symbols-outlined text-[18px]">verified_user</span>
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-primary">Ledger Digest // Production Transition</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface">Official Handover Dossier</h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-0.5">Deterministic transition plan compiled strictly from human-approved claims. Sensitive items are role-gated.</p>
+</div>
+<!-- Action buttons -->
+<div class="flex items-center flex-wrap gap-space-sm">
+<button class="h-[38px] px-space-md rounded-lg bg-surface-container-low text-on-surface font-label-md text-label-md hover:bg-surface-container transition-all flex items-center gap-1.5 shadow-sm" id="btn-print" type="button">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">print</span>
+          Print Dossier (PDF Export)
+        </button>
+<button class="h-[38px] px-space-md rounded-lg bg-primary-container text-on-primary font-label-md text-label-md hover:bg-primary transition-all flex items-center gap-1.5 shadow-sm" id="btn-ack" type="button">
+<span class="material-symbols-outlined text-[16px]">fingerprint</span>
+          Acknowledge Handover Receipt
+        </button>
+</div>
+</div>
+<!-- Exclusive Role Selector on this Page -->
+<div class="bg-surface-container-low p-space-sm rounded-lg flex flex-col lg:flex-row lg:items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-sm overflow-x-auto py-0.5">
+<span class="font-label-sm text-label-sm text-on-surface-variant whitespace-nowrap pl-1">EVALUATOR ROLE:</span>
+<div class="inline-flex rounded-lg bg-surface-container-lowest p-1 shadow-sm gap-1" id="role-selector">
+<button class="role-btn px-space-sm py-1 rounded font-label-md text-label-md text-on-secondary-fixed bg-secondary-fixed shadow-xs flex items-center gap-1.5 transition-all" data-role="dev">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+            Incoming Dev (Team Level)
+          </button>
+<button class="role-btn px-space-sm py-1 rounded font-label-md text-label-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-all" data-role="pm">
+            Incoming PM (Team Level)
+          </button>
+<button class="role-btn px-space-sm py-1 rounded font-label-md text-label-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-all" data-role="lead">
+            Lead / EM (Restricted Level)
+          </button>
+<button class="role-btn px-space-sm py-1 rounded font-label-md text-label-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-all" data-role="admin">
+            Admin / Security (Confidential Level)
+          </button>
+</div>
+</div>
+<div class="flex items-center gap-1 text-on-surface-variant font-label-sm text-label-sm pr-1">
+<span class="material-symbols-outlined text-[15px] text-outline">info</span>
+<span id="role-caption">Current simulation: Viewing as <strong class="text-on-surface">Incoming Dev</strong>. Claims citing restricted or confidential documents are withheld.</span>
+</div>
+</div>
+<!-- Cryptographic Acknowledgement Toast (hidden by default) -->
+<div class="hidden bg-tertiary-fixed text-on-tertiary-fixed p-space-md rounded-lg flex items-center justify-between transition-all" id="ack-banner">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-tertiary">check_circle</span>
+<div>
+<span class="font-headline-sm text-headline-sm text-tertiary">Cryptographic Receipt Written to AuditLog</span>
+<p class="font-code-sm text-code-sm text-on-tertiary-fixed-variant mt-0.5">Digest: sha256:7e8b2f90a...e311 | Signer: simulated_incoming_dev | Timestamp: UTC NOW</p>
+</div>
+</div>
+<button class="text-on-tertiary-fixed-variant hover:text-on-tertiary-fixed" onclick="document.getElementById('ack-banner').classList.add('hidden')">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+</section>
+<!-- Interactive Phased Ramp-up Roadmap: 3 Columns -->
+<section class="flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface">Phased Ramp-up Roadmap</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Deterministic milestones partitioned by knowledge blast radius and verified code ownership.</p>
+</div>
+<span class="hidden sm:inline-flex items-center gap-1 font-code-sm text-code-sm text-primary px-space-sm py-0.5 bg-primary-fixed rounded">
+        AUTO-SORTED: RECENCY & RISK COEFF
+      </span>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-space-lg items-start">
+<!-- Column 1: Immediate Survival -->
+<div class="flex flex-col gap-space-md bg-surface-container-low rounded-xl p-space-md shadow-sm">
+<div class="flex items-center justify-between pb-space-xs">
+<div class="flex items-center gap-space-xs">
+<span class="w-6 h-6 rounded bg-error-container text-on-error-container flex items-center justify-center font-label-sm text-label-sm">1</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Day 1: Immediate Survival</h3>
+</div>
+<span class="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-surface-container-highest text-on-surface-variant">2 items</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Sole-knowledge risks ≥70% leaver share, active blockers, critical credentials contacts.</p>
+<!-- Card 1 -->
+<div class="bg-surface-container-lowest rounded-lg p-space-md shadow-sm flex flex-col gap-space-sm hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between gap-space-xs">
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-error-container text-on-error-container">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>Sole-Knowledge
+            </span>
+<span class="font-code-sm text-code-sm text-outline">RISK-92</span>
+</div>
+<h4 class="font-headline-sm text-headline-sm text-on-surface">deploy/ pipeline sole ownership</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+            Riya holds <strong class="text-on-surface">92% commit attribution</strong> across staging and canary runner orchestration scripts.
+          </p>
+<div class="bg-surface-container-low rounded p-space-sm flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[16px] text-primary">priority_high</span>
+<span class="font-label-sm text-label-sm text-primary">Action: Shadow deployment on staging before EOW.</span>
+</div>
+<div class="flex items-center justify-between pt-1 font-label-sm text-label-sm text-on-surface-variant">
+<span>Source: git log --stat</span>
+<span class="text-tertiary flex items-center gap-0.5"><span class="material-symbols-outlined text-[14px]">check_circle</span>Verified</span>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface-container-lowest rounded-lg p-space-md shadow-sm flex flex-col gap-space-sm hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between gap-space-xs">
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-error-container text-on-error-container">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>Blocker
+            </span>
+<span class="font-code-sm text-code-sm text-outline">SEC-04</span>
+</div>
+<h4 class="font-headline-sm text-headline-sm text-on-surface">Staging SSL certificate expiring</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+            Staging ingress wildcard cert expires in <strong class="text-error">12 days</strong>. Automatic ACME renewal failed due to Route53 IAM shift.
+          </p>
+<div class="bg-surface-container-low rounded p-space-sm flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Primary contact:</span>
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">SRE team (#sre-ops)</span>
+</div>
+<div class="flex items-center justify-between pt-1 font-label-sm text-label-sm text-on-surface-variant">
+<span>Cert Hash: c3f8...a011</span>
+<span class="text-tertiary flex items-center gap-0.5"><span class="material-symbols-outlined text-[14px]">check_circle</span>Verified</span>
+</div>
+</div>
+</div>
+<!-- Column 2: Context & Decisions -->
+<div class="flex flex-col gap-space-md bg-surface-container-low rounded-xl p-space-md shadow-sm">
+<div class="flex items-center justify-between pb-space-xs">
+<div class="flex items-center gap-space-xs">
+<span class="w-6 h-6 rounded bg-primary-fixed text-on-primary-fixed flex items-center justify-center font-label-sm text-label-sm">2</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Week 1: Context & Decisions</h3>
+</div>
+<span class="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-surface-container-highest text-on-surface-variant">2 items</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Architectural decisions with rationales, active conflicts requiring arbitration.</p>
+<!-- Card 1 -->
+<div class="bg-surface-container-lowest rounded-lg p-space-md shadow-sm flex flex-col gap-space-sm hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between gap-space-xs">
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>Decision
+            </span>
+<span class="font-code-sm text-code-sm text-outline">ADR-109</span>
+</div>
+<h4 class="font-headline-sm text-headline-sm text-on-surface">Adopted PostgreSQL JSONB over MongoDB</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+            Consolidated event metadata storage into Postgres instances. 
+          </p>
+<div class="bg-surface-container-low rounded p-space-sm flex flex-col gap-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Verified Rationale:</span>
+<p class="font-body-sm text-body-sm text-on-surface">Strict ACID compliance required for dual-entry ticket ledger reconciliations.</p>
+</div>
+<div class="flex items-center justify-between pt-1 font-label-sm text-label-sm text-on-surface-variant">
+<span>Doc: ADR-109.md</span>
+<span class="text-tertiary flex items-center gap-0.5"><span class="material-symbols-outlined text-[14px]">check_circle</span>Verified</span>
+</div>
+</div>
+<!-- Card 2: Locked / Gated Item -->
+<div class="role-gated-item bg-surface-container-lowest rounded-lg p-space-md shadow-sm flex flex-col gap-space-sm bg-surface-bright" data-min-role="lead" id="locked-card-1">
+<!-- Locked View (Incoming Dev & PM) -->
+<div class="locked-view flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm px-2 py-0.5 rounded bg-surface-container text-on-surface-variant">
+<span class="material-symbols-outlined text-[14px]">lock</span>
+                Role-Gated Claim
+              </span>
+<span class="font-code-sm text-code-sm text-outline">RESTRICTED</span>
+</div>
+<div class="p-space-sm rounded bg-surface-container-low flex flex-col gap-1.5">
+<div class="flex items-center gap-1.5 text-on-surface">
+<span class="material-symbols-outlined text-[18px] text-outline">lock</span>
+<span class="font-headline-sm text-headline-sm">Withheld Item — Requires Restricted (Lead) Access</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                Reason: Contains sensitive architectural negotiation cited from <code class="font-code-sm text-code-sm px-1 py-0.2 bg-surface-container rounded">notes/advisor-private.md</code>.
+              </p>
+<div class="mt-1 flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline">Contact Engineering Lead to request clearance</span>
+<a class="font-label-sm text-label-sm text-primary hover:underline" href="#">Request GPG Role Upgrade →</a>
+</div>
+</div>
+</div>
+<!-- Unlocked View (Lead/Admin) -->
+<div class="unlocked-view hidden flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed">
+<span class="material-symbols-outlined text-[14px] text-secondary">lock_open</span>Restricted Cleared
+              </span>
+<span class="font-code-sm text-code-sm text-outline">ADR-114</span>
+</div>
+<h4 class="font-headline-sm text-headline-sm text-on-surface">Architectural Split: Auth0 vs Self-Hosted Ory Kratos</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+              Board negotiation mandates migration from SaaS IAM to internal Ory clusters by Q3 to reduce vendor margin exposure.
+            </p>
+<div class="bg-surface-container-low rounded p-space-sm">
+<span class="font-code-sm text-code-sm text-on-surface">Source: notes/advisor-private.md (Verified cryptographic anchor)</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Column 3: Long-term Stewardship -->
+<div class="flex flex-col gap-space-md bg-surface-container-low rounded-xl p-space-md shadow-sm">
+<div class="flex items-center justify-between pb-space-xs">
+<div class="flex items-center gap-space-xs">
+<span class="w-6 h-6 rounded bg-surface-container-highest text-on-surface flex items-center justify-center font-label-sm text-label-sm">3</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Month 1: Long-term Stewardship</h3>
+</div>
+<span class="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-surface-container-highest text-on-surface-variant">2 items</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Cross-system dependencies, stale modules >30 days, missing evidence questions.</p>
+<!-- Card 1 -->
+<div class="bg-surface-container-lowest rounded-lg p-space-md shadow-sm flex flex-col gap-space-sm hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between gap-space-xs">
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span>Dependency
+            </span>
+<span class="font-code-sm text-code-sm text-outline">EXT-STRIPE</span>
+</div>
+<h4 class="font-headline-sm text-headline-sm text-on-surface">Stripe Webhook Idempotency</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+            Idempotent retry logic situated in <code class="font-code-sm text-code-sm px-1 py-0.5 bg-surface-container-low rounded text-on-surface">notifications/services/webhook.ts</code>.
+          </p>
+<div class="bg-surface-container-low rounded p-space-sm flex items-center gap-space-xs text-on-surface-variant font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-[16px] text-tertiary">replay</span>
+<span>Handles network partition replays within a 72-hour sliding window.</span>
+</div>
+<div class="flex items-center justify-between pt-1 font-label-sm text-label-sm text-on-surface-variant">
+<span>Commit: 4a2b91c</span>
+<span class="text-tertiary flex items-center gap-0.5"><span class="material-symbols-outlined text-[14px]">check_circle</span>Verified</span>
+</div>
+</div>
+<!-- Card 2: Confidential Locked Item -->
+<div class="role-gated-item bg-surface-container-lowest rounded-lg p-space-md shadow-sm flex flex-col gap-space-sm bg-surface-bright" data-min-role="admin" id="locked-card-2">
+<!-- Locked View (Incoming Dev, PM, Lead) -->
+<div class="locked-view flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm px-2 py-0.5 rounded bg-surface-container text-on-surface-variant">
+<span class="material-symbols-outlined text-[14px]">lock</span>
+                Confidential Item
+              </span>
+<span class="font-code-sm text-code-sm text-error">CONFIDENTIAL</span>
+</div>
+<div class="p-space-sm rounded bg-surface-container-low flex flex-col gap-1.5">
+<div class="flex items-center gap-1.5 text-on-surface">
+<span class="material-symbols-outlined text-[18px] text-outline">lock</span>
+<span class="font-headline-sm text-headline-sm">Withheld Item — Requires Confidential Access</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                Reason: Financial budgeting notes and infrastructure cost commitments for enterprise contract renewal.
+              </p>
+<div class="mt-1 flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline">Security/Finance Admin role strictly required</span>
+<a class="font-label-sm text-label-sm text-primary hover:underline" href="#">Elevate Role →</a>
+</div>
+</div>
+</div>
+<!-- Unlocked View (Admin only) -->
+<div class="unlocked-view hidden flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-error-container text-on-error-container">
+<span class="material-symbols-outlined text-[14px] text-error">lock_open</span>Confidential Cleared
+              </span>
+<span class="font-code-sm text-code-sm text-outline">FIN-882</span>
+</div>
+<h4 class="font-headline-sm text-headline-sm text-on-surface">AWS Savings Plan Rebalance & Overdraft Caps</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+              Fixed compute commitment expires Nov 30; rollover amortized cap capped at $14,200/mo. Primary budget holder: VP Eng.
+            </p>
+<div class="bg-surface-container-low rounded p-space-sm">
+<span class="font-code-sm text-code-sm text-on-surface">Source: finance/contracts-2024.enc</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Approved Claims Breakdown: Categorized Table -->
+<section class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-md">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm">
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface">Approved Claims Breakdown</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Granular ledger entries verified via plain-code derivations and strict verbatim quotations.</p>
+</div>
+<div class="flex items-center gap-space-sm">
+<span class="inline-flex items-center gap-1.5 font-label-sm text-label-sm px-space-sm py-1 rounded bg-surface-container text-on-surface">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>5 Verified Claims Total
+        </span>
+</div>
+</div>
+<!-- Grouped Claims Table -->
+<div class="overflow-x-auto rounded-lg bg-surface-container-low p-1">
+<table class="w-full text-left font-body-sm text-body-sm">
+<thead>
+<tr class="text-on-surface-variant font-label-sm text-label-sm uppercase">
+<th class="px-space-md py- space-sm">Claim ID & Summary</th>
+<th class="px-space-md py- space-sm">Category</th>
+<th class="px-space-md py- space-sm">Verbatim Anchor</th>
+<th class="px-space-md py- space-sm">Confidence</th>
+<th class="px-space-md py- space-sm">Verification Status</th>
+</tr>
+</thead>
+<tbody class="divide-y-0 flex-col">
+<!-- Category Row: Decisions -->
+<tr class="bg-surface-container">
+<td class="px-space-md py-1.5 font-label-sm text-label-sm text-on-surface font-semibold" colspan="5">
+              CATEGORY: ARCHITECTURAL DECISIONS (1 CLAIM)
+            </td>
+</tr>
+<tr class="bg-surface-container-lowest hover:bg-surface-container-low transition-colors">
+<td class="px-space-md py-space-sm">
+<div class="font-headline-sm text-headline-sm text-on-surface">Adopt PostgreSQL JSONB over MongoDB</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">Consolidated event store to prevent cross-database transaction failure</div>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="px-2 py-0.5 rounded font-label-sm text-label-sm bg-secondary-fixed text-on-secondary-fixed">Decision</span>
+</td>
+<td class="px-space-md py-space-sm">
+<code class="font-code-sm text-code-sm text-primary">docs/adr/ADR-109.md#L34</code>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="font-label-sm text-label-sm text-tertiary font-semibold">100% Deterministic</span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>Verified
+              </span>
+</td>
+</tr>
+<!-- Category Row: Sole-Knowledge Risks -->
+<tr class="bg-surface-container">
+<td class="px-space-md py-1.5 font-label-sm text-label-sm text-on-surface font-semibold" colspan="5">
+              CATEGORY: SOLE-KNOWLEDGE RISKS >=70% (1 CLAIM)
+            </td>
+</tr>
+<tr class="bg-surface-container-lowest hover:bg-surface-container-low transition-colors">
+<td class="px-space-md py-space-sm">
+<div class="font-headline-sm text-headline-sm text-on-surface">deploy/ pipeline sole ownership</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">Riya author of 92% of continuous delivery workflow files</div>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="px-2 py-0.5 rounded font-label-sm text-label-sm bg-error-container text-on-error-container">Sole-Knowledge</span>
+</td>
+<td class="px-space-md py-space-sm">
+<code class="font-code-sm text-code-sm text-on-surface">.github/workflows/deploy.yml</code>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="font-label-sm text-label-sm text-tertiary font-semibold">92.4% Metric Attrib</span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>Verified
+              </span>
+</td>
+</tr>
+<!-- Category Row: Dependencies -->
+<tr class="bg-surface-container">
+<td class="px-space-md py-1.5 font-label-sm text-label-sm text-on-surface font-semibold" colspan="5">
+              CATEGORY: CROSS-SYSTEM DEPENDENCIES (2 CLAIMS)
+            </td>
+</tr>
+<tr class="bg-surface-container-lowest hover:bg-surface-container-low transition-colors">
+<td class="px-space-md py-space-sm">
+<div class="font-headline-sm text-headline-sm text-on-surface">Stripe Webhook Idempotency Handler</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">Guarantees exactly-once transaction fulfillment via Redis lock</div>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="px-2 py-0.5 rounded font-label-sm text-label-sm bg-surface-container text-on-surface-variant">Dependency</span>
+</td>
+<td class="px-space-md py-space-sm">
+<code class="font-code-sm text-code-sm text-primary">notifications/services/webhook.ts#L88</code>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="font-label-sm text-label-sm text-tertiary font-semibold">98.1% AST Analysis</span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>Verified
+              </span>
+</td>
+</tr>
+<tr class="bg-surface-container-lowest hover:bg-surface-container-low transition-colors">
+<td class="px-space-md py-space-sm">
+<div class="font-headline-sm text-headline-sm text-on-surface">Staging SSL Certificate Expiry</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">Ingress wildcard SAN cert requires DNS-01 challenge revalidation</div>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="px-2 py-0.5 rounded font-label-sm text-label-sm bg-error-container text-on-error-container">Blocker</span>
+</td>
+<td class="px-space-md py-space-sm">
+<code class="font-code-sm text-code-sm text-on-surface">k8s/ingress/staging-cert.yaml</code>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="font-label-sm text-label-sm text-tertiary font-semibold">100% Certificate Expiry</span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>Verified
+              </span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm pt-2">
+<span>Zero unverified or inferred claims admitted into the Official Handover record.</span>
+<span class="font-code-sm text-code-sm">MERKLE_ROOT: b41a...929f</span>
+</div>
+</section>
+<!-- Dossier Cryptographic Footer Stamp -->
+<section class="p-space-md rounded-xl bg-surface-container-low flex flex-col md:flex-row items-center justify-between gap-space-md text-on-surface-variant font-body-sm text-body-sm">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-[20px] text-tertiary">verified</span>
+<span>Ledger snapshot validated by 3 human verifiers: Lead Architect, Security Auditor, and Leaver.</span>
+</div>
+<div class="flex items-center gap-space-md font-code-sm text-code-sm">
+<span>GPG-ID: 0x98FF2C8A</span>
+<span class="text-tertiary font-semibold">SEALED & IMMUTABLE</span>
+</div>
+</section>
+</div>
+<script>
+  // Role switcher simulation logic strictly localized to Page 3
+  (function initRoleSimulation() {
+    const roleButtons = document.querySelectorAll('.role-btn');
+    const roleCaption = document.getElementById('role-caption');
+    const lockedCard1 = document.getElementById('locked-card-1');
+    const lockedCard2 = document.getElementById('locked-card-2');
+    const ackBtn = document.getElementById('btn-ack');
+    const ackBanner = document.getElementById('ack-banner');
+    const printBtn = document.getElementById('btn-print');
+
+    const roleConfigs = {
+      dev: {
+        name: 'Incoming Dev',
+        caption: 'Current simulation: Viewing as <strong class="text-on-surface">Incoming Dev</strong>. Claims citing restricted or confidential documents are withheld.',
+        canAccessLead: false,
+        canAccessAdmin: false
+      },
+      pm: {
+        name: 'Incoming PM',
+        caption: 'Current simulation: Viewing as <strong class="text-on-surface">Incoming PM</strong>. Engineering scope shown; restricted architectural disputes withheld.',
+        canAccessLead: false,
+        canAccessAdmin: false
+      },
+      lead: {
+        name: 'Lead / EM',
+        caption: 'Current simulation: Viewing as <strong class="text-on-surface">Lead / EM</strong>. Restricted internal architectural disputes unlocked. Confidential budgeting withheld.',
+        canAccessLead: true,
+        canAccessAdmin: false
+      },
+      admin: {
+        name: 'Admin / Security',
+        caption: 'Current simulation: Viewing as <strong class="text-on-surface">Admin / Security</strong>. Full cryptographic clearance granted across all confidentiality tiers.',
+        canAccessLead: true,
+        canAccessAdmin: true
+      }
+    };
+
+    function updateRoleUI(roleKey) {
+      const cfg = roleConfigs[roleKey];
+      if (!cfg) return;
+
+      // Update button visual styles
+      roleButtons.forEach(btn => {
+        if (btn.getAttribute('data-role') === roleKey) {
+          btn.className = 'role-btn px-space-sm py-1 rounded font-label-md text-label-md text-on-secondary-fixed bg-secondary-fixed shadow-xs flex items-center gap-1.5 transition-all';
+          if (!btn.querySelector('.w-1\\.5')) {
+            const dot = document.createElement('span');
+            dot.className = 'w-1.5 h-1.5 rounded-full bg-secondary';
+            btn.prepend(dot);
+          }
+        } else {
+          btn.className = 'role-btn px-space-sm py-1 rounded font-label-md text-label-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-all';
+          const dot = btn.querySelector('.w-1\\.5');
+          if (dot) dot.remove();
+        }
+      });
+
+      // Update descriptive caption
+      roleCaption.innerHTML = cfg.caption;
+
+      // Card 1: Restricted Level
+      const card1LockedView = lockedCard1.querySelector('.locked-view');
+      const card1UnlockedView = lockedCard1.querySelector('.unlocked-view');
+      if (cfg.canAccessLead) {
+        card1LockedView.classList.add('hidden');
+        card1UnlockedView.classList.remove('hidden');
+        lockedCard1.classList.remove('bg-surface-bright');
+        lockedCard1.classList.add('bg-surface-container-lowest');
+      } else {
+        card1LockedView.classList.remove('hidden');
+        card1UnlockedView.classList.add('hidden');
+        lockedCard1.classList.add('bg-surface-bright');
+        lockedCard1.classList.remove('bg-surface-container-lowest');
+      }
+
+      // Card 2: Confidential Level
+      const card2LockedView = lockedCard2.querySelector('.locked-view');
+      const card2UnlockedView = lockedCard2.querySelector('.unlocked-view');
+      if (cfg.canAccessAdmin) {
+        card2LockedView.classList.add('hidden');
+        card2UnlockedView.classList.remove('hidden');
+        lockedCard2.classList.remove('bg-surface-bright');
+        lockedCard2.classList.add('bg-surface-container-lowest');
+      } else {
+        card2LockedView.classList.remove('hidden');
+        card2UnlockedView.classList.add('hidden');
+        lockedCard2.classList.add('bg-surface-bright');
+        lockedCard2.classList.remove('bg-surface-container-lowest');
+      }
+    }
+
+    roleButtons.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const role = btn.getAttribute('data-role');
+        updateRoleUI(role);
+      });
+    });
+
+    // Acknowledgement button interaction
+    if (ackBtn && ackBanner) {
+      ackBtn.addEventListener('click', () => {
+        ackBanner.classList.remove('hidden');
+        ackBtn.classList.add('opacity-75');
+        ackBtn.innerHTML = '<span class="material-symbols-outlined text-[16px]">done_all</span> Receipt Acknowledged';
+      });
+    }
+
+    // PDF print preview trigger
+    if (printBtn) {
+      printBtn.addEventListener('click', () => {
+        window.print();
+      });
+    }
+  })();
+</script></div></main><footer class="w-full bg-surface-container-lowest shadow-[0_-1px_6px_rgba(0,0,0,0.03)] py-space-md"><div class="max-w-7xl mx-auto px-gutter flex flex-col sm:flex-row items-center justify-between gap-space-sm text-center sm:text-left"><div class="flex items-center gap-space-sm"><span class="font-label-md text-label-md text-on-surface">Backstop</span><span class="text-outline-variant">•</span><span class="font-body-sm text-body-sm text-on-surface-variant">Deterministic Developer Handover Ledger. Dual-track verification with plain-code derivations and strict verbatim quotes.</span></div><div class="flex items-center gap-space-md"><span class="font-code-sm text-code-sm text-outline">SHA256:VERIFIED_LEDGER</span><span class="font-label-sm text-label-sm text-tertiary flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-tertiary"></span>Operational</span></div></div></footer></body></html>

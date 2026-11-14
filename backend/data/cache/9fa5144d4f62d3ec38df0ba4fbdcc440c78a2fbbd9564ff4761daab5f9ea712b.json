@@ -1,0 +1,68 @@
+[
+  {
+    "category": "decisions",
+    "quote": "Migration to v3 SDK planned.",
+    "chunk_id": "8079",
+    "owner": null,
+    "reason": null,
+    "blockers": null,
+    "dependencies": null,
+    "open_questions": null,
+    "conflict": false
+  },
+  {
+    "category": "decisions",
+    "quote": "Production deploy planned for 1 Apr.",
+    "chunk_id": "8079",
+    "owner": null,
+    "reason": null,
+    "blockers": null,
+    "dependencies": null,
+    "open_questions": null,
+    "conflict": false
+  },
+  {
+    "category": "owners",
+    "quote": "[Riya] Write deploy runbook.",
+    "chunk_id": "8082",
+    "owner": "Riya",
+    "reason": null,
+    "blockers": null,
+    "dependencies": null,
+    "open_questions": null,
+    "conflict": false
+  },
+  {
+    "category": "owners",
+    "quote": "[Meena] Resolve FCM key access.",
+    "chunk_id": "8082",
+    "owner": "Meena",
+    "reason": null,
+    "blockers": null,
+    "dependencies": null,
+    "open_questions": null,
+    "conflict": false
+  },
+  {
+    "category": "blockers",
+    "quote": "Deploy process is only fully known to Riya.",
+    "chunk_id": "8081",
+    "owner": null,
+    "reason": null,
+    "blockers": "Deploy process is only fully known to Riya.",
+    "dependencies": null,
+    "open_questions": null,
+    "conflict": false
+  },
+  {
+    "category": "blockers",
+    "quote": "Push notification keys: no one has FCM console access.",
+    "chunk_id": "8081",
+    "owner": null,
+    "reason": null,
+    "blockers": "no one has FCM console access",
+    "dependencies": null,
+    "open_questions": null,
+    "conflict": false
+  }
+]

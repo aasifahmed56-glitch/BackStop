@@ -1,0 +1,43 @@
+{
+  "decisions": [],
+  "reasons": [],
+  "owners": [
+    {
+      "quote": "Sara to continue as main auth reviewer post-Riya.",
+      "chunk_id": "8524"
+    },
+    {
+      "quote": "- Dev: takes over deploy/ (needs Riya's runbook).",
+      "chunk_id": "8525"
+    },
+    {
+      "quote": "- Kabir: takes over payments/.",
+      "chunk_id": "8525"
+    },
+    {
+      "quote": "- Meena: takes over auth/ (with Sara's support).",
+      "chunk_id": "8525"
+    },
+    {
+      "quote": "- [Riya] Finalise runbook by 12 Mar.",
+      "chunk_id": "8526"
+    },
+    {
+      "quote": "- [Dev] Review deploy/ codebase with Riya this week.",
+      "chunk_id": "8526"
+    }
+  ],
+  "blockers": [
+    {
+      "quote": "  - FCM push key (blocked, no owner).",
+      "chunk_id": "8524"
+    }
+  ],
+  "dependencies": [
+    {
+      "quote": "- Dev: takes over deploy/ (needs Riya's runbook).",
+      "chunk_id": "8525"
+    }
+  ],
+  "open_questions": []
+}

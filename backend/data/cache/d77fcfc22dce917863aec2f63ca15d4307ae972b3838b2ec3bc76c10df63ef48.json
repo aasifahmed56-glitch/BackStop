@@ -1,0 +1,68 @@
+[
+  {
+    "type": "decision",
+    "quote": "Payments migration postponed",
+    "reason": null,
+    "owner": null,
+    "blocker": null,
+    "dependency": null,
+    "open_question": null,
+    "chunk_id": "8091",
+    "conflict": false
+  },
+  {
+    "type": "decision",
+    "quote": "Payments migration postponed (see issue #31).",
+    "reason": "see issue #31",
+    "owner": null,
+    "blocker": null,
+    "dependency": null,
+    "open_question": null,
+    "chunk_id": "8091",
+    "conflict": false
+  },
+  {
+    "type": "decision",
+    "quote": "Web UI: mobile responsiveness done.",
+    "reason": null,
+    "owner": null,
+    "blocker": null,
+    "dependency": null,
+    "open_question": null,
+    "chunk_id": "8091",
+    "conflict": false
+  },
+  {
+    "type": "blocker",
+    "quote": "Notifications: push notification keys still blocked.",
+    "reason": null,
+    "owner": null,
+    "blocker": "push notification keys still blocked",
+    "dependency": null,
+    "open_question": null,
+    "chunk_id": "8091",
+    "conflict": false
+  },
+  {
+    "type": "decision",
+    "quote": "- [Riya] Complete deploy runbook before 15 Mar.",
+    "reason": null,
+    "owner": "Riya",
+    "blocker": null,
+    "dependency": null,
+    "open_question": null,
+    "chunk_id": "8093",
+    "conflict": false
+  },
+  {
+    "type": "decision",
+    "quote": "- [Dev] Identify who takes over deploy after Riya.",
+    "reason": null,
+    "owner": "Dev",
+    "blocker": null,
+    "dependency": null,
+    "open_question": null,
+    "chunk_id": "8093",
+    "conflict": false
+  }
+]

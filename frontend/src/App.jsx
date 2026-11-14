@@ -131,18 +131,17 @@ export default function App() {
         </div>
       </main>
 
-      {/* Engineering-Grade Footer */}
+      {/* Application Footer */}
       <footer className="w-full bg-surface-container-lowest shadow-[0_-1px_6px_rgba(0,0,0,0.03)] py-space-md border-t border-surface-container no-print mt-auto">
         <div className="max-w-7xl mx-auto px-gutter flex flex-col sm:flex-row items-center justify-between gap-space-sm text-center sm:text-left">
           <div className="flex items-center gap-space-sm flex-wrap justify-center sm:justify-start">
             <span className="font-label-md text-label-md text-on-surface font-bold">Backstop</span>
             <span className="text-outline-variant">•</span>
             <span className="font-body-sm text-body-sm text-on-surface-variant">
-              Developer Handover Assistant. Dual-track verification with plain-code derivations and strict verbatim quotes. Automated checks reduce errors and a human approves.
+              Developer Handover Assistant. Automated checks reduce errors and a human approves.
             </span>
           </div>
           <div className="flex items-center gap-space-md shrink-0">
-            <span className="font-code-sm text-code-sm text-outline">AUDIT_LOG_ACTIVE</span>
             <span className="font-label-sm text-label-sm text-tertiary flex items-center gap-1 font-semibold">
               <span className="w-2 h-2 rounded-full bg-tertiary"></span>Operational
             </span>

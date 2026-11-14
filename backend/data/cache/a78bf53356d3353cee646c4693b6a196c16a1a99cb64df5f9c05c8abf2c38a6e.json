@@ -1,0 +1,20 @@
+{
+  "decisions": [],
+  "reasons": [],
+  "owners": [],
+  "blockers": [
+    {
+      "quote": "FCM push key (blocked, no owner).",
+      "chunk_id": "8097",
+      "conflict": false
+    }
+  ],
+  "dependencies": [
+    {
+      "quote": "Dev: takes over deploy/ (needs Riya's runbook).",
+      "chunk_id": "8098",
+      "conflict": false
+    }
+  ],
+  "open_questions": []
+}

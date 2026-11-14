@@ -9,7 +9,7 @@ export const ROLES = [
 export default function Navbar({ activeTab, setActiveTab, onResetSample, isResetting }) {
   const NAV_ITEMS = [
     { id: "home", label: "1. Overview" },
-    { id: "review", label: "2. Review Queue" },
+    { id: "review", label: "2. Check the claims" },
     { id: "handover", label: "3. Handover Dossier" },
     { id: "backtest", label: "4. Backtest" },
   ];

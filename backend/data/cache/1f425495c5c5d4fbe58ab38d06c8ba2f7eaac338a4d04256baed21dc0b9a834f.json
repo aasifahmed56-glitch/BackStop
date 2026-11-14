@@ -1,0 +1,23 @@
+{
+  "decisions": [],
+  "reasons": [],
+  "owners": [],
+  "blockers": [
+    {
+      "chunk_id": "7929",
+      "quote": "notes: No owner assigned. FCM console access unclear. BLOCKED."
+    }
+  ],
+  "dependencies": [
+    {
+      "chunk_id": "7939",
+      "quote": "notes: Postponed. See issue #31."
+    }
+  ],
+  "open_questions": [
+    {
+      "chunk_id": "7929",
+      "quote": "notes: No owner assigned. FCM console access unclear. BLOCKED."
+    }
+  ]
+}
