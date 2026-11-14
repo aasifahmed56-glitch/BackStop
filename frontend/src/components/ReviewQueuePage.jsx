@@ -401,7 +401,7 @@ export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
           </div>
 
           {/* Ledger Cards Container */}
-          <div className="flex flex-col gap-space-sm" id="claims-ledger-container">
+          <div className="flex flex-col gap-space-sm lg:max-h-[calc(100vh-176px)] lg:overflow-y-auto pr-2" id="claims-ledger-container">
             {isLoading ? (
               <div className="p-space-xl text-center bg-surface-container-lowest rounded-xl border border-surface-container">
                 <span className="material-symbols-outlined text-[28px] text-primary animate-spin">refresh</span>
@@ -466,17 +466,22 @@ export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
                       </span>
                     </div>
 
-                    {/* Claim Title */}
-                    <div className="font-headline-sm text-headline-sm text-on-surface mb-2 font-semibold">
-                      Claim #{claim.id}: {claim.text?.slice(0, 75)}
-                    </div>
-
-                    {/* Claim Statement */}
-                    <p className="font-body-md text-body-md text-on-surface-variant mb-space-md line-clamp-2">
-                      {claim.withheld
-                        ? "Withheld due to role restrictions. Access level required: " + (claim.access_level || "Restricted")
+                    {/* Claim Title with Line Clamp and Ellipsis */}
+                    <div
+                      className="font-headline-sm text-headline-sm text-on-surface mb-2 font-semibold line-clamp-2 break-words"
+                      style={{
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
+                      title={`Claim #${claim.id}: ${claim.text}`}
+                    >
+                      Claim #{claim.id}: {claim.withheld
+                        ? "Withheld due to role restrictions (" + (claim.access_level || "Restricted") + ")"
                         : claim.text}
-                    </p>
+                    </div>
 
                     {/* Metadata Footer */}
                     <div className="flex items-center justify-between text-on-surface-variant pt-2 border-t border-surface-container/60">
@@ -518,149 +523,175 @@ export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
         </div>
 
         {/* Right Column: Detail & Verification Drawer (5 cols) */}
-        <div className="lg:col-span-5 sticky top-28">
+        <div className="lg:col-span-5 lg:sticky lg:top-[112px] lg:max-h-[calc(100vh-124px)] flex flex-col">
           {selectedClaim ? (
-            <div className="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-lg border border-surface-container">
-              {/* Header & Target Claim */}
-              <div className="flex items-start justify-between gap-space-md">
-                <div className="flex flex-col">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="font-code-sm text-code-sm text-primary uppercase font-bold">Inspection Node</span>
-                    <span className="px-1.5 py-0.5 rounded bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm font-semibold capitalize">
+            <div className="bg-surface-container-lowest rounded-xl shadow-sm border border-surface-container flex flex-col max-h-[calc(100vh-124px)] overflow-hidden">
+              {/* Scrollable Inspection Content */}
+              <div className="p-space-lg overflow-y-auto flex-1 flex flex-col gap-space-lg">
+                {/* Header & Target Claim */}
+                <div className="flex items-start justify-between gap-space-md">
+                  <div className="flex flex-col">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-code-sm text-code-sm text-primary uppercase font-bold">Inspection Node</span>
+                      <span className="px-1.5 py-0.5 rounded bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm font-semibold capitalize">
+                        {selectedClaim.status}
+                      </span>
+                    </div>
+                    <h2 className="font-headline-md text-headline-md text-on-surface font-semibold break-words" id="inspect-claim-header">
+                      Claim #{selectedClaim.id}: {selectedClaim.text}
+                    </h2>
+                  </div>
+                  <div className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-on-surface-variant shrink-0">
+                    <span className="material-symbols-outlined text-[18px]">
+                      {selectedClaim.status === "verified" ? "verified" : "help"}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Scope & Access Level */}
+                <div className="p-space-sm bg-surface-container-low rounded-lg flex items-center justify-between font-label-sm text-label-sm border border-surface-container/60">
+                  <div className="flex items-center gap-space-sm">
+                    <span className="text-on-surface-variant">Claim Type:</span>
+                    <span className="font-code-sm text-code-sm text-primary font-semibold capitalize">
+                      {selectedClaim.type}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-space-sm">
+                    <span className="text-on-surface-variant">Access Tier:</span>
+                    <span className="font-label-md text-label-md text-on-surface font-semibold capitalize">
+                      {selectedClaim.access_level}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Full Statement */}
+                <div className="flex flex-col gap-1.5">
+                  <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold">
+                    Full Claim Text
+                  </span>
+                  <div className="p-space-md bg-surface-container-low rounded-xl border border-surface-container/60 font-body-md text-body-md text-on-surface leading-relaxed break-words">
+                    {selectedClaim.text}
+                  </div>
+                </div>
+
+                {/* Verbatim Quote & Source Chunk OR Derived Message */}
+                {selectedClaim.kind === "derived" ? (
+                  <div className="p-space-md bg-surface-container-low rounded-xl border border-surface-container/60 space-y-2">
+                    <div className="flex items-center gap-2 font-headline-sm text-headline-sm text-on-surface font-semibold">
+                      <span className="material-symbols-outlined text-secondary text-[20px]">code</span>
+                      <span>Derived from Git History</span>
+                    </div>
+                    <p className="font-body-sm text-body-sm text-on-surface-variant">
+                      Calculated by code from git history; no quote check
+                    </p>
+                    <p className="font-label-sm text-label-sm text-outline">
+                      Ownership and commit concentration metrics are derived by Python scripts inspecting commit author ratios and timestamps.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-space-sm">
+                    <div className="flex items-center justify-between font-label-sm text-label-sm">
+                      <span className="text-on-surface-variant flex items-center gap-1 font-semibold">
+                        <span className="material-symbols-outlined text-[16px] text-primary">format_quote</span>
+                        Exact Source Substring Quote
+                      </span>
+                      <span className="font-code-sm text-code-sm text-outline flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[12px]">link</span>
+                        {currentContext?.source_name || "Source document"}
+                      </span>
+                    </div>
+                    <div className="p-space-md bg-surface-container-low rounded-xl relative group border border-surface-container/60">
+                      <div className="absolute top-2 right-2">
+                        <button
+                          onClick={() => handleCopyQuote(currentQuote)}
+                          className="p-1 rounded hover:bg-surface-container text-on-surface-variant text-[14px] cursor-pointer"
+                          title="Copy exact raw quote"
+                        >
+                          <span className="material-symbols-outlined text-[16px]">
+                            {copiedQuote ? "check" : "content_copy"}
+                          </span>
+                        </button>
+                      </div>
+                      <p className="font-code-sm text-code-sm text-on-surface leading-relaxed pr-6 bg-surface-variant/40 p-2 rounded">
+                        “{currentQuote || "No quote recorded"}”
+                      </p>
+                    </div>
+
+                    {/* Highlighted Chunk */}
+                    {currentChunkText && (
+                      <div className="flex flex-col gap-1">
+                        <span className="font-label-sm text-label-sm text-on-surface-variant font-semibold">
+                          Source Chunk Context ({currentContext?.source_name})
+                        </span>
+                        <div className="p-space-sm bg-surface-container-low rounded-lg font-code-sm text-code-sm text-on-surface-variant leading-relaxed max-h-40 overflow-y-auto border border-surface-container/60">
+                          {renderHighlightedChunk(currentChunkText, currentQuote)}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Actual Stored Check Results */}
+                <div className="flex flex-col gap-space-sm">
+                  <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold">
+                    Stored Verification Check Results
+                  </span>
+                  <div className="p-space-sm bg-surface-container rounded-lg flex items-center justify-between border border-surface-container/60">
+                    <div className="flex items-center gap-space-sm">
+                      <div className="w-6 h-6 rounded-full bg-tertiary-fixed text-on-tertiary-fixed flex items-center justify-center shrink-0">
+                        <span className="material-symbols-outlined text-[14px]">
+                          {selectedClaim.status === "verified" ? "done" : "info"}
+                        </span>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="font-headline-sm text-headline-sm text-on-surface text-[14px] font-semibold capitalize">
+                          Check Status: {selectedClaim.status}
+                        </span>
+                        <span className="font-body-sm text-body-sm text-on-surface-variant text-[12px]">
+                          {selectedClaim.kind === "derived"
+                            ? "Calculated by code from git history; no quote check"
+                            : selectedClaim.status === "verified"
+                            ? "Substring quote check passed verbatim in source chunk."
+                            : selectedClaim.status === "conflicting"
+                            ? "Discrepancy identified across source artifacts."
+                            : selectedClaim.status === "missing"
+                            ? "Evidence or field missing in source artifact."
+                            : "Inferred statement without exact substring anchor."}
+                        </span>
+                      </div>
+                    </div>
+                    <span className="px-2 py-0.5 rounded bg-surface-container-high text-on-surface font-code-sm text-code-sm font-bold uppercase">
                       {selectedClaim.status}
                     </span>
                   </div>
-                  <h2 className="font-headline-md text-headline-md text-on-surface font-semibold" id="inspect-claim-header">
-                    Claim #{selectedClaim.id}: {selectedClaim.text?.slice(0, 60)}
-                  </h2>
                 </div>
-                <div className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-on-surface-variant shrink-0">
-                  <span className="material-symbols-outlined text-[18px]">
-                    {selectedClaim.status === "verified" ? "verified" : "help"}
-                  </span>
-                </div>
-              </div>
 
-              {/* Scope & Access Level */}
-              <div className="p-space-sm bg-surface-container-low rounded-lg flex items-center justify-between font-label-sm text-label-sm border border-surface-container/60">
-                <div className="flex items-center gap-space-sm">
-                  <span className="text-on-surface-variant">Claim Type:</span>
-                  <span className="font-code-sm text-code-sm text-primary font-semibold capitalize">
-                    {selectedClaim.type}
-                  </span>
-                </div>
-                <div className="flex items-center gap-space-sm">
-                  <span className="text-on-surface-variant">Access Tier:</span>
-                  <span className="font-label-md text-label-md text-on-surface font-semibold capitalize">
-                    {selectedClaim.access_level}
-                  </span>
-                </div>
-              </div>
-
-              {/* Full Statement */}
-              <div className="flex flex-col gap-1.5">
-                <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold">
-                  Full Claim Text
-                </span>
-                <div className="p-space-md bg-surface-container-low rounded-xl border border-surface-container/60 font-body-md text-body-md text-on-surface leading-relaxed">
-                  {selectedClaim.text}
-                </div>
-              </div>
-
-              {/* Verbatim Quote & Source Chunk OR Derived Message */}
-              {selectedClaim.kind === "derived" ? (
-                <div className="p-space-md bg-surface-container-low rounded-xl border border-surface-container/60 space-y-2">
-                  <div className="flex items-center gap-2 font-headline-sm text-headline-sm text-on-surface font-semibold">
-                    <span className="material-symbols-outlined text-secondary text-[20px]">code</span>
-                    <span>Derived from Git History</span>
-                  </div>
-                  <p className="font-body-sm text-body-sm text-on-surface-variant">
-                    Calculated by code from git history; no quote check
-                  </p>
-                  <p className="font-label-sm text-label-sm text-outline">
-                    Ownership and commit concentration metrics are derived by Python scripts inspecting commit author ratios and timestamps.
-                  </p>
-                </div>
-              ) : (
-                <div className="flex flex-col gap-space-sm">
-                  <div className="flex items-center justify-between font-label-sm text-label-sm">
-                    <span className="text-on-surface-variant flex items-center gap-1 font-semibold">
-                      <span className="material-symbols-outlined text-[16px] text-primary">format_quote</span>
-                      Exact Source Substring Quote
+                {/* Version History & Audit Trail */}
+                {claimVersions.length > 0 && (
+                  <div className="flex flex-col gap-space-xs pt-2 border-t border-surface-container/60">
+                    <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold">
+                      Version Audit Trail ({claimVersions.length})
                     </span>
-                    <span className="font-code-sm text-code-sm text-outline flex items-center gap-1">
-                      <span className="material-symbols-outlined text-[12px]">link</span>
-                      {currentContext?.source_name || "Source document"}
-                    </span>
-                  </div>
-                  <div className="p-space-md bg-surface-container-low rounded-xl relative group border border-surface-container/60">
-                    <div className="absolute top-2 right-2">
-                      <button
-                        onClick={() => handleCopyQuote(currentQuote)}
-                        className="p-1 rounded hover:bg-surface-container text-on-surface-variant text-[14px] cursor-pointer"
-                        title="Copy exact raw quote"
-                      >
-                        <span className="material-symbols-outlined text-[16px]">
-                          {copiedQuote ? "check" : "content_copy"}
-                        </span>
-                      </button>
-                    </div>
-                    <p className="font-code-sm text-code-sm text-on-surface leading-relaxed pr-6 bg-surface-variant/40 p-2 rounded">
-                      “{currentQuote || "No quote recorded"}”
-                    </p>
-                  </div>
-
-                  {/* Highlighted Chunk */}
-                  {currentChunkText && (
-                    <div className="flex flex-col gap-1">
-                      <span className="font-label-sm text-label-sm text-on-surface-variant font-semibold">
-                        Source Chunk Context ({currentContext?.source_name})
-                      </span>
-                      <div className="p-space-sm bg-surface-container-low rounded-lg font-code-sm text-code-sm text-on-surface-variant leading-relaxed max-h-40 overflow-y-auto border border-surface-container/60">
-                        {renderHighlightedChunk(currentChunkText, currentQuote)}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Actual Stored Check Results */}
-              <div className="flex flex-col gap-space-sm">
-                <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold">
-                  Stored Verification Check Results
-                </span>
-                <div className="p-space-sm bg-surface-container rounded-lg flex items-center justify-between border border-surface-container/60">
-                  <div className="flex items-center gap-space-sm">
-                    <div className="w-6 h-6 rounded-full bg-tertiary-fixed text-on-tertiary-fixed flex items-center justify-center shrink-0">
-                      <span className="material-symbols-outlined text-[14px]">
-                        {selectedClaim.status === "verified" ? "done" : "info"}
-                      </span>
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="font-headline-sm text-headline-sm text-on-surface text-[14px] font-semibold capitalize">
-                        Check Status: {selectedClaim.status}
-                      </span>
-                      <span className="font-body-sm text-body-sm text-on-surface-variant text-[12px]">
-                        {selectedClaim.kind === "derived"
-                          ? "Calculated by code from git history; no quote check"
-                          : selectedClaim.status === "verified"
-                          ? "Substring quote check passed verbatim in source chunk."
-                          : selectedClaim.status === "conflicting"
-                          ? "Discrepancy identified across source artifacts."
-                          : selectedClaim.status === "missing"
-                          ? "Evidence or field missing in source artifact."
-                          : "Inferred statement without exact substring anchor."}
-                      </span>
+                    <div className="space-y-1.5 max-h-36 overflow-y-auto">
+                      {claimVersions.map((v) => (
+                        <div
+                          key={v.version}
+                          className="p-2 rounded bg-surface-container-low text-xs border border-surface-container/60 flex items-start justify-between"
+                        >
+                          <div>
+                            <span className="font-bold text-on-surface">v{v.version}</span>
+                            <span className="text-on-surface-variant ml-2">{v.change_note || "Initial version"}</span>
+                          </div>
+                          <span className="text-outline font-code-sm text-[10px]">{v.changed_by}</span>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                  <span className="px-2 py-0.5 rounded bg-surface-container-high text-on-surface font-code-sm text-code-sm font-bold uppercase">
-                    {selectedClaim.status}
-                  </span>
-                </div>
+                )}
               </div>
 
-              {/* Action Controls: Approve, Reject, Edit */}
-              <div className="flex flex-col gap-space-sm pt-2 border-t border-surface-container/60">
+              {/* Sticky Action Footer Inside Detail Panel */}
+              <div className="p-space-md bg-surface-container-lowest border-t border-surface-container sticky bottom-0 z-10 shrink-0 shadow-[0_-2px_8px_rgba(0,0,0,0.04)]">
                 <div className="flex items-center justify-between gap-space-sm">
                   <button
                     id="btn-approve"
@@ -698,29 +729,6 @@ export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
                   </button>
                 </div>
               </div>
-
-              {/* Version History & Audit Trail */}
-              {claimVersions.length > 0 && (
-                <div className="flex flex-col gap-space-xs pt-2 border-t border-surface-container/60">
-                  <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold">
-                    Version Audit Trail ({claimVersions.length})
-                  </span>
-                  <div className="space-y-1.5 max-h-36 overflow-y-auto">
-                    {claimVersions.map((v) => (
-                      <div
-                        key={v.version}
-                        className="p-2 rounded bg-surface-container-low text-xs border border-surface-container/60 flex items-start justify-between"
-                      >
-                        <div>
-                          <span className="font-bold text-on-surface">v{v.version}</span>
-                          <span className="text-on-surface-variant ml-2">{v.change_note || "Initial version"}</span>
-                        </div>
-                        <span className="text-outline font-code-sm text-[10px]">{v.changed_by}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
           ) : (
             <div className="p-space-xl text-center bg-surface-container-lowest rounded-xl border border-surface-container">
