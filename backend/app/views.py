@@ -60,7 +60,9 @@ ROLE_EMPHASIS: dict[Role, list[ClaimType]] = {
 
 class AcknowledgeRequest(BaseModel):
     role: Role = Role.incoming_dev
-    actor_name: str
+    recipient_name: Optional[str] = None
+    actor_name: Optional[str] = None
+    note: Optional[str] = None
 
 
 # ---------------------------------------------------------------------------
@@ -243,12 +245,20 @@ def acknowledge_handover(
     if not project:
         raise HTTPException(404, "Project not found.")
 
+    signer = (req.recipient_name or req.actor_name or "").strip()
+    if not signer:
+        raise HTTPException(400, "Recipient name is required")
+
+    detail = f"Handover acknowledged by {signer} as {req.role.value}."
+    if req.note and req.note.strip():
+        detail += f" Note: {req.note.strip()}"
+
     log = AuditLog(
         project_id=project_id,
         claim_id=None,
         action="handover_acknowledged",
         actor_role=req.role.value,
-        detail=f"Handover acknowledged by {req.actor_name} as {req.role.value}.",
+        detail=detail,
         created_at=datetime.utcnow(),
     )
     session.add(log)
@@ -258,9 +268,11 @@ def acknowledge_handover(
         "ok": True,
         "project_id": project_id,
         "role": req.role.value,
-        "actor_name": req.actor_name,
+        "recipient_name": signer,
+        "actor_name": signer,
+        "note": req.note,
         "acknowledged_at": log.created_at.isoformat(),
-        "message": f"Handover receipt officially logged in audit ledger for {req.actor_name}.",
+        "message": f"Handover receipt officially logged in audit ledger for {signer}.",
     }
 
 

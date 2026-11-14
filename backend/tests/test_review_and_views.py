@@ -384,3 +384,55 @@ class TestHandoverAndRoleSecurity:
             assert log is not None
             assert "Alex Dev" in (log.detail or "")
 
+    def test_acknowledge_receipt_frontend_payload_with_note(self, client):
+        """Verify POST /api/projects/{id}/acknowledge accepts frontend payload with recipient_name and note."""
+        payload = {
+            "role": "incoming_dev",
+            "recipient_name": "Sam Taylor",
+            "note": "Completed handover walkthrough with lead",
+        }
+        resp = client.post("/api/projects/1/acknowledge", json=payload)
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["ok"] is True
+        assert data["recipient_name"] == "Sam Taylor"
+        assert data["actor_name"] == "Sam Taylor"
+        assert "acknowledged_at" in data
+        assert data["note"] == "Completed handover walkthrough with lead"
+
+        # Verify AuditLog record
+        with Session(engine) as s:
+            log = s.exec(
+                select(AuditLog)
+                .where(AuditLog.action == "handover_acknowledged")
+                .where(AuditLog.project_id == 1)
+            ).all()
+            assert any(
+                "Sam Taylor" in (l.detail or "") and "Completed handover walkthrough" in (l.detail or "")
+                for l in log
+            )
+
+    def test_acknowledge_receipt_missing_recipient_name(self, client):
+        """Verify POST /api/projects/{id}/acknowledge returns 400 when recipient name is missing or blank."""
+        # Missing field
+        resp1 = client.post("/api/projects/1/acknowledge", json={"role": "incoming_dev"})
+        assert resp1.status_code == 400
+        data1 = resp1.json()
+        assert "Recipient name is required" in data1["detail"]
+
+        # Blank/whitespace name
+        resp2 = client.post(
+            "/api/projects/1/acknowledge",
+            json={"role": "incoming_pm", "recipient_name": "   ", "note": "Some note"},
+        )
+        assert resp2.status_code == 400
+        data2 = resp2.json()
+        assert "Recipient name is required" in data2["detail"]
+
+        # Missing project (404)
+        resp3 = client.post(
+            "/api/projects/99999/acknowledge",
+            json={"role": "incoming_dev", "recipient_name": "Nobody"},
+        )
+        assert resp3.status_code == 404
+

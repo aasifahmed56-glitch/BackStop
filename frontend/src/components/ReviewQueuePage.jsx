@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { api } from "../api";
+import { api, formatErrorMessage } from "../api";
 
 export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
   const [claims, setClaims] = useState([]);
@@ -94,7 +94,7 @@ export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
       const vers = await api.getClaimVersions(selectedClaim.id).catch(() => null);
       if (vers?.versions) setClaimVersions(vers.versions);
     } catch (err) {
-      alert("Approve failed: " + err.message);
+      alert("Approve failed: " + formatErrorMessage(err));
     } finally {
       setIsSubmittingAction(false);
     }
@@ -113,7 +113,7 @@ export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
       await loadClaims();
       if (onRefreshStats) onRefreshStats();
     } catch (err) {
-      alert("Reject failed: " + err.message);
+      alert("Reject failed: " + formatErrorMessage(err));
     } finally {
       setIsSubmittingAction(false);
     }
@@ -137,7 +137,7 @@ export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
       const vers = await api.getClaimVersions(selectedClaim.id).catch(() => null);
       if (vers?.versions) setClaimVersions(vers.versions);
     } catch (err) {
-      alert("Edit failed: " + err.message);
+      alert("Edit failed: " + formatErrorMessage(err));
     } finally {
       setIsSubmittingAction(false);
     }
@@ -154,7 +154,7 @@ export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
       await loadClaims();
       if (onRefreshStats) onRefreshStats();
     } catch (err) {
-      alert("Bulk approve failed: " + err.message);
+      alert("Bulk approve failed: " + formatErrorMessage(err));
     } finally {
       setIsBulkApproving(false);
     }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { api } from "../api";
+import { api, formatErrorMessage } from "../api";
 import { ROLES } from "./Navbar";
 
 export default function HandoverPage({ role, setRole, setActiveTab }) {
@@ -43,7 +43,7 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
       setAckSuccess(res);
       setAckModalOpen(false);
     } catch (err) {
-      alert("Acknowledgment failed: " + err.message);
+      alert("Acknowledgment failed: " + formatErrorMessage(err));
     } finally {
       setIsSubmittingAck(false);
     }
@@ -176,11 +176,11 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
             <div className="flex items-center gap-space-sm">
               <span className="material-symbols-outlined text-tertiary text-[22px]">check_circle</span>
               <div>
-                <span className="font-headline-sm text-headline-sm text-tertiary font-bold">
-                  Receipt Written to Audit Log
+                <span className="font-headline-sm text-headline-sm text-tertiary font-bold" id="ack-success-title">
+                  Receipt recorded at {new Date(ackSuccess.acknowledged_at || Date.now()).toLocaleTimeString()}
                 </span>
                 <p className="font-code-sm text-code-sm text-on-tertiary-fixed-variant mt-0.5">
-                  Signer: {ackSuccess.recipient_name || `simulated_${role}`} | Handover successfully acknowledged.
+                  Signer: {ackSuccess.recipient_name || ackSuccess.actor_name || `simulated_${role}`} | Handover successfully acknowledged.
                 </p>
               </div>
             </div>

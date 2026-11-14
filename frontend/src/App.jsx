@@ -4,7 +4,7 @@ import HomePage from "./components/HomePage";
 import ReviewQueuePage from "./components/ReviewQueuePage";
 import HandoverPage from "./components/HandoverPage";
 import BacktestPage from "./components/BacktestPage";
-import { api } from "./api";
+import { api, formatErrorMessage } from "./api";
 
 export default function App() {
   const [activeTab, setActiveTab] = useState("home");
@@ -44,7 +44,7 @@ export default function App() {
       setActionStatus(`Sample project successfully reloaded! Derived: ${result.derived_claims}, Extracted: ${result.extracted_claims}.`);
       setTimeout(() => setActionStatus(null), 5000);
     } catch (err) {
-      alert("Reset failed: " + err.message);
+      alert("Reset failed: " + formatErrorMessage(err));
       setActionStatus(null);
     } finally {
       setIsLoading(false);
@@ -61,7 +61,7 @@ export default function App() {
       setActionStatus(`Plain-code derivation complete! Created ${result.claims_created} claims.`);
       setTimeout(() => setActionStatus(null), 5000);
     } catch (err) {
-      alert("Derivation failed: " + err.message);
+      alert("Derivation failed: " + formatErrorMessage(err));
       setActionStatus(null);
     } finally {
       setIsLoading(false);
@@ -78,7 +78,7 @@ export default function App() {
       setActionStatus(`Extraction complete! Verified: ${result.verified}, Inferred: ${result.inferred}, Rejected: ${result.rejected_by_quote_check + result.rejected_by_support_check}.`);
       setTimeout(() => setActionStatus(null), 5000);
     } catch (err) {
-      alert("Extraction failed: " + err.message);
+      alert("Extraction failed: " + formatErrorMessage(err));
       setActionStatus(null);
     } finally {
       setIsLoading(false);

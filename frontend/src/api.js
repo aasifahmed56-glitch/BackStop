@@ -4,6 +4,41 @@
 
 const BASE_URL = "/api";
 
+export function formatErrorMessage(err) {
+  if (!err) return "Unknown error";
+  if (typeof err === "string") return err;
+  if (Array.isArray(err)) {
+    return err
+      .map((item) => formatErrorMessage(item))
+      .filter(Boolean)
+      .join("; ");
+  }
+  if (typeof err === "object") {
+    // If it's a standard Error object with a clean message
+    if (err instanceof Error && err.message && err.message !== "[object Object]") {
+      return err.message;
+    }
+    // If it's FastAPI validation error object: { loc: [...], msg: "...", type: "..." }
+    if (err.msg || err.message) {
+      const loc = Array.isArray(err.loc)
+        ? err.loc.filter((l) => l !== "body").join(" ")
+        : "";
+      const msg = err.msg || err.message;
+      return loc ? `${loc}: ${msg}` : msg;
+    }
+    if (err.detail !== undefined) {
+      return formatErrorMessage(err.detail);
+    }
+    try {
+      const json = JSON.stringify(err);
+      if (json && json !== "{}") return json;
+    } catch {
+      // ignore
+    }
+  }
+  return String(err);
+}
+
 async function request(path, options = {}) {
   const url = `${BASE_URL}${path}`;
   const headers = {
@@ -16,7 +51,15 @@ async function request(path, options = {}) {
     let errorDetail = `Request failed: ${response.status} ${response.statusText}`;
     try {
       const errJson = await response.json();
-      if (errJson.detail) errorDetail = errJson.detail;
+      if (errJson) {
+        if (errJson.detail !== undefined) {
+          errorDetail = formatErrorMessage(errJson.detail);
+        } else if (errJson.message) {
+          errorDetail = formatErrorMessage(errJson.message);
+        } else if (errJson.error) {
+          errorDetail = formatErrorMessage(errJson.error);
+        }
+      }
     } catch {
       // ignore
     }
