@@ -7,11 +7,25 @@ Supported providers:
   - anthropic
   - openai
   - none (offline mode: reads from backend/data/cache/<hash>.json)
+
+Cache-key stability guarantee
+------------------------------
+The cache key must be identical whether the app runs locally or in a Docker
+container that starts with a fresh database (and therefore different SQLite
+auto-increment IDs).  To achieve this:
+
+  1. CRLF → LF normalisation on both system and user prompts.
+  2. ``[Chunk ID: <digits>]`` tokens are replaced with ``[Para <digits>]``
+     (the caller in verify.py now uses sequential 0-based paragraph indices,
+     not database row IDs).
+  3. In ``none`` mode the model name is *not* part of the key so a different
+     ``LLM_MODEL`` env var on Render does not cause cache misses.
 """
 from __future__ import annotations
 
 import hashlib
 import json
+import logging
 import os
 import re
 import time
@@ -32,6 +46,8 @@ load_dotenv()
 CACHE_DIR = Path(__file__).parent.parent / "data" / "cache"
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
+logger = logging.getLogger(__name__)
+
 # Fake provider hook for unit tests
 _fake_provider: Optional[Callable[[str, str, Optional[dict]], dict]] = None
 
@@ -42,9 +58,38 @@ def set_fake_provider(fn: Optional[Callable[[str, str, Optional[dict]], dict]]) 
     _fake_provider = fn
 
 
-def get_cache_key(model: str, system: str, user: str) -> str:
-    """Deterministic hash key of (model, system, user)."""
-    payload = f"{model}|{system}|{user}".encode("utf-8")
+def _normalize_prompt(text: str) -> str:
+    """Normalise line endings and strip trailing whitespace so the key is
+    stable across Windows (CRLF) and Linux (LF) environments."""
+    return re.sub(r"\r\n|\r", "\n", text).strip()
+
+
+def get_cache_key(model: str, system: str, user: str, *, offline: bool = False) -> str:
+    """Return a stable SHA-256 cache key.
+
+    When *offline* is True (LLM_PROVIDER=none) the model name is excluded so
+    that different ``LLM_MODEL`` values on Render produce the same key.
+
+    Both prompts are CRLF-normalised before hashing.
+    """
+    s = _normalize_prompt(system)
+    u = _normalize_prompt(user)
+    if offline:
+        payload = f"{s}|{u}".encode("utf-8")
+    else:
+        payload = f"{model}|{s}|{u}".encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+
+def _offline_cache_key(system: str, user: str) -> str:
+    """Model-agnostic key — used both when writing (live call) and reading (none mode).
+
+    Writing a second file with this key after every live call ensures the cache
+    is readable in production even when LLM_MODEL differs from the local value.
+    """
+    s = _normalize_prompt(system)
+    u = _normalize_prompt(user)
+    payload = f"{s}|{u}".encode("utf-8")
     return hashlib.sha256(payload).hexdigest()
 
 
@@ -82,6 +127,9 @@ def complete_json(
     Send prompt to configured LLM and return parsed JSON dict.
     In 'none' mode, reads exclusively from disk cache.
     Caches every successful real response to backend/data/cache/<hash>.json.
+
+    Cache-key stability: prompts are CRLF-normalised; in none mode the model
+    name is excluded so differing LLM_MODEL values on Render don't cause misses.
     """
     # 0. Test mock override
     if _fake_provider is not None:
@@ -92,15 +140,28 @@ def complete_json(
     api_key = os.getenv("LLM_API_KEY", "")
     daily_limit = int(os.getenv("LLM_DAILY_CALL_LIMIT", "50"))
 
-    cache_key = get_cache_key(model, system, user)
-    cache_file = CACHE_DIR / f"{cache_key}.json"
+    # Offline key: model-agnostic + CRLF-normalised (stable across environments)
+    offline_key = _offline_cache_key(system, user)
+    offline_file = CACHE_DIR / f"{offline_key}.json"
 
-    # 1. Offline "none" mode
+    # Live key: includes model (for backward compat with existing cache files)
+    live_key = get_cache_key(model, system, user, offline=False)
+    live_file = CACHE_DIR / f"{live_key}.json"
+
+    # 1. Offline "none" mode — try offline key first, then live key as fallback
     if provider == "none":
-        if cache_file.exists():
-            return json.loads(cache_file.read_text(encoding="utf-8"))
+        if offline_file.exists():
+            logger.debug("cache HIT (offline-key) key=%s", offline_key[:16])
+            return json.loads(offline_file.read_text(encoding="utf-8"))
+        if live_file.exists():
+            logger.debug("cache HIT (live-key fallback) key=%s", live_key[:16])
+            return json.loads(live_file.read_text(encoding="utf-8"))
+        logger.warning(
+            "cache MISS offline_key=%s live_key=%s  prompt_prefix=%.120s",
+            offline_key[:16], live_key[:16], user[:120],
+        )
         raise RuntimeError(
-            f"LLM_PROVIDER=none and cache missing for key {cache_key}. "
+            f"LLM_PROVIDER=none and cache missing for key {offline_key}. "
             "Run with a live provider first to populate the cache."
         )
 
@@ -110,19 +171,21 @@ def complete_json(
         current_calls = _get_daily_call_count(session, today_str)
 
     if current_calls >= daily_limit:
-        if cache_file.exists():
-            return json.loads(cache_file.read_text(encoding="utf-8"))
+        for f in (offline_file, live_file):
+            if f.exists():
+                return json.loads(f.read_text(encoding="utf-8"))
         raise RuntimeError(
             f"Daily LLM call limit ({daily_limit}) reached for {today_str}. "
-            f"No cache entry found for key {cache_key}."
+            f"No cache entry found for key {offline_key}."
         )
 
     # 3. If already cached, return immediately
-    if cache_file.exists():
-        try:
-            return json.loads(cache_file.read_text(encoding="utf-8"))
-        except Exception:
-            pass
+    for f in (offline_file, live_file):
+        if f.exists():
+            try:
+                return json.loads(f.read_text(encoding="utf-8"))
+            except Exception:
+                pass
 
     # 4. Execute with retries (max 2 retries = 3 attempts total)
     max_retries = 2
@@ -134,9 +197,11 @@ def complete_json(
             cleaned = _clean_json_text(raw_text)
             parsed = json.loads(cleaned)
 
-            # Record call & save to cache
+            # Record call & save BOTH keys so production (none mode) can find it
             _record_call(model)
-            cache_file.write_text(json.dumps(parsed, indent=2), encoding="utf-8")
+            json_text = json.dumps(parsed, indent=2)
+            offline_file.write_text(json_text, encoding="utf-8")
+            live_file.write_text(json_text, encoding="utf-8")
             return parsed
 
         except (httpx.TimeoutException, httpx.HTTPStatusError, json.JSONDecodeError, KeyError) as e:

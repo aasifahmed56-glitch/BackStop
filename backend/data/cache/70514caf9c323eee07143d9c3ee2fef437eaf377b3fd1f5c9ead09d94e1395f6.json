@@ -1,0 +1,26 @@
+[
+  {
+    "type": "decision",
+    "quote": "Payments migration postponed (see issue #31).",
+    "chunk_id": "8945",
+    "conflict": false
+  },
+  {
+    "type": "reason",
+    "quote": "push notification keys still blocked.",
+    "chunk_id": "8945",
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "quote": "Riya handling.",
+    "chunk_id": "8945",
+    "conflict": false
+  },
+  {
+    "type": "blocker",
+    "quote": "push notification keys still blocked.",
+    "chunk_id": "8945",
+    "conflict": false
+  }
+]

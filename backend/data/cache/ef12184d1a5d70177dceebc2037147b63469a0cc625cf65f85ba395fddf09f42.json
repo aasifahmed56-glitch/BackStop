@@ -1,0 +1,13 @@
+[
+  {
+    "type": "decision",
+    "quote": "Contract renewal due: 30 Sep 2026.",
+    "chunk_id": "797",
+    "reason": null,
+    "owner": null,
+    "blocker": null,
+    "dependency": null,
+    "open_question": null,
+    "conflict": false
+  }
+]

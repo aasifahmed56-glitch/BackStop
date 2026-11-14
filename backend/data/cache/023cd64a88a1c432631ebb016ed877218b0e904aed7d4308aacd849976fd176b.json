@@ -1,0 +1,38 @@
+[
+  {
+    "type": "decision",
+    "quote": "Payments migration postponed (see issue #31).",
+    "chunk_id": "9372",
+    "conflict": false
+  },
+  {
+    "type": "reason",
+    "quote": "Payments migration postponed (see issue #31).",
+    "chunk_id": "9372",
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "quote": "Riya handling.",
+    "chunk_id": "9372",
+    "conflict": false
+  },
+  {
+    "type": "blocker",
+    "quote": "push notification keys still blocked.",
+    "chunk_id": "9372",
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "quote": "[Riya] Complete deploy runbook before 15 Mar.",
+    "chunk_id": "9374",
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "quote": "[Dev] Identify who takes over deploy after Riya.",
+    "chunk_id": "9374",
+    "conflict": false
+  }
+]

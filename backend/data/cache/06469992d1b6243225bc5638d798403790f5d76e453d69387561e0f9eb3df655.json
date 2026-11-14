@@ -1,0 +1,26 @@
+[
+  {
+    "type": "decision",
+    "quote": "Deploy: Dockerfile and CI pipeline in place.",
+    "chunk_id": "811",
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "quote": "Meena",
+    "chunk_id": "813",
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "quote": "Riya",
+    "chunk_id": "813",
+    "conflict": false
+  },
+  {
+    "type": "blocker",
+    "quote": "Deploy pipeline is non-trivial \u2014 I'll document it once things stabilise.",
+    "chunk_id": "812",
+    "conflict": false
+  }
+]

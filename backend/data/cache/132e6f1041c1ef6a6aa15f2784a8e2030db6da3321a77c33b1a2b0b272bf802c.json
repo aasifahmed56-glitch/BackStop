@@ -1,0 +1,79 @@
+[
+  {
+    "type": "decision",
+    "quote": "Migration to v3 SDK planned.",
+    "reason": null,
+    "owner": null,
+    "blocker": null,
+    "dependency": null,
+    "open_question": null,
+    "conflict": false,
+    "chunk_id": "8933"
+  },
+  {
+    "type": "decision",
+    "quote": "Production deploy planned for 1 Apr.",
+    "reason": null,
+    "owner": null,
+    "blocker": null,
+    "dependency": null,
+    "open_question": null,
+    "conflict": false,
+    "chunk_id": "8933"
+  },
+  {
+    "type": "decision",
+    "quote": "Document everything \u2014 I want handover-ready docs by March.",
+    "reason": null,
+    "owner": null,
+    "blocker": null,
+    "dependency": null,
+    "open_question": null,
+    "conflict": false,
+    "chunk_id": "8934"
+  },
+  {
+    "type": "decision",
+    "quote": "[Riya] Write deploy runbook.",
+    "reason": null,
+    "owner": "Riya",
+    "blocker": null,
+    "dependency": null,
+    "open_question": null,
+    "conflict": false,
+    "chunk_id": "8936"
+  },
+  {
+    "type": "decision",
+    "quote": "[Meena] Resolve FCM key access.",
+    "reason": null,
+    "owner": "Meena",
+    "blocker": null,
+    "dependency": null,
+    "open_question": null,
+    "conflict": false,
+    "chunk_id": "8936"
+  },
+  {
+    "type": "blocker",
+    "quote": "Deploy process is only fully known to Riya.",
+    "reason": null,
+    "owner": null,
+    "blocker": "Deploy process is only fully known to Riya.",
+    "dependency": null,
+    "open_question": null,
+    "conflict": false,
+    "chunk_id": "8935"
+  },
+  {
+    "type": "blocker",
+    "quote": "Push notification keys: no one has FCM console access.",
+    "reason": null,
+    "owner": null,
+    "blocker": "no one has FCM console access",
+    "dependency": null,
+    "open_question": null,
+    "conflict": false,
+    "chunk_id": "8935"
+  }
+]

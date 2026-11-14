@@ -1,0 +1,32 @@
+[
+  {
+    "type": "decision",
+    "quote": "Going with JWT \u2014 sessions had issues in demo.",
+    "chunk_id": "594",
+    "conflict": false
+  },
+  {
+    "type": "decision",
+    "quote": "Going with Stripe for now \u2014 better docs.",
+    "chunk_id": "598",
+    "conflict": false
+  },
+  {
+    "type": "decision",
+    "quote": "Websockets broke on campus wifi in testing \u2014 reverting to polling.",
+    "chunk_id": "606",
+    "conflict": false
+  },
+  {
+    "type": "blocker",
+    "quote": "FCM server key needs to be configured. Blocked on key provisioning.",
+    "chunk_id": "633",
+    "conflict": false
+  },
+  {
+    "type": "blocker",
+    "quote": "No one has access to the FCM console. This is blocked.",
+    "chunk_id": "634",
+    "conflict": false
+  }
+]

@@ -1,0 +1,14 @@
+[
+  {
+    "type": "decision",
+    "quote": "Use PostgreSQL for production, SQLite for dev/test.",
+    "chunk_id": "9346",
+    "conflict": false
+  },
+  {
+    "type": "decision",
+    "quote": "Follow trunk-based development (short-lived branches).",
+    "chunk_id": "9346",
+    "conflict": false
+  }
+]

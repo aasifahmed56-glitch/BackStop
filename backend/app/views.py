@@ -291,10 +291,22 @@ def reset_sample_project(session: Session = Depends(get_session)):
     # Run extraction (uses cache if offline)
     extract_res = run_extraction_and_verification(project.id, session)
 
+    # Count final claims by kind
+    from app.models import ClaimKind
+    final_claims = session.exec(select(Claim).where(Claim.project_id == project.id)).all()
+    derived_count = sum(1 for c in final_claims if c.kind == ClaimKind.derived)
+    interpreted_count = sum(1 for c in final_claims if c.kind == ClaimKind.interpreted)
+    print(f"[Reset Sample] Claims created: derived={derived_count}, interpreted={interpreted_count}, total={len(final_claims)}")
+
     return {
         "ok": True,
         "message": "Sample project reset successfully.",
         "project_id": project.id,
+        "claims_by_kind": {
+            "derived": derived_count,
+            "interpreted": interpreted_count,
+            "total": len(final_claims),
+        },
         "ingest_summary": summary,
         "derived_breakdown": derive_res.get("breakdown"),
         "extract_stats": extract_res,

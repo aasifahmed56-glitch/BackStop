@@ -1,0 +1,264 @@
+{
+  "decisions": [],
+  "reasons": [
+    {
+      "quote": "Riya to document the full deploy process before departure.",
+      "chunk_id": 9219
+    },
+    {
+      "quote": "Postponed. See issue #31.",
+      "chunk_id": 9220
+    }
+  ],
+  "owners": [
+    {
+      "quote": "owner: Dev",
+      "chunk_id": 9180
+    },
+    {
+      "quote": "owner: Riya",
+      "chunk_id": 9181
+    },
+    {
+      "quote": "owner: Dev",
+      "chunk_id": 9182
+    },
+    {
+      "quote": "owner: Riya",
+      "chunk_id": 9183
+    },
+    {
+      "quote": "owner: Dev",
+      "chunk_id": 9184
+    },
+    {
+      "quote": "owner: Sara",
+      "chunk_id": 9185
+    },
+    {
+      "quote": "owner: Riya",
+      "chunk_id": 9186
+    },
+    {
+      "quote": "owner: Meena",
+      "chunk_id": 9187
+    },
+    {
+      "quote": "owner: Riya",
+      "chunk_id": 9188
+    },
+    {
+      "quote": "owner: Dev",
+      "chunk_id": 9189
+    },
+    {
+      "quote": "owner: Sara",
+      "chunk_id": 9190
+    },
+    {
+      "quote": "owner: Kabir",
+      "chunk_id": 9191
+    },
+    {
+      "quote": "owner: Sara",
+      "chunk_id": 9192
+    },
+    {
+      "quote": "owner: Riya",
+      "chunk_id": 9193
+    },
+    {
+      "quote": "owner: Kabir",
+      "chunk_id": 9194
+    },
+    {
+      "quote": "owner: Riya",
+      "chunk_id": 9195
+    },
+    {
+      "quote": "owner: Dev",
+      "chunk_id": 9196
+    },
+    {
+      "quote": "owner: Kabir",
+      "chunk_id": 9197
+    },
+    {
+      "quote": "owner: Meena",
+      "chunk_id": 9198
+    },
+    {
+      "quote": "owner: Sara",
+      "chunk_id": 9199
+    },
+    {
+      "quote": "owner: Riya",
+      "chunk_id": 9200
+    },
+    {
+      "quote": "owner: Meena",
+      "chunk_id": 9201
+    },
+    {
+      "quote": "owner: Dev",
+      "chunk_id": 9202
+    },
+    {
+      "quote": "owner: Riya",
+      "chunk_id": 9203
+    },
+    {
+      "quote": "owner: Kabir",
+      "chunk_id": 9204
+    },
+    {
+      "quote": "owner: Riya",
+      "chunk_id": 9205
+    },
+    {
+      "quote": "owner: Riya",
+      "chunk_id": 9206
+    },
+    {
+      "quote": "owner: Sara",
+      "chunk_id": 9207
+    },
+    {
+      "quote": "owner: Kabir",
+      "chunk_id": 9208
+    },
+    {
+      "quote": "owner: Riya",
+      "chunk_id": 9209
+    },
+    {
+      "quote": "owner: Riya",
+      "chunk_id": 9211
+    },
+    {
+      "quote": "owner: Dev",
+      "chunk_id": 9212
+    },
+    {
+      "quote": "owner: Dev",
+      "chunk_id": 9213
+    },
+    {
+      "quote": "owner: Kabir",
+      "chunk_id": 9214
+    },
+    {
+      "quote": "owner: Meena",
+      "chunk_id": 9215
+    },
+    {
+      "quote": "owner: Riya",
+      "chunk_id": 9216
+    },
+    {
+      "quote": "owner: Dev",
+      "chunk_id": 9217
+    },
+    {
+      "quote": "owner: Sara",
+      "chunk_id": 9218
+    },
+    {
+      "quote": "owner: Riya",
+      "chunk_id": 9219
+    },
+    {
+      "quote": "owner: Riya",
+      "chunk_id": 9220
+    },
+    {
+      "quote": "owner: Meena",
+      "chunk_id": 9221
+    },
+    {
+      "quote": "owner: Dev",
+      "chunk_id": 9222
+    },
+    {
+      "quote": "owner: Riya",
+      "chunk_id": 9223
+    },
+    {
+      "quote": "owner: Sara",
+      "chunk_id": 9224
+    },
+    {
+      "quote": "owner: Riya",
+      "chunk_id": 9225
+    },
+    {
+      "quote": "owner: Kabir",
+      "chunk_id": 9226
+    },
+    {
+      "quote": "owner: Meena",
+      "chunk_id": 9227
+    },
+    {
+      "quote": "owner: Dev",
+      "chunk_id": 9228
+    },
+    {
+      "quote": "owner: Kabir",
+      "chunk_id": 9229
+    },
+    {
+      "quote": "owner: Riya",
+      "chunk_id": 9230
+    },
+    {
+      "quote": "owner: Sara",
+      "chunk_id": 9231
+    },
+    {
+      "quote": "owner: Kabir",
+      "chunk_id": 9232
+    },
+    {
+      "quote": "owner: Dev",
+      "chunk_id": 9233
+    },
+    {
+      "quote": "owner: Riya",
+      "chunk_id": 9234
+    },
+    {
+      "quote": "owner: Meena",
+      "chunk_id": 9235
+    },
+    {
+      "quote": "owner: Riya",
+      "chunk_id": 9236
+    },
+    {
+      "quote": "owner: Sara",
+      "chunk_id": 9237
+    },
+    {
+      "quote": "owner: Kabir",
+      "chunk_id": 9238
+    },
+    {
+      "quote": "owner: Dev",
+      "chunk_id": 9239
+    }
+  ],
+  "blockers": [
+    {
+      "quote": "No owner assigned. FCM console access unclear. BLOCKED.",
+      "chunk_id": 9210
+    }
+  ],
+  "dependencies": [
+    {
+      "quote": "See issue #31.",
+      "chunk_id": 9220
+    }
+  ],
+  "open_questions": []
+}

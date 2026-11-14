@@ -7,6 +7,7 @@ Serves:
 """
 from __future__ import annotations
 
+import logging
 import os
 import sys
 import time
@@ -95,24 +96,41 @@ app.add_middleware(
 # ---------------------------------------------------------------------------
 
 def _seed_sample_if_needed() -> None:
-    """Seed sample project on startup so first screen works instantly."""
+    """Seed sample project on startup so first screen works instantly.
+
+    On a fresh database (Docker / Render) there are no projects, so we do a
+    full ingest + derive + extract.  On a warm restart (project exists and has
+    claims) we skip to avoid duplicate inserts.
+    """
+    import logging as _logging
+    _log = _logging.getLogger(__name__)
+
     from sqlmodel import Session, select
     from app.db import engine
-    from app.models import Project, Claim
+    from app.models import Project, Claim, ClaimKind
     from app.ingest import _ingest_all, _load_manifest
     from app.derived import derive_claims
     from app.verify import run_extraction_and_verification
 
     with Session(engine) as session:
         proj = session.get(Project, 1)
-        claims = session.exec(select(Claim).where(Claim.project_id == 1)).all() if proj else []
-        if proj and len(claims) > 0:
-            return
+        if proj:
+            claims = session.exec(select(Claim).where(Claim.project_id == 1)).all()
+            derived_count = sum(1 for c in claims if c.kind == ClaimKind.derived)
+            interp_count = sum(1 for c in claims if c.kind == ClaimKind.interpreted)
+            _log.info(
+                "startup: project exists — derived=%d interpreted=%d total=%d",
+                derived_count, interp_count, len(claims),
+            )
+            if len(claims) > 0:
+                return
 
         sample_dir = Path(__file__).parent.parent / "data" / "sample"
         if not sample_dir.exists():
+            _log.warning("startup: sample directory not found at %s — skipping seed", sample_dir)
             return
 
+        _log.info("startup: seeding sample project …")
         manifest = _load_manifest(sample_dir)
         if not proj:
             proj = Project(
@@ -127,17 +145,29 @@ def _seed_sample_if_needed() -> None:
         _ingest_all(session, proj, sample_dir, manifest)
         session.commit()
 
-        derive_claims(project_id=1, session=session)
+        derive_result = derive_claims(project_id=1, session=session)
+        derived_n = derive_result.get("claims_created", "?") if isinstance(derive_result, dict) else "?"
+        _log.info("startup: derived claims created=%s", derived_n)
 
         # Extract LLM claims from cache
         try:
-            run_extraction_and_verification(project_id=1, session=session)
-        except Exception:
-            pass
+            extract_result = run_extraction_and_verification(project_id=1, session=session)
+            _log.info(
+                "startup: extracted claims verified=%s inferred=%s missing=%s",
+                extract_result.get("verified", "?"),
+                extract_result.get("inferred", "?"),
+                extract_result.get("missing", "?"),
+            )
+        except Exception as exc:
+            _log.warning("startup: LLM extraction failed (non-fatal): %s", exc)
 
 
 @app.on_event("startup")
 def on_startup() -> None:
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s %(levelname)s %(name)s %(message)s",
+    )
     create_db_and_tables()
     _seed_sample_if_needed()
 

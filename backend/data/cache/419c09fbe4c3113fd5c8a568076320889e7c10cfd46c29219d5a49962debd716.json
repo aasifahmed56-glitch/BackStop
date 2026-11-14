@@ -1,0 +1,56 @@
+[
+  {
+    "type": "decision",
+    "quote": "JWT is the auth mechanism.",
+    "chunk_id": "8962",
+    "conflict": false
+  },
+  {
+    "type": "decision",
+    "quote": "Sessions were rejected due to load failures in the Oct demo.",
+    "chunk_id": "8962",
+    "conflict": false
+  },
+  {
+    "type": "decision",
+    "quote": "Migration to v3 is planned but postponed.",
+    "chunk_id": "8963",
+    "conflict": false
+  },
+  {
+    "type": "reason",
+    "quote": "Sessions were rejected due to load failures in the Oct demo.",
+    "chunk_id": "8962",
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "quote": "Remaining: GDPR deletion endpoint (hand to Meena).",
+    "chunk_id": "8962",
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "quote": "Kabir has context on the gateway.",
+    "chunk_id": "8963",
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "quote": "Dev: please read the nginx and docker-compose configs carefully.",
+    "chunk_id": "8964",
+    "conflict": false
+  },
+  {
+    "type": "blocker",
+    "quote": "Push notification setup is fully blocked.",
+    "chunk_id": "8967",
+    "conflict": false
+  },
+  {
+    "type": "blocker",
+    "quote": "FCM push key is unresolved \u2014 nobody has console access.",
+    "chunk_id": "8965",
+    "conflict": false
+  }
+]

@@ -1,0 +1,50 @@
+[
+  {
+    "decisions": [
+      {
+        "quote": "Payment gateway research done. Stripe wins.",
+        "chunk_id": "8823"
+      }
+    ],
+    "reasons": [],
+    "owners": [],
+    "blockers": [],
+    "dependencies": [],
+    "open_questions": []
+  },
+  {
+    "decisions": [
+      {
+        "quote": "Understood. Polling it is.",
+        "chunk_id": "8848"
+      }
+    ],
+    "reasons": [
+      {
+        "quote": "Websockets broke on campus wifi during testing. Reverting to polling.",
+        "chunk_id": "8846"
+      },
+      {
+        "quote": "Yeah, websockets need persistent connections \u2014 campus wifi drops them. Polling is safer.",
+        "chunk_id": "8847"
+      }
+    ],
+    "owners": [],
+    "blockers": [],
+    "dependencies": [],
+    "open_questions": []
+  },
+  {
+    "decisions": [],
+    "reasons": [],
+    "owners": [],
+    "blockers": [],
+    "dependencies": [],
+    "open_questions": [
+      {
+        "quote": "Quick question \u2014 why JWT and not server sessions?",
+        "chunk_id": "8831"
+      }
+    ]
+  }
+]

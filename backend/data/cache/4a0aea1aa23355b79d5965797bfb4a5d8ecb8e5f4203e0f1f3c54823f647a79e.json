@@ -1,0 +1,68 @@
+[
+  {
+    "type": "decision",
+    "quote": "Deploy: Dev will own after 15 Mar.",
+    "chunk_id": "9383",
+    "owner": "Dev",
+    "reason": null,
+    "blockers": null,
+    "dependencies": null,
+    "open_questions": null,
+    "conflict": false
+  },
+  {
+    "type": "decision",
+    "quote": "Kabir Own payments migration in April sprint.",
+    "chunk_id": "9385",
+    "owner": "Kabir",
+    "reason": null,
+    "blockers": null,
+    "dependencies": null,
+    "open_questions": null,
+    "conflict": false
+  },
+  {
+    "type": "reason",
+    "quote": "Migration blocked on testing.",
+    "chunk_id": "9383",
+    "owner": null,
+    "reason": "testing",
+    "blockers": null,
+    "dependencies": null,
+    "open_questions": null,
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "quote": "Dev will own after 15 Mar.",
+    "chunk_id": "9383",
+    "owner": "Dev",
+    "reason": null,
+    "blockers": null,
+    "dependencies": null,
+    "open_questions": null,
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "quote": "Push notification keys: still no owner.",
+    "chunk_id": "9384",
+    "owner": null,
+    "reason": null,
+    "blockers": null,
+    "dependencies": null,
+    "open_questions": null,
+    "conflict": false
+  },
+  {
+    "type": "blocker",
+    "quote": "Migration blocked on testing.",
+    "chunk_id": "9383",
+    "owner": null,
+    "reason": null,
+    "blockers": "testing",
+    "dependencies": null,
+    "open_questions": null,
+    "conflict": false
+  }
+]

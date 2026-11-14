@@ -1,0 +1,32 @@
+[
+  {
+    "decision": null,
+    "reason": null,
+    "owner": null,
+    "blockers": "No owner assigned. FCM console access unclear. BLOCKED.",
+    "dependencies": null,
+    "open questions": null,
+    "chunk_id": "8783",
+    "conflict": false
+  },
+  {
+    "decision": null,
+    "reason": "Riya to document the full deploy process before departure.",
+    "owner": null,
+    "blockers": null,
+    "dependencies": null,
+    "open questions": null,
+    "chunk_id": "8792",
+    "conflict": false
+  },
+  {
+    "decision": null,
+    "reason": null,
+    "owner": null,
+    "blockers": "Postponed. See issue #31.",
+    "dependencies": null,
+    "open questions": null,
+    "chunk_id": "8793",
+    "conflict": false
+  }
+]

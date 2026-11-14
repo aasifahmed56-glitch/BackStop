@@ -1,0 +1,68 @@
+[
+  {
+    "type": "decision",
+    "quote": "Focus on a stable MVP by February.",
+    "chunk_id": "9341",
+    "conflict": false
+  },
+  {
+    "type": "decision",
+    "quote": "Auth: Riya (backend lead)",
+    "chunk_id": "9341",
+    "conflict": false
+  },
+  {
+    "type": "decision",
+    "quote": "Payments: Riya + Kabir",
+    "chunk_id": "9341",
+    "conflict": false
+  },
+  {
+    "type": "decision",
+    "quote": "Notifications: Meena",
+    "chunk_id": "9341",
+    "conflict": false
+  },
+  {
+    "type": "decision",
+    "quote": "Events API: Dev",
+    "chunk_id": "9341",
+    "conflict": false
+  },
+  {
+    "type": "decision",
+    "quote": "Web UI: Sara + Meena",
+    "chunk_id": "9341",
+    "conflict": false
+  },
+  {
+    "type": "decision",
+    "quote": "Deploy: Riya",
+    "chunk_id": "9341",
+    "conflict": false
+  },
+  {
+    "type": "decision",
+    "quote": "Docs: Dev + Kabir",
+    "chunk_id": "9341",
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "quote": "Riya",
+    "chunk_id": "9342",
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "quote": "Dev",
+    "chunk_id": "9342",
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "quote": "Sara",
+    "chunk_id": "9342",
+    "conflict": false
+  }
+]

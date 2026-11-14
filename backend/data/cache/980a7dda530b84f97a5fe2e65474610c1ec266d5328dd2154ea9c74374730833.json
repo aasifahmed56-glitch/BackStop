@@ -1,0 +1,72 @@
+{
+  "decisions": [
+    {
+      "quote": "Going with JWT \u2014 sessions had issues in demo.",
+      "chunk_id": "9133",
+      "conflict": false
+    },
+    {
+      "quote": "Going with Stripe for now \u2014 better docs.",
+      "chunk_id": "9137",
+      "conflict": false
+    },
+    {
+      "quote": "Websockets broke on campus wifi in testing \u2014 reverting to polling.",
+      "chunk_id": "9145",
+      "conflict": false
+    },
+    {
+      "quote": "Confirmed. Polling is more reliable here.",
+      "chunk_id": "9146",
+      "conflict": false
+    }
+  ],
+  "reasons": [
+    {
+      "quote": "sessions had issues in demo.",
+      "chunk_id": "9133",
+      "conflict": false
+    },
+    {
+      "quote": "better docs.",
+      "chunk_id": "9137",
+      "conflict": false
+    },
+    {
+      "quote": "Websockets broke on campus wifi in testing",
+      "chunk_id": "9145",
+      "conflict": false
+    },
+    {
+      "quote": "Polling is more reliable here.",
+      "chunk_id": "9146",
+      "conflict": false
+    }
+  ],
+  "owners": [
+    {
+      "quote": "Riya to lead.",
+      "chunk_id": "9132",
+      "conflict": false
+    },
+    {
+      "quote": "Riya to evaluate Stripe vs Razorpay.",
+      "chunk_id": "9136",
+      "conflict": false
+    }
+  ],
+  "blockers": [
+    {
+      "quote": "Blocked on key provisioning.",
+      "chunk_id": "9172",
+      "conflict": false
+    },
+    {
+      "quote": "No one has access to the FCM console. This is blocked.",
+      "chunk_id": "9173",
+      "conflict": false
+    }
+  ],
+  "dependencies": [],
+  "open_questions": []
+}

@@ -1,0 +1,50 @@
+[
+  {
+    "type": "decision",
+    "quote": "Dev will own after 15 Mar.",
+    "chunk_id": "8956",
+    "conflict": false
+  },
+  {
+    "type": "reason",
+    "quote": "Migration blocked on testing.",
+    "chunk_id": "8956",
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "quote": "Dev will own after 15 Mar.",
+    "chunk_id": "8956",
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "quote": "[Kabir] Own payments migration in April sprint.",
+    "chunk_id": "8958",
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "quote": "Push notification keys: still no owner.",
+    "chunk_id": "8957",
+    "conflict": false
+  },
+  {
+    "type": "blocker",
+    "quote": "Migration blocked on testing.",
+    "chunk_id": "8956",
+    "conflict": false
+  },
+  {
+    "type": "dependency",
+    "quote": "Payments migration: needs re-scoping.",
+    "chunk_id": "8957",
+    "conflict": false
+  },
+  {
+    "type": "open_question",
+    "quote": "Push notification keys: still no owner.",
+    "chunk_id": "8957",
+    "conflict": false
+  }
+]

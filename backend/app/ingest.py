@@ -72,6 +72,24 @@ def load_sample(session: Session = Depends(get_session)):
         session.add(project)
         session.flush()
     else:
+        # Wipe ALL existing claim versions, claims, audit logs, and sources
+        # so repeated loads never accumulate duplicates.
+        from app.models import Claim, ClaimVersion, AuditLog
+        versions = session.exec(select(ClaimVersion)).all()
+        for v in versions:
+            session.delete(v)
+        old_claims = session.exec(
+            select(Claim).where(Claim.project_id == project.id)
+        ).all()
+        for cl in old_claims:
+            session.delete(cl)
+        logs = session.exec(
+            select(AuditLog).where(AuditLog.project_id == project.id)
+        ).all()
+        for l in logs:
+            session.delete(l)
+        session.flush()
+
         # Remove existing sources (cascades to chunks via DELETE below)
         existing_sources = session.exec(
             select(Source).where(Source.project_id == project.id)
@@ -99,16 +117,23 @@ def load_sample(session: Session = Depends(get_session)):
     except Exception as e:
         extract_res = {"error": str(e)}
 
+    # Count final claims by kind
+    from app.models import Claim, ClaimKind
+    final_claims = session.exec(select(Claim).where(Claim.project_id == project.id)).all()
+    derived_count = sum(1 for c in final_claims if c.kind == ClaimKind.derived)
+    interpreted_count = sum(1 for c in final_claims if c.kind == ClaimKind.interpreted)
+    print(f"[Load Sample] Claims created: derived={derived_count}, interpreted={interpreted_count}, total={len(final_claims)}")
+
     return {
         "project_id": project.id,
         "project_name": project.name,
-        "derived_claims": derive_res.get("claims_created", 0),
-        "extracted_claims": (
-            extract_res.get("verified", 0)
-            + extract_res.get("inferred", 0)
-            + extract_res.get("conflicting", 0)
-            + extract_res.get("missing", 0)
-        ) if isinstance(extract_res, dict) else 0,
+        "derived_claims": derived_count,
+        "extracted_claims": interpreted_count,
+        "claims_by_kind": {
+            "derived": derived_count,
+            "interpreted": interpreted_count,
+            "total": len(final_claims),
+        },
         **summary,
     }
 

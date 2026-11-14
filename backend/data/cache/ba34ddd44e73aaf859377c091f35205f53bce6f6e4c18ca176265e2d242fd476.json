@@ -1,0 +1,51 @@
+{
+  "decisions": [
+    {
+      "chunk_id": "8706",
+      "quote": "Going with JWT \u2014 sessions had issues in demo.",
+      "reason": "sessions had issues in demo."
+    },
+    {
+      "chunk_id": "8710",
+      "quote": "Going with Stripe for now \u2014 better docs.",
+      "reason": "better docs."
+    },
+    {
+      "chunk_id": "8718",
+      "quote": "Websockets broke on campus wifi in testing \u2014 reverting to polling.",
+      "reason": "Websockets broke on campus wifi in testing"
+    }
+  ],
+  "reasons": [
+    {
+      "chunk_id": "8706",
+      "quote": "sessions had issues in demo."
+    },
+    {
+      "chunk_id": "8710",
+      "quote": "better docs."
+    },
+    {
+      "chunk_id": "8718",
+      "quote": "Websockets broke on campus wifi in testing"
+    }
+  ],
+  "owners": [
+    {
+      "chunk_id": "8705",
+      "quote": "Riya to lead."
+    },
+    {
+      "chunk_id": "8709",
+      "quote": "Riya to evaluate Stripe vs Razorpay."
+    }
+  ],
+  "blockers": [
+    {
+      "chunk_id": "8745",
+      "quote": "Blocked on key provisioning."
+    }
+  ],
+  "dependencies": [],
+  "open_questions": []
+}

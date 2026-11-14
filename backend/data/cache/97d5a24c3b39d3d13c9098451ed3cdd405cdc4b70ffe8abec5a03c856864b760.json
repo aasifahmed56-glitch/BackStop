@@ -1,0 +1,38 @@
+[
+  {
+    "type": "decision",
+    "quote": "Remove test keys from config before go-live.",
+    "chunk_id": "816",
+    "conflict": false
+  },
+  {
+    "type": "reason",
+    "quote": "idempotency keys are essential for payment retries.",
+    "chunk_id": "816",
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "quote": "Kabir",
+    "chunk_id": "816",
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "quote": "Riya",
+    "chunk_id": "818",
+    "conflict": false
+  },
+  {
+    "type": "owner",
+    "quote": "Kabir",
+    "chunk_id": "818",
+    "conflict": false
+  },
+  {
+    "type": "blocker",
+    "quote": "If test key leaks to production there will be issues. Remove immediately.",
+    "chunk_id": "817",
+    "conflict": false
+  }
+]
