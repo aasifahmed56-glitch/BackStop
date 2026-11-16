@@ -210,6 +210,10 @@ def approve_claim(
         session.commit()
         raise HTTPException(403, "Access denied: claim level exceeds role.")
 
+    # A conflict needs a human decision, not a click: require a resolution note.
+    if claim.status == ClaimStatus.conflicting and not (req.note or "").strip():
+        raise HTTPException(422, "This claim is Conflicting. Add a note saying which source is current before approving.")
+
     # Version snapshot
     _save_version(session, claim, req.role.value, req.note)
 

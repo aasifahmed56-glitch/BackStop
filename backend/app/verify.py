@@ -15,6 +15,7 @@ Workflow:
 from __future__ import annotations
 
 import json
+from pathlib import Path
 import re
 from typing import Any, Optional
 
@@ -127,13 +128,14 @@ def check_claim_support(claim_text: str, quote: str) -> dict[str, str]:
     user_prompt = f'Claim: "{claim_text}"\nQuote: "{quote}"\nDoes the quote support the claim?'
     try:
         resp = complete_json(SUPPORT_CHECK_SYSTEM_PROMPT, user_prompt)
-        supports = str(resp.get("supports", "yes")).lower().strip()
+        supports = str(resp.get("supports", "")).lower().strip()
         if supports not in ("yes", "partly", "no"):
-            supports = "yes"
+            # An unreadable answer is not evidence of support.
+            return {"supports": "unchecked", "reason": f"Unreadable support-check answer: {supports!r}"}
         return {"supports": supports, "reason": resp.get("reason", "")}
     except Exception as e:
-        # Graceful fallback: assume verified if LLM fails
-        return {"supports": "yes", "reason": f"Fallback: {e}"}
+        # Fail closed: if the check cannot run, the claim is NOT treated as supported.
+        return {"supports": "unchecked", "reason": f"Support check unavailable: {e}"}
 
 
 # ---------------------------------------------------------------------------
@@ -206,6 +208,25 @@ def normalize_extracted_items(raw_data: Any) -> list[dict]:
 # Extraction & Verification Pipeline
 # ---------------------------------------------------------------------------
 
+_SEEDED_FIXTURES_PATH = Path(__file__).resolve().parent.parent / "data" / "sample" / "seeded_claims.json"
+
+
+def _normalise_claim_text(text: str) -> str:
+    """Lower-case, drop punctuation and issue references so trivial variants match."""
+    t = text.lower()
+    t = re.sub(r"\(?(?:see|per)\s+issue\s*#\d+\)?\.?", " ", t)
+    t = re.sub(r"[^a-z0-9 ]+", " ", t)
+    return " ".join(t.split())
+
+
+def _load_seeded_fixtures() -> dict[str, list[dict]]:
+    """Hand-written demo claims keyed by sample source name (see seeded_claims.json)."""
+    if not _SEEDED_FIXTURES_PATH.exists():
+        return {}
+    data = json.loads(_SEEDED_FIXTURES_PATH.read_text(encoding="utf-8"))
+    return data.get("by_source", {})
+
+
 def run_extraction_and_verification(project_id: int, session: Session) -> dict[str, Any]:
     """
     Run extraction and verification pipeline over non-git chunks for a project.
@@ -247,7 +268,14 @@ def run_extraction_and_verification(project_id: int, session: Session) -> dict[s
         "inferred": 0,
         "conflicting": 0,
         "missing": 0,
+        "support_unchecked": 0,
+        "seeded": 0,
+        "failed_sources": [],
+        "merged_duplicates": 0,
     }
+    merged_claims: dict[tuple, Claim] = {}
+
+    seeded_fixtures = _load_seeded_fixtures()
 
     chunks_by_source: dict[int, list[Chunk]] = {}
     for c in chunks:
@@ -279,57 +307,15 @@ def run_extraction_and_verification(project_id: int, session: Session) -> dict[s
                 schema=EXTRACTION_SCHEMA,
             )
             items = normalize_extracted_items(raw_resp)
-        except Exception:
+        except Exception as exc:
+            # Never fail silently: record which source could not be analysed.
             items = []
+            stats["failed_sources"].append({"source": src.name, "error": str(exc)[:200]})
 
-        # Ensure key ground truth items from advisor-private.md and budget-confidential.md are extracted
-        if "advisor-private" in src.name:
-            has_perf = any("performance concern" in it.get("text", "").lower() for it in items)
-            if not has_perf:
-                items.insert(0, {
-                    "type": "risk",
-                    "text": "Private advisor observation: performance concern regarding contributor.",
-                    "quotes": ["There is a concern about the engagement level of one team member in recent sprints."],
-                    "conflict": False,
-                    "reason_given": True,
-                })
-            has_checkin = any("check-in" in it.get("text", "").lower() for it in items)
-            if not has_checkin:
-                items.append({
-                    "type": "decision",
-                    "text": "Please monitor the situation and consider a one-on-one check-in.",
-                    "quotes": ["Please monitor the situation and consider a one-on-one check-in."],
-                    "conflict": False,
-                    "reason_given": True,
-                })
-        elif "budget-confidential" in src.name:
-            has_vendor = any("fictionalcloud" in it.get("text", "").lower() or "1,20,000" in it.get("text", "") for it in items)
-            if not has_vendor:
-                items.insert(0, {
-                    "type": "decision",
-                    "text": "Vendor contract with FictionalCloud costs ₹1,20,000 annually.",
-                    "quotes": ["FictionalCloud Inc. | Hosting (VM + storage) | ₹1,20,000"],
-                    "conflict": False,
-                    "reason_given": True,
-                })
-            has_total = any("1,62,000" in it.get("text", "") for it in items)
-            if not has_total:
-                items.append({
-                    "type": "decision",
-                    "text": "Total estimated annual cost: ₹1,62,000",
-                    "quotes": ["Total estimated annual cost: ₹1,62,000"],
-                    "conflict": False,
-                    "reason_given": True,
-                })
-            has_renewal = any("contract renewal" in it.get("text", "").lower() for it in items)
-            if not has_renewal:
-                items.append({
-                    "type": "decision",
-                    "text": "Contract renewal due: 30 Sep 2026.",
-                    "quotes": ["Contract renewal due: 30 Sep 2026."],
-                    "conflict": False,
-                    "reason_given": True,
-                })
+        # Hand-written demo fixtures for the sample's restricted/confidential notes.
+        # They are labelled "seeded" end to end and never presented as AI output.
+        for fx in seeded_fixtures.get(src.name, []):
+            items.append({**fx, "_seeded": True})
 
         for it in items:
             it["_source_id"] = src_id
@@ -340,23 +326,20 @@ def run_extraction_and_verification(project_id: int, session: Session) -> dict[s
             #   1. If the value is a valid para index → map via para_to_chunk
             #   2. If the value is a valid DB chunk_id in chunk_map → keep
             #   3. Otherwise → fall back to quote-matching across src_chunks
-            raw_cids = it.get("chunk_ids", [])
+            # Quote-first: the chunk that actually contains the quote is the
+            # evidence. Cached chunk ids / para indices are only hints and are
+            # kept only when that chunk really contains one of the quotes, so
+            # results never depend on database row ids.
             resolved: list[int] = []
-            for cid in raw_cids:
-                if cid in para_to_chunk:
-                    # Treat as para index
-                    resolved.append(para_to_chunk[cid].id)
-                elif cid in chunk_map:
-                    # Already a valid DB id
-                    resolved.append(cid)
-                # else: stale cached DB id from a previous run — skip; quote-match below
-
-            if not resolved and it.get("quotes"):
-                for q in it["quotes"]:
-                    for chk in src_chunks:
-                        if verify_quote_in_original(q, chk.text):
-                            if chk.id not in resolved:
-                                resolved.append(chk.id)
+            quotes_for_item = it.get("quotes") or []
+            for q in quotes_for_item:
+                for chk in src_chunks:
+                    if verify_quote_in_original(q, chk.text) and chk.id not in resolved:
+                        resolved.append(chk.id)
+            if not resolved and not quotes_for_item:
+                for cid in it.get("chunk_ids", []):
+                    if cid in para_to_chunk and para_to_chunk[cid].id not in resolved:
+                        resolved.append(para_to_chunk[cid].id)
 
             it["chunk_ids"] = resolved
             extracted_items.append(it)
@@ -376,6 +359,10 @@ def run_extraction_and_verification(project_id: int, session: Session) -> dict[s
         quotes = it.get("quotes", [])
         is_conflict = bool(it.get("conflict", False))
         reason_given = bool(it.get("reason_given", True))
+
+        if not claim_text:
+            # Nothing to say: an empty claim must not become a "Regarding ''" question.
+            continue
 
         # Check for missing candidates (decision or owner with no quote or no reason given)
         if (claim_type in (ClaimType.decision, ClaimType.owner)) and (not quotes or not reason_given):
@@ -447,10 +434,22 @@ def run_extraction_and_verification(project_id: int, session: Session) -> dict[s
         access_level = strictest_access(cited_access_levels) if cited_access_levels else AccessLevel.public
 
         # 2. CONFLICT CHECK
-        if is_conflict or "conflict" in claim_text.lower() or "postponed" in claim_text.lower():
+        is_seeded = bool(it.get("_seeded"))
+        if is_seeded:
+            for ev in valid_evidence:
+                ev["origin"] = "seeded"
+
+        if is_conflict:
             stats["conflicting"] += 1
             status = ClaimStatus.conflicting
             confidence = 0.5
+        elif is_seeded:
+            # Hand-written fixture: the quote check passed, but no model judged
+            # support, so it is never shown as Verified.
+            stats["seeded"] += 1
+            stats["inferred"] += 1
+            status = ClaimStatus.inferred
+            confidence = 0.75
         else:
             # 3. SUPPORT CHECK (LLM)
             support_res = check_claim_support(claim_text, primary_quote)
@@ -459,6 +458,11 @@ def run_extraction_and_verification(project_id: int, session: Session) -> dict[s
             if sup == "no":
                 stats["rejected_by_support_check"] += 1
                 continue
+            elif sup == "unchecked":
+                stats["support_unchecked"] += 1
+                stats["inferred"] += 1
+                status = ClaimStatus.inferred
+                confidence = 0.6
             elif sup == "partly":
                 stats["inferred"] += 1
                 status = ClaimStatus.inferred
@@ -467,6 +471,21 @@ def run_extraction_and_verification(project_id: int, session: Session) -> dict[s
                 stats["verified"] += 1
                 status = ClaimStatus.verified
                 confidence = 1.0
+
+        # Merge duplicates: the same statement found in several places becomes
+        # one claim that cites every source, instead of N near-identical rows.
+        dedupe_key = (claim_type, _normalise_claim_text(claim_text))
+        existing_claim = merged_claims.get(dedupe_key)
+        if existing_claim is not None:
+            ev_list = existing_claim.evidence()
+            seen_ev = {(e.get("chunk_id"), e.get("quote")) for e in ev_list}
+            for ev in valid_evidence:
+                if (ev.get("chunk_id"), ev.get("quote")) not in seen_ev:
+                    ev_list.append(ev)
+            existing_claim.evidence_json = json.dumps(ev_list)
+            existing_claim.access_level = strictest_access([existing_claim.access_level, access_level])
+            stats["merged_duplicates"] += 1
+            continue
 
         claim_obj = Claim(
             project_id=project_id,
@@ -479,6 +498,7 @@ def run_extraction_and_verification(project_id: int, session: Session) -> dict[s
             access_level=access_level,
             review_state=ReviewState.pending,
         )
+        merged_claims[dedupe_key] = claim_obj
         session.add(claim_obj)
 
     session.commit()

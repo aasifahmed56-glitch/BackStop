@@ -1,0 +1,36 @@
+{
+  "_note": "Hand-written demo fixtures for the synthetic sample's restricted and confidential notes. They exist so the role-based views can be demonstrated even when the model extracts nothing from these notes. They pass the same exact-quote check, are labelled 'seeded' in the evidence and the UI, are never marked Verified, and are never presented as AI output.",
+  "by_source": {
+    "notes/advisor-private.md": [
+      {
+        "type": "risk",
+        "text": "Advisor raised a private performance concern about one team member's engagement in recent sprints.",
+        "quotes": [
+          "There is a concern about the engagement level of one team member in recent sprints."
+        ],
+        "conflict": false,
+        "reason_given": true
+      },
+      {
+        "type": "next_action",
+        "text": "Advisor asked the lead to monitor the situation and consider a one-on-one check-in.",
+        "quotes": [
+          "Please monitor the situation and consider a one-on-one check-in."
+        ],
+        "conflict": false,
+        "reason_given": true
+      }
+    ],
+    "notes/budget-confidential.md": [
+      {
+        "type": "dependency",
+        "text": "Hosting depends on a FictionalCloud contract costing ₹1,20,000 a year.",
+        "quotes": [
+          "FictionalCloud Inc. | Hosting (VM + storage) | ₹1,20,000"
+        ],
+        "conflict": false,
+        "reason_given": true
+      }
+    ]
+  }
+}
