@@ -4,6 +4,7 @@ export default function HomePage({
   project,
   stats,
   onResetSample,
+  onStartDemo,
   setActiveTab,
   isLoading,
   actionStatus,
@@ -18,10 +19,11 @@ export default function HomePage({
   const handleTryDemo = async () => {
     if (isLoading) return;
     try {
-      if (onResetSample) {
-        await onResetSample();
+      if (onStartDemo) {
+        await onStartDemo();
+      } else {
+        setActiveTab("review");
       }
-      setActiveTab("review");
     } catch (err) {
       console.error("Failed to load sample demo", err);
       setActiveTab("review");
@@ -99,14 +101,6 @@ export default function HomePage({
           </div>
         </div>
       </div>
-
-      {/* Action status toast banner */}
-      {actionStatus && (
-        <div className="p-space-sm rounded-lg bg-surface-container text-on-surface font-label-md text-label-md flex items-center gap-2 shadow-xs border border-primary/20">
-          <span className="material-symbols-outlined text-primary text-[18px]">info</span>
-          <span>{actionStatus}</span>
-        </div>
-      )}
 
       {/* "How it works" Strip: 3 Short Steps in Plain Words */}
       <section className="w-full space-y-space-md">

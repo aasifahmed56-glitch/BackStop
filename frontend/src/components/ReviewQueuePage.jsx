@@ -1,6 +1,33 @@
 import React, { useState, useEffect } from "react";
 import { api, formatErrorMessage } from "../api";
 
+const STATUS_HELP = {
+  verified: "Quote matched: the quote exists word for word in the source, and the claim is supported by it (or was calculated by code).",
+  inferred: "Inferred: the quote exists, but it only partly supports the claim, or the support check could not run. Read it before approving.",
+  conflicting: "Conflicting: two sources disagree. Decide which one is current before approving.",
+  missing: "Missing evidence: the records do not say who owns this or why it was decided. Ask the person leaving.",
+};
+
+const STATUS_STYLE = {
+  verified: { label: "Quote matched", icon: "check_circle", chip: "bg-tertiary-fixed text-on-tertiary-fixed" },
+  inferred: { label: "Inferred", icon: "help", chip: "bg-surface-container-high text-on-surface" },
+  conflicting: { label: "Conflicting", icon: "error", chip: "bg-error-container text-on-error-container" },
+  missing: { label: "Missing evidence", icon: "report", chip: "bg-surface-container-highest text-on-surface-variant" },
+};
+
+const isSeeded = (claim) => (claim?.evidence || []).some((ev) => ev.origin === "seeded");
+
+const kindLabel = (claim) => {
+  if (isSeeded(claim)) return "Seeded fixture";
+  return claim.kind === "derived" ? "Derived" : "Interpreted";
+};
+
+const kindHelp = (claim) => {
+  if (isSeeded(claim)) return "Hand-written demo claim for the synthetic sample. Its quote is checked, but no AI produced it.";
+  if (claim.kind === "derived") return "Calculated by plain code from git history, tasks or notes. No AI involved.";
+  return "Extracted by an AI model, then checked: the quote must exist in the source and support the claim.";
+};
+
 export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
   const [claims, setClaims] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -86,7 +113,16 @@ export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
     if (!selectedClaim) return;
     setIsSubmittingAction(true);
     try {
-      await api.approveClaim(selectedClaim.id, { role: "lead", note: "Approved via Review Queue UI" });
+      let note = "Approved via Review Queue UI";
+      if (selectedClaim.status === "conflicting") {
+        const answer = window.prompt("This claim is Conflicting. Which source is current, and why? (required)");
+        if (!answer || !answer.trim()) {
+          setIsSubmittingAction(false);
+          return;
+        }
+        note = `Conflict resolved: ${answer.trim()}`;
+      }
+      await api.approveClaim(selectedClaim.id, { role: "lead", note });
       setActionSuccessMessage(`Claim #${selectedClaim.id} approved!`);
       setTimeout(() => setActionSuccessMessage(null), 3500);
       await loadClaims();
@@ -145,7 +181,7 @@ export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
 
   // Actions: Bulk Approve Verified (demo shortcut)
   const handleBulkApproveVerified = async () => {
-    if (!window.confirm("Approve all Verified claims? Conflicting and Missing claims will be skipped.")) return;
+    if (!window.confirm("Approve all quote-matched claims? Conflicting, Inferred and Missing claims are skipped and need one-by-one review.")) return;
     setIsBulkApproving(true);
     try {
       await api.bulkApproveVerified({ projectId: 1, role: "lead" });
@@ -244,7 +280,7 @@ export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
               <span className={`material-symbols-outlined text-[18px] ${isBulkApproving ? "animate-spin" : ""}`}>
                 {isBulkApproving ? "refresh" : "done_all"}
               </span>
-              <span>{isBulkApproving ? "Approving Verified..." : `Approve All Verified (${verifiedCount})`}</span>
+              <span>{isBulkApproving ? "Approving…" : `Approve all quote-matched (${verifiedCount})`}</span>
             </button>
             <span className="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1">
               <span className="material-symbols-outlined text-[14px] text-error">gavel</span>
@@ -281,16 +317,18 @@ export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
               </button>
               <button
                 onClick={() => setStatusFilter("verified")}
+                title={STATUS_HELP.verified}
                 className={`filter-status-chip px-2.5 py-1 rounded-lg font-label-md text-label-md transition-colors flex items-center gap-1 cursor-pointer ${
                   statusFilter === "verified"
                     ? "bg-tertiary-fixed text-on-tertiary-fixed font-bold"
                     : "bg-surface-container-low text-tertiary hover:bg-surface-container"
                 }`}
               >
-                <span className="w-1.5 h-1.5 rounded-full bg-tertiary"></span>Verified ({verifiedCount})
+                <span className="w-1.5 h-1.5 rounded-full bg-tertiary"></span>Quote matched ({verifiedCount})
               </button>
               <button
                 onClick={() => setStatusFilter("inferred")}
+                title={STATUS_HELP.inferred}
                 className={`filter-status-chip px-2.5 py-1 rounded-lg font-label-md text-label-md transition-colors flex items-center gap-1 cursor-pointer ${
                   statusFilter === "inferred"
                     ? "bg-surface-container-high text-on-surface font-bold"
@@ -301,6 +339,7 @@ export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
               </button>
               <button
                 onClick={() => setStatusFilter("conflicting")}
+                title={STATUS_HELP.conflicting}
                 className={`filter-status-chip px-2.5 py-1 rounded-lg font-label-md text-label-md transition-colors flex items-center gap-1 cursor-pointer ${
                   statusFilter === "conflicting"
                     ? "bg-error-container text-on-error-container font-bold"
@@ -311,6 +350,7 @@ export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
               </button>
               <button
                 onClick={() => setStatusFilter("missing")}
+                title={STATUS_HELP.missing}
                 className={`filter-status-chip px-2.5 py-1 rounded-lg font-label-md text-label-md transition-colors flex items-center gap-1 cursor-pointer ${
                   statusFilter === "missing"
                     ? "bg-surface-container-high text-outline font-bold"
@@ -430,7 +470,7 @@ export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
                         {/* Status Chip */}
                         {claim.status === "verified" && (
                           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-label-sm text-label-sm bg-tertiary-fixed text-on-tertiary-fixed font-semibold">
-                            <span className="w-1.5 h-1.5 rounded-full bg-tertiary"></span>Verified
+                            <span className="w-1.5 h-1.5 rounded-full bg-tertiary"></span>Quote matched
                           </span>
                         )}
                         {claim.status === "inferred" && (
@@ -450,8 +490,13 @@ export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
                         )}
 
                         {/* Kind Chip */}
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-md font-label-sm text-label-sm bg-secondary-fixed text-on-secondary-fixed font-semibold capitalize">
-                          {claim.kind}
+                        <span
+                          title={kindHelp(claim)}
+                          className={`inline-flex items-center px-2 py-0.5 rounded-md font-label-sm text-label-sm font-semibold ${
+                            isSeeded(claim) ? "bg-tertiary-fixed text-on-tertiary-fixed" : "bg-secondary-fixed text-on-secondary-fixed"
+                          }`}
+                        >
+                          {kindLabel(claim)}
                         </span>
 
                         {/* Type Chip */}
@@ -533,8 +578,12 @@ export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
                   <div className="flex flex-col">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="font-code-sm text-code-sm text-primary uppercase font-bold">Inspection Node</span>
-                      <span className="px-1.5 py-0.5 rounded bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm font-semibold capitalize">
-                        {selectedClaim.status}
+                      <span
+                        title={STATUS_HELP[selectedClaim.status]}
+                        className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded font-label-sm text-label-sm font-semibold ${STATUS_STYLE[selectedClaim.status]?.chip || "bg-surface-container-high text-on-surface"}`}
+                      >
+                        <span className="material-symbols-outlined text-[14px]" aria-hidden="true">{STATUS_STYLE[selectedClaim.status]?.icon || "help"}</span>
+                        {STATUS_STYLE[selectedClaim.status]?.label || selectedClaim.status}
                       </span>
                     </div>
                     <h2 className="font-headline-md text-headline-md text-on-surface font-semibold break-words" id="inspect-claim-header">
@@ -542,8 +591,8 @@ export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
                     </h2>
                   </div>
                   <div className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-on-surface-variant shrink-0">
-                    <span className="material-symbols-outlined text-[18px]">
-                      {selectedClaim.status === "verified" ? "verified" : "help"}
+                    <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
+                      {STATUS_STYLE[selectedClaim.status]?.icon || "help"}
                     </span>
                   </div>
                 </div>
@@ -575,7 +624,27 @@ export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
                 </div>
 
                 {/* Verbatim Quote & Source Chunk OR Derived Message */}
-                {selectedClaim.kind === "derived" ? (
+                {selectedClaim.kind === "derived" && (selectedClaim.evidence || []).length > 1 && selectedClaim.status === "conflicting" ? (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 font-headline-sm text-headline-sm text-on-surface font-semibold">
+                      <span className="material-symbols-outlined text-error text-[20px]" aria-hidden="true">compare_arrows</span>
+                      <span>Two sources disagree</span>
+                    </div>
+                    <p className="font-body-sm text-body-sm text-on-surface-variant">
+                      Found by code comparing dated plans across notes, chat and issues. Both quotes are exact text from the sources.
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-space-sm">
+                      {selectedClaim.evidence.map((ev, i) => (
+                        <figure key={i} className="p-space-sm rounded-xl border border-outline-variant bg-surface-container-lowest">
+                          <figcaption className="font-label-sm text-label-sm text-outline mb-1">
+                            {i === 0 ? "Earlier plan" : "Later change"} · {ev.source_name || `source ${ev.source_id}`}
+                          </figcaption>
+                          <blockquote className="font-body-sm text-body-sm text-on-surface">“{ev.quote}”</blockquote>
+                        </figure>
+                      ))}
+                    </div>
+                  </div>
+                ) : selectedClaim.kind === "derived" ? (
                   <div className="p-space-md bg-surface-container-low rounded-xl border border-surface-container/60 space-y-2">
                     <div className="flex items-center gap-2 font-headline-sm text-headline-sm text-on-surface font-semibold">
                       <span className="material-symbols-outlined text-secondary text-[20px]">code</span>
@@ -585,7 +654,9 @@ export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
                       Calculated by code from git history; no quote check
                     </p>
                     <p className="font-label-sm text-label-sm text-outline">
-                      Ownership and commit concentration metrics are derived by Python scripts inspecting commit author ratios and timestamps.
+                      {selectedClaim.type === "blocker"
+                        ? "Found by code reading the task export: the owner field is empty."
+                        : "Ownership and commit concentration metrics are derived by Python scripts inspecting commit author ratios and timestamps."}
                     </p>
                   </div>
                 ) : (

@@ -15,6 +15,8 @@ export default function App() {
   const [stats, setStats] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [actionStatus, setActionStatus] = useState(null);
+  // Bumped after a reset so open pages remount and refetch instead of showing stale claims.
+  const [dataVersion, setDataVersion] = useState(0);
 
   // Initial load
   const loadInitialData = async () => {
@@ -35,34 +37,56 @@ export default function App() {
   }, []);
 
   // Handler: Full reset & re-generation
+  const reviewedCount = (stats?.by_review?.approved ?? 0) + (stats?.by_review?.corrected ?? 0) + (stats?.by_review?.rejected ?? 0);
+
   const handleResetSample = async () => {
+    if (reviewedCount > 0) {
+      const ok = window.confirm(
+        `Reset the sample project? This clears ${reviewedCount} review decision${reviewedCount === 1 ? "" : "s"} (approvals, edits and rejections).`
+      );
+      if (!ok) return;
+    }
     setIsLoading(true);
-    setActionStatus("Resetting database, ingesting sample data, and compiling verified claims...");
+    setActionStatus({ tone: "info", text: "Resetting the sample project…" });
     try {
       const result = await api.resetSample();
       await loadInitialData();
-      setActionStatus(`Sample project successfully reloaded! Derived: ${result.derived_claims}, Extracted: ${result.extracted_claims}.`);
-      setTimeout(() => setActionStatus(null), 5000);
+      setDataVersion((v) => v + 1);
+      const kinds = result?.claims_by_kind || {};
+      const failed = result?.extract_stats?.failed_sources || [];
+      setActionStatus(
+        failed.length
+          ? { tone: "warn", text: `Sample reset. ${failed.length} source${failed.length === 1 ? "" : "s"} could not be analysed: ${failed.map((f) => f.source).join(", ")}.` }
+          : { tone: "ok", text: `Sample reset: ${kinds.total ?? 0} claims (${kinds.derived ?? 0} from code, ${kinds.interpreted ?? 0} extracted).` }
+      );
+      setTimeout(() => setActionStatus(null), 6000);
     } catch (err) {
-      alert("Reset failed: " + formatErrorMessage(err));
-      setActionStatus(null);
+      setActionStatus({ tone: "error", text: "Reset failed: " + formatErrorMessage(err) });
     } finally {
       setIsLoading(false);
     }
   };
 
+  // The demo button never wipes review work: the sample is seeded on startup,
+  // so it only resets when the project is missing.
+  const handleStartDemo = async () => {
+    if (!stats?.total) {
+      await handleResetSample();
+    }
+    setActiveTab("review");
+  };
+
   // Handler: Re-run derivations
   const handleDerive = async () => {
     setIsLoading(true);
-    setActionStatus("Executing derivations from git logs and tasks...");
+    setActionStatus({ tone: "info", text: "Running derivations from git history and tasks…" });
     try {
       const result = await api.deriveClaims(1);
       await loadInitialData();
-      setActionStatus(`Plain-code derivation complete! Created ${result.claims_created} claims.`);
+      setActionStatus({ tone: "ok", text: `Derivation complete: ${result.claims_created} claims from code.` });
       setTimeout(() => setActionStatus(null), 5000);
     } catch (err) {
-      alert("Derivation failed: " + formatErrorMessage(err));
-      setActionStatus(null);
+      setActionStatus({ tone: "error", text: "Derivation failed: " + formatErrorMessage(err) });
     } finally {
       setIsLoading(false);
     }
@@ -71,15 +95,15 @@ export default function App() {
   // Handler: Re-run extraction
   const handleExtract = async () => {
     setIsLoading(true);
-    setActionStatus("Running extraction with substring quote checks and support validation...");
+    setActionStatus({ tone: "info", text: "Running extraction with quote and support checks…" });
     try {
       const result = await api.extractClaims(1);
       await loadInitialData();
-      setActionStatus(`Extraction complete! Verified: ${result.verified}, Inferred: ${result.inferred}, Rejected: ${result.rejected_by_quote_check + result.rejected_by_support_check}.`);
+      const st = result?.stats || {};
+      setActionStatus({ tone: (st.failed_sources || []).length ? "warn" : "ok", text: `Extraction complete: ${st.verified ?? 0} quote-matched, ${st.inferred ?? 0} inferred, ${(st.rejected_by_quote_check ?? 0) + (st.rejected_by_support_check ?? 0)} rejected${(st.failed_sources || []).length ? `, ${st.failed_sources.length} sources failed` : ""}.` });
       setTimeout(() => setActionStatus(null), 5000);
     } catch (err) {
-      alert("Extraction failed: " + formatErrorMessage(err));
-      setActionStatus(null);
+      setActionStatus({ tone: "error", text: "Extraction failed: " + formatErrorMessage(err) });
     } finally {
       setIsLoading(false);
     }
@@ -103,6 +127,7 @@ export default function App() {
               project={project}
               stats={stats}
               onResetSample={handleResetSample}
+              onStartDemo={handleStartDemo}
               onDerive={handleDerive}
               onExtract={handleExtract}
               setActiveTab={setActiveTab}
@@ -113,6 +138,7 @@ export default function App() {
 
           {activeTab === "review" && (
             <ReviewQueuePage
+              key={`review-${dataVersion}`}
               role="lead"
               stats={stats}
               onRefreshStats={loadInitialData}
@@ -121,6 +147,7 @@ export default function App() {
 
           {activeTab === "handover" && (
             <HandoverPage
+              key={`handover-${dataVersion}`}
               role={role}
               setRole={setRole}
               setActiveTab={setActiveTab}
@@ -130,6 +157,30 @@ export default function App() {
           {activeTab === "backtest" && <BacktestPage />}
         </div>
       </main>
+
+      {/* Global action feedback, visible on every page */}
+      {actionStatus && (
+        <div
+          role={actionStatus.tone === "error" ? "alert" : "status"}
+          aria-live="polite"
+          className={`no-print fixed bottom-4 left-1/2 -translate-x-1/2 z-50 max-w-[calc(100vw-2rem)] sm:max-w-xl flex items-start gap-3 px-4 py-3 rounded-xl shadow-lg border font-body-sm text-body-sm ${
+            actionStatus.tone === "error"
+              ? "bg-error-container text-on-error-container border-error/30"
+              : actionStatus.tone === "warn"
+              ? "bg-surface-container-highest text-on-surface border-outline-variant"
+              : "bg-inverse-surface text-inverse-on-surface border-transparent"
+          }`}
+        >
+          <span className="flex-1">{actionStatus.text}</span>
+          <button
+            type="button"
+            onClick={() => setActionStatus(null)}
+            className="shrink-0 font-label-md text-label-md underline underline-offset-2"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
 
       {/* Application Footer */}
       <footer className="w-full bg-surface-container-lowest shadow-[0_-1px_6px_rgba(0,0,0,0.03)] py-space-md border-t border-surface-container no-print mt-auto">
