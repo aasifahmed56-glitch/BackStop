@@ -1,0 +1,411 @@
+{
+  "generated_by": "backend/scripts/replay_tripwires.py",
+  "ai_used": false,
+  "rules": {
+    "window_days": 180,
+    "fix_days": 30,
+    "trouble_pattern": "\\b(revert|reverts|reverted|fix|fixes|fixed|bug)\\b",
+    "problematic": "Reverted later (a revert names its hash or quotes its message), or a commit matching the trouble pattern touches the same files within 30 days. 'same_module' is a looser secondary rule.",
+    "tripwires_used": "Only git-based tripwires (reverted work, sole knowledge, stale modules) built from pre-cutoff commits. Decision and conflict tripwires need reviewed claims, which have no dates, so the replay cannot use them.",
+    "baseline": "Flag every commit that touches a module whose top author before the cutoff is the leaver."
+  },
+  "datasets": [
+    {
+      "cutoff": "2026-01-14",
+      "window_end": "2026-07-13",
+      "proposed_changes": 40,
+      "tripwires_built": 4,
+      "tripwires_by_kind": {
+        "reverted_work": 1,
+        "sole_knowledge": 3
+      },
+      "leaver_owned_modules": [
+        "auth",
+        "deploy",
+        "payments"
+      ],
+      "triggered_by_kind": {
+        "sole_knowledge": 23
+      },
+      "flagged_commits_by_match": {
+        "path": 23,
+        "keyword": 0
+      },
+      "results": {
+        "same_file": {
+          "problematic": 0,
+          "base_rate": 0.0,
+          "tripwires": {
+            "flagged": 23,
+            "hits": 0,
+            "misses": 0,
+            "false_alarms": 23,
+            "flag_rate": 0.575,
+            "precision": 0.0,
+            "recall": null
+          },
+          "baseline_leaver_owned_module": {
+            "flagged": 23,
+            "hits": 0,
+            "misses": 0,
+            "false_alarms": 23,
+            "flag_rate": 0.575,
+            "precision": 0.0,
+            "recall": null
+          },
+          "flag_everything": {
+            "flagged": 40,
+            "hits": 0,
+            "misses": 0,
+            "false_alarms": 40,
+            "flag_rate": 1.0,
+            "precision": 0.0,
+            "recall": null
+          },
+          "tripwires_by_kind": {
+            "sole_knowledge": {
+              "flagged": 23,
+              "hits": 0,
+              "misses": 0,
+              "false_alarms": 23,
+              "flag_rate": 0.575,
+              "precision": 0.0,
+              "recall": null
+            }
+          }
+        },
+        "same_module": {
+          "problematic": 8,
+          "base_rate": 0.2,
+          "tripwires": {
+            "flagged": 23,
+            "hits": 2,
+            "misses": 6,
+            "false_alarms": 21,
+            "flag_rate": 0.575,
+            "precision": 0.087,
+            "recall": 0.25
+          },
+          "baseline_leaver_owned_module": {
+            "flagged": 23,
+            "hits": 2,
+            "misses": 6,
+            "false_alarms": 21,
+            "flag_rate": 0.575,
+            "precision": 0.087,
+            "recall": 0.25
+          },
+          "flag_everything": {
+            "flagged": 40,
+            "hits": 8,
+            "misses": 0,
+            "false_alarms": 32,
+            "flag_rate": 1.0,
+            "precision": 0.2,
+            "recall": 1.0
+          },
+          "tripwires_by_kind": {
+            "sole_knowledge": {
+              "flagged": 23,
+              "hits": 2,
+              "misses": 6,
+              "false_alarms": 21,
+              "flag_rate": 0.575,
+              "precision": 0.087,
+              "recall": 0.25
+            }
+          }
+        }
+      },
+      "examples": [
+        {
+          "commit": "517469a9d5",
+          "date": "2026-01-16",
+          "message": "Auth: add e2e test scaffold",
+          "tripwires": [
+            "sole_knowledge-auth"
+          ]
+        },
+        {
+          "commit": "f08f14069a",
+          "date": "2026-01-17",
+          "message": "Lint fixes in auth/",
+          "tripwires": [
+            "sole_knowledge-auth"
+          ]
+        },
+        {
+          "commit": "63607bb4e9",
+          "date": "2026-01-17",
+          "message": "Auth: fix typo in error message",
+          "tripwires": [
+            "sole_knowledge-auth"
+          ]
+        },
+        {
+          "commit": "97a3ac8af5",
+          "date": "2026-01-23",
+          "message": "Auth: logging improvements",
+          "tripwires": [
+            "sole_knowledge-auth"
+          ]
+        },
+        {
+          "commit": "7fcbac4c40",
+          "date": "2026-01-25",
+          "message": "Payments: idempotency test cases",
+          "tripwires": [
+            "sole_knowledge-payments"
+          ]
+        },
+        {
+          "commit": "99135db61a",
+          "date": "2026-01-26",
+          "message": "Payments: pre-migration branch setup",
+          "tripwires": [
+            "sole_knowledge-payments"
+          ]
+        },
+        {
+          "commit": "24732b9b91",
+          "date": "2026-01-27",
+          "message": "Deploy: secrets management via vault stub",
+          "tripwires": [
+            "sole_knowledge-deploy"
+          ]
+        },
+        {
+          "commit": "53f0a2799f",
+          "date": "2026-02-07",
+          "message": "Auth: extend token lifetime for mobile",
+          "tripwires": [
+            "sole_knowledge-auth"
+          ]
+        }
+      ],
+      "dataset": {
+        "name": "sample",
+        "label": "Synthetic sample (Campus Event App)",
+        "leaver": "Riya",
+        "note": "The sample git log ends on the departure date (15 Mar 2026), so there are no commits after the real departure. The replay uses a cutoff 60 days earlier (14 Jan 2026) and treats the following commits as proposed changes. The leaver is still active in that window. Synthetic data: not a real-world result."
+      }
+    },
+    {
+      "cutoff": "2014-05-16",
+      "window_end": "2014-11-12",
+      "proposed_changes": 142,
+      "tripwires_built": 26,
+      "tripwires_by_kind": {
+        "reverted_work": 9,
+        "sole_knowledge": 1,
+        "stale_module": 16
+      },
+      "leaver_owned_modules": [
+        "bin",
+        "example",
+        "lib",
+        "lib/browser",
+        "lib/interfaces",
+        "lib/reporters",
+        "root",
+        "support",
+        "test",
+        "test/browser",
+        "test/interfaces",
+        "test/jsapi",
+        "test/misc",
+        "test/unit"
+      ],
+      "triggered_by_kind": {
+        "reverted_work": 172,
+        "stale_module": 49
+      },
+      "flagged_commits_by_match": {
+        "path": 91,
+        "keyword": 50
+      },
+      "results": {
+        "same_file": {
+          "problematic": 45,
+          "base_rate": 0.317,
+          "tripwires": {
+            "flagged": 109,
+            "hits": 40,
+            "misses": 5,
+            "false_alarms": 69,
+            "flag_rate": 0.768,
+            "precision": 0.367,
+            "recall": 0.889
+          },
+          "baseline_leaver_owned_module": {
+            "flagged": 134,
+            "hits": 45,
+            "misses": 0,
+            "false_alarms": 89,
+            "flag_rate": 0.944,
+            "precision": 0.336,
+            "recall": 1.0
+          },
+          "flag_everything": {
+            "flagged": 142,
+            "hits": 45,
+            "misses": 0,
+            "false_alarms": 97,
+            "flag_rate": 1.0,
+            "precision": 0.317,
+            "recall": 1.0
+          },
+          "tripwires_by_kind": {
+            "reverted_work": {
+              "flagged": 98,
+              "hits": 38,
+              "misses": 7,
+              "false_alarms": 60,
+              "flag_rate": 0.69,
+              "precision": 0.388,
+              "recall": 0.844
+            },
+            "stale_module": {
+              "flagged": 38,
+              "hits": 17,
+              "misses": 28,
+              "false_alarms": 21,
+              "flag_rate": 0.268,
+              "precision": 0.447,
+              "recall": 0.378
+            }
+          }
+        },
+        "same_module": {
+          "problematic": 113,
+          "base_rate": 0.796,
+          "tripwires": {
+            "flagged": 109,
+            "hits": 87,
+            "misses": 26,
+            "false_alarms": 22,
+            "flag_rate": 0.768,
+            "precision": 0.798,
+            "recall": 0.77
+          },
+          "baseline_leaver_owned_module": {
+            "flagged": 134,
+            "hits": 109,
+            "misses": 4,
+            "false_alarms": 25,
+            "flag_rate": 0.944,
+            "precision": 0.813,
+            "recall": 0.965
+          },
+          "flag_everything": {
+            "flagged": 142,
+            "hits": 113,
+            "misses": 0,
+            "false_alarms": 29,
+            "flag_rate": 1.0,
+            "precision": 0.796,
+            "recall": 1.0
+          },
+          "tripwires_by_kind": {
+            "reverted_work": {
+              "flagged": 98,
+              "hits": 79,
+              "misses": 34,
+              "false_alarms": 19,
+              "flag_rate": 0.69,
+              "precision": 0.806,
+              "recall": 0.699
+            },
+            "stale_module": {
+              "flagged": 38,
+              "hits": 32,
+              "misses": 81,
+              "false_alarms": 6,
+              "flag_rate": 0.268,
+              "precision": 0.842,
+              "recall": 0.283
+            }
+          }
+        }
+      },
+      "examples": [
+        {
+          "commit": "7ce102be07",
+          "date": "2014-05-17",
+          "message": "add support for reporter options",
+          "tripwires": [
+            "reverted-3bb53b39db",
+            "reverted-61b3f8a3b4",
+            "reverted-8ccdee1ec7",
+            "reverted-970068d610"
+          ]
+        },
+        {
+          "commit": "30582e646d",
+          "date": "2014-05-17",
+          "message": "if a reporter has a .done method, call it before exiting",
+          "tripwires": [
+            "reverted-3bb53b39db"
+          ]
+        },
+        {
+          "commit": "82bba0cd9c",
+          "date": "2014-05-17",
+          "message": "xunit reporter support for optionally writing to a file",
+          "tripwires": [
+            "reverted-3bb53b39db"
+          ]
+        },
+        {
+          "commit": "bc708c1722",
+          "date": "2014-05-17",
+          "message": "1.19.0",
+          "tripwires": [
+            "reverted-8ccdee1ec7"
+          ]
+        },
+        {
+          "commit": "efc53eb86e",
+          "date": "2014-05-19",
+          "message": "Catch empty throws",
+          "tripwires": [
+            "reverted-d40df7a91b"
+          ]
+        },
+        {
+          "commit": "55f01bcb37",
+          "date": "2014-05-22",
+          "message": "Add filenames to Suite objects",
+          "tripwires": [
+            "reverted-c44cf13773",
+            "stale_module-lib/interfaces"
+          ]
+        },
+        {
+          "commit": "114498be6e",
+          "date": "2014-05-22",
+          "message": "Fix #1191 Make sure that a test case returning a promise fails if the promise is rejected without a reason.",
+          "tripwires": [
+            "stale_module-test"
+          ]
+        },
+        {
+          "commit": "d4552b6620",
+          "date": "2014-05-28",
+          "message": "1.20.0",
+          "tripwires": [
+            "reverted-8ccdee1ec7"
+          ]
+        }
+      ],
+      "dataset": {
+        "name": "mocha",
+        "label": "mochajs/mocha (MIT), pseudonymised",
+        "leaver": "Contributor A",
+        "repository_url": "https://github.com/mochajs/mocha",
+        "departure_evidence": "https://medium.com/@tjholowaychuk/farewell-node-js-4ba9e7f3e52b",
+        "note": "Real public history; contributors are pseudonymised."
+      }
+    }
+  ]
+}

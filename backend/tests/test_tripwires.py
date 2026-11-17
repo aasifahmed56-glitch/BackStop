@@ -1,5 +1,6 @@
 """Tripwires: matching rules, access ceilings, no raw source text, replay rules."""
 import json
+from datetime import date
 
 import pytest
 from fastapi.testclient import TestClient
@@ -11,8 +12,9 @@ from app.models import (
     AccessLevel, Chunk, Claim, ClaimKind, ClaimStatus, ClaimType, ReviewState, Source,
 )
 from app.tripwires import (
-    Tripwire, files_from_diff, match_change, split_reason, tokens,
+    REPLAY_PATH, Tripwire, files_from_diff, match_change, split_reason, tokens,
 )
+from app.tripwires_replay import later_problems, replay
 
 
 # ---------------------------------------------------------------------------
@@ -203,3 +205,47 @@ def test_rejected_claims_are_not_used(client):
     assert client.post(f"/api/claims/{cid}/reject", json={"role": "lead", "reason": "test"}).status_code == 200
     listing = client.get(f"/api/projects/{client.pid}/tripwires?role=lead").json()
     assert all(cid not in t["claim_ids"] for t in listing["tripwires"])
+
+
+# ---------------------------------------------------------------------------
+# Replay
+# ---------------------------------------------------------------------------
+
+def _c(i, author, d, files, msg="change"):
+    return {"hash": f"{i:040x}", "author": author, "date": d, "files": files, "message": msg}
+
+
+def test_later_problems_rules():
+    cs = [
+        _c(1, "A", date(2020, 1, 1), ["a/x.py"], "add thing"),
+        _c(2, "B", date(2020, 1, 10), ["a/x.py"], "fix crash"),           # fix within 30 days -> 1 problematic
+        _c(3, "B", date(2020, 2, 1), ["b/y.py"], "add other feature"),
+        _c(4, "B", date(2020, 2, 3), ["b/z.py"], "Revert \"add other feature\""),  # reverts 3 by quoted message
+        _c(5, "C", date(2020, 3, 1), ["c/q.py"], "add q"),
+        _c(6, "C", date(2020, 5, 1), ["c/q.py"], "fix q"),                # too late for 5
+    ]
+    probs = later_problems(cs)
+    assert set(probs) == {cs[0]["hash"], cs[2]["hash"]}
+    loose = later_problems(cs, module_fn=lambda f: f.split("/")[0])
+    assert cs[0]["hash"] in loose and cs[4]["hash"] not in loose
+
+
+def test_replay_uses_only_pre_cutoff_data_for_tripwires():
+    pre = [_c(i, "A", date(2020, 1, i), ["core/a.py"]) for i in range(1, 10)]
+    post = [_c(20, "B", date(2020, 7, 1), ["core/a.py"], "touch core"),
+            _c(21, "B", date(2020, 7, 5), ["core/a.py"], "fix core"),
+            _c(22, "B", date(2020, 7, 6), ["other/b.py"], "Revert something new")]
+    res = replay(pre + post, "A", date(2020, 6, 1), lambda f: f.split("/")[0])
+    assert res["tripwires_by_kind"].get("reverted_work", 0) == 0  # the post-cutoff revert is not used
+    r = res["results"]["same_file"]
+    assert res["proposed_changes"] == 3
+    assert r["problematic"] == 1 and r["tripwires"]["hits"] == 1
+
+
+def test_saved_replay_file_and_endpoint(client):
+    assert REPLAY_PATH.exists(), "run backend/scripts/replay_tripwires.py"
+    saved = json.loads(REPLAY_PATH.read_text())
+    assert saved["ai_used"] is False
+    assert [d["dataset"]["name"] for d in saved["datasets"]] == ["sample", "mocha"]
+    r = client.get("/api/tripwires/replay")
+    assert r.status_code == 200 and r.json() == saved
