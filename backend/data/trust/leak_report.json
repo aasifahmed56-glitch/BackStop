@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-17T14:35:55+00:00",
+  "generated_at": "2026-11-17T14:39:10+00:00",
   "llm_provider": "none",
   "note": "Roles are simulated: the server trusts the role value it is sent. These are tested cases of the access rules, not a test of authentication.",
   "summary": {

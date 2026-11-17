@@ -5,7 +5,7 @@ import GithubImportPanel from "./GithubImportPanel";
 
 const DATASET_KEY = "backstop.backtestDataset";
 
-export default function BacktestPage() {
+export default function BacktestPage({ onOpenTrust }) {
   const [datasets, setDatasets] = useState([{ id: "sample", label: "Synthetic sample", kind: "synthetic" }]);
   const [dataset, setDataset] = useState(() => {
     try {
@@ -53,6 +53,15 @@ export default function BacktestPage() {
           Analyse a GitHub repository
         </label>
       </fieldset>
+      {onOpenTrust && (
+        <p className="font-body-sm text-body-sm text-on-surface-variant">
+          Did it work? The backtest checks the risk ranking. For leak attacks and how often wrong claims are caught, see the{" "}
+          <button onClick={onOpenTrust} className="underline text-primary font-semibold focus-visible:ring-2 focus-visible:ring-primary rounded">
+            Trust report
+          </button>
+          .
+        </p>
+      )}
       {dataset === "import" ? (
         <GithubImportPanel />
       ) : dataset === "sample" || !datasets.some((d) => d.id === dataset) ? (

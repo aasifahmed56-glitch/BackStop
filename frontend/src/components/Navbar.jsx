@@ -12,6 +12,7 @@ export default function Navbar({ activeTab, setActiveTab, onResetSample, isReset
     { id: "review", label: "2. Check the claims" },
     { id: "handover", label: "3. Handover Dossier" },
     { id: "backtest", label: "4. Backtest" },
+    { id: "trust", label: "5. Trust report" },
   ];
 
   return (

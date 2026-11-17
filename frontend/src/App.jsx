@@ -4,6 +4,7 @@ import HomePage from "./components/HomePage";
 import ReviewQueuePage from "./components/ReviewQueuePage";
 import HandoverPage from "./components/HandoverPage";
 import BacktestPage from "./components/BacktestPage";
+import TrustReportPage from "./components/TrustReportPage";
 import { api, formatErrorMessage } from "./api";
 
 export default function App() {
@@ -154,7 +155,8 @@ export default function App() {
             />
           )}
 
-          {activeTab === "backtest" && <BacktestPage />}
+          {activeTab === "backtest" && <BacktestPage onOpenTrust={() => setActiveTab("trust")} />}
+          {activeTab === "trust" && <TrustReportPage />}
         </div>
       </main>
 

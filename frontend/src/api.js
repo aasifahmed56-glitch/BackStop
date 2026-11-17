@@ -147,6 +147,7 @@ export const api = {
   // Backtest
   getBacktest: (projectId = 1) => request(`/backtest/projects/${projectId}`),
   getBacktestDatasets: () => request(`/backtest/datasets`),
+  getTrustReport: () => request(`/trust/report`),
   importGithub: (body) => request(`/import/github`, { method: "POST", body: JSON.stringify(body) }),
   getRealBacktest: (name) => request(`/backtest/real/${encodeURIComponent(name)}`),
 };
