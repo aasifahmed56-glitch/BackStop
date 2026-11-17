@@ -297,9 +297,9 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
                 `${visibleCount} approved ${visibleCount === 1 ? "item" : "items"}${withheldCount > 0 ? `, ${withheldCount} withheld` : ""}`,
               ],
             ].map(([label, value], i) => (
-              <div key={label} className={`bg-surface-container-lowest px-3 py-2 min-w-0 ${i === 0 ? "font-mono" : ""}`}>
+              <div key={label} className={`bg-surface-container-lowest px-3 py-2 min-w-0 `}>
                 <div className="field-label">{label}</div>
-                <div className="text-[14px] leading-6 font-semibold text-on-surface break-words tnum">{value}</div>
+                <div className={`text-[14px] leading-6 font-semibold text-on-surface break-words tnum ${i === 0 ? "font-mono" : ""}`}>{value}</div>
               </div>
             ))}
           </section>

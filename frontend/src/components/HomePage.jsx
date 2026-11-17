@@ -58,6 +58,12 @@ export default function HomePage({
         const hit = list.find((c) => !c.withheld && c.kind === "interpreted" && c.status === "verified" && c.evidence?.[0]?.quote)
           || list.find((c) => !c.withheld && c.evidence?.[0]?.quote);
         setExample(hit || null);
+        if (hit) {
+          api.getClaimContext(hit.id).then((ctx) => {
+            const src = ctx?.contexts?.[0]?.source_name;
+            if (live && src) setExample((e) => (e && e.id === hit.id ? { ...e, sourceName: src } : e));
+          }).catch(() => {});
+        }
       })
       .catch(() => {});
     return () => {
@@ -188,6 +194,13 @@ export default function HomePage({
                 <div className="flex flex-col items-start gap-2">
                   <StatusChip status={example.status} size="sm" />
                   <p className="text-[14px] leading-5 font-semibold text-on-surface line-clamp-2">{example.text}</p>
+                  <p className="text-[12px] text-on-surface-variant -mb-1">
+                    Exact quote in{" "}
+                    <span className="font-mono text-on-surface">
+                      {example.sourceName || "its source"}
+                      {example.evidence[0].line_start ? `, line ${example.evidence[0].line_start}` : ""}
+                    </span>
+                  </p>
                   <p className="font-mono text-[12px] leading-5 text-on-surface bg-surface-container-low self-stretch px-2 py-1.5 rounded-[2px] break-words">
                     <mark className="bg-canary text-on-canary rounded-[1px] px-px">{example.evidence[0].quote}</mark>
                   </p>
