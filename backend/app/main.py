@@ -217,7 +217,7 @@ app.include_router(tripwires_router, prefix="/api")
 
 _DIST = Path(__file__).parent.parent.parent / "frontend" / "dist"
 
-if _DIST.exists():
+if (_DIST / "assets").exists():
     app.mount("/assets", StaticFiles(directory=str(_DIST / "assets")), name="assets")
 
     @app.get("/{full_path:path}", include_in_schema=False)

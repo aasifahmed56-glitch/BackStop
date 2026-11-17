@@ -49,6 +49,9 @@ It also runs in the test suite as `tests/trust/test_leak_harness.py`.
 |---|---|---|---|
 | Before the fixes | 1290 | 1164 | **126** |
 | After the fixes | 1290 | 1290 | **0** |
+| After merging tripwires (29 endpoints) | 1357 | 1357 | **0** |
+
+The merged build adds the three tripwire routes, which the harness picks up automatically. On the first run it caught 7 leaks in `POST /api/projects/{id}/tripwires/check`: the response echoed the caller's description, so restricted words came back to lower roles. The description is no longer echoed.
 
 ### Leaks found and fixed
 

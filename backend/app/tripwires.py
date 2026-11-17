@@ -556,7 +556,8 @@ def check_change(session: Session, project_id: int, files: list[str], descriptio
         "project_id": project_id,
         "role": role.value,
         "files": files,
-        "description": description,
+        # The description is not echoed back: the caller already has it, and
+        # repeating free text lets restricted words ride out in a response.
         "tripwires_checked": len(built["tripwires"]),
         "triggered": triggered,
         "claims_withheld": built["claims_withheld"],
