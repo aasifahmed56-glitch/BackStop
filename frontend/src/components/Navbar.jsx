@@ -1,5 +1,6 @@
 import React from "react";
 import { RotateCcw, Keyboard } from "lucide-react";
+import { consignmentNo } from "./ui";
 
 export const ROLES = [
   { id: "incoming_dev", label: "New developer", access: "Team level", desc: "Owners, decisions, risks, dependencies and contacts." },
@@ -42,7 +43,7 @@ export default function Navbar({ activeTab, onNavigate, onResetSample, isResetti
         </a>
 
         <div className="hidden lg:flex flex-col leading-tight pl-4 border-l border-ink-line min-w-0">
-          <span className="text-[10.5px] uppercase tracking-[0.08em] font-semibold text-on-ink-muted">Consignment</span>
+          <span className="text-[10.5px] uppercase tracking-[0.08em] font-semibold text-on-ink-muted">Consignment <span className="font-mono normal-case tracking-normal text-canary">No. {consignmentNo(project?.id)}</span></span>
           <span className="text-[13px] font-semibold truncate">
             {project?.name || "Campus Event App"}
             <span className="text-on-ink-muted font-normal"> · from {project?.leaver_name || "Riya"}</span>

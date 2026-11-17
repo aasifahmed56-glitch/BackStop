@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { api } from "../api";
 import { ArrowRight, FileText } from "lucide-react";
 import { Button, Field, Skeleton, StatusChip, STATUS, REVIEW } from "./ui.jsx";
 
@@ -46,6 +47,24 @@ export default function HomePage({
   isLoading,
   actionStatus,
 }) {
+  // A real manifest line for the specimen: the first AI-extracted claim whose quote matched.
+  const [example, setExample] = useState(null);
+  useEffect(() => {
+    let live = true;
+    api
+      .getClaims({ projectId: 1, role: "lead" })
+      .then((list) => {
+        if (!live || !Array.isArray(list)) return;
+        const hit = list.find((c) => !c.withheld && c.kind === "interpreted" && c.status === "verified" && c.evidence?.[0]?.quote)
+          || list.find((c) => !c.withheld && c.evidence?.[0]?.quote);
+        setExample(hit || null);
+      })
+      .catch(() => {});
+    return () => {
+      live = false;
+    };
+  }, []);
+
   const hasStats = !!stats;
   const total = num(stats?.total);
   const review = stats?.by_review || {};
@@ -122,7 +141,7 @@ export default function HomePage({
             </div>
             <Field label="Contents">
               {hasStats && project ? (
-                <p className="font-mono text-[13px] text-on-surface tnum">
+                <p className="text-[14px] font-semibold text-on-surface tnum">
                   {total} claims from {sourceCount ?? "—"} sources
                 </p>
               ) : (
@@ -148,13 +167,34 @@ export default function HomePage({
                 <Skeleton className="h-10 w-full" />
               )}
             </Field>
-            <Field label="Example line" aside={<span className="text-[11px] text-outline">Illustration</span>}>
-              <div className="flex flex-col items-start gap-2">
-                <StatusChip status="verified" size="sm" />
-                <p className="font-mono text-[12px] leading-5 text-on-surface-variant bg-surface-container-low self-stretch px-2 py-1.5 rounded-[2px] break-words">
-                  “Quote copied word for word from the source file.”
-                </p>
-              </div>
+            <Field
+              label="Example line"
+              aside={
+                example ? (
+                  <a
+                    href={`#/review/${example.id}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setActiveTab("review", example.id);
+                    }}
+                    className="font-mono text-[12px] font-semibold text-primary hover:underline"
+                  >
+                    Line #{example.id}
+                  </a>
+                ) : null
+              }
+            >
+              {example ? (
+                <div className="flex flex-col items-start gap-2">
+                  <StatusChip status={example.status} size="sm" />
+                  <p className="text-[14px] leading-5 font-semibold text-on-surface line-clamp-2">{example.text}</p>
+                  <p className="font-mono text-[12px] leading-5 text-on-surface bg-surface-container-low self-stretch px-2 py-1.5 rounded-[2px] break-words">
+                    <mark className="bg-canary text-on-canary rounded-[1px] px-px">{example.evidence[0].quote}</mark>
+                  </p>
+                </div>
+              ) : (
+                <Skeleton className="h-16 w-full" />
+              )}
             </Field>
           </div>
         </div>
@@ -171,7 +211,7 @@ export default function HomePage({
           {STEPS.map((s, i) => (
             <li key={s.n} className="relative flex flex-col gap-2 py-5 md:px-5 md:first:pl-0 md:last:pr-0">
               <div className="flex items-center gap-3">
-                <span className="font-mono tnum text-[13px] font-bold text-on-primary bg-ink px-1.5 py-0.5 rounded-[2px]">
+                <span className="tnum text-[13px] font-bold text-on-primary bg-ink px-1.5 py-0.5 rounded-[2px]">
                   {s.n}
                 </span>
                 <h3 className="text-[17px] font-bold text-on-surface">{s.title}</h3>
@@ -220,7 +260,7 @@ export default function HomePage({
                 <p className="text-[14px] leading-6 text-on-surface-variant order-3 sm:order-none col-span-2 sm:col-span-1">
                   {STATUS[k].help}
                 </p>
-                <p className="tnum font-mono text-[15px] font-bold text-on-surface text-right sm:self-center">
+                <p className="tnum text-[15px] font-bold text-on-surface text-right sm:self-center">
                   {hasStats ? num(byStatus[k]) : "—"}
                 </p>
               </li>

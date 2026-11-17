@@ -406,11 +406,11 @@ export default function ReviewQueuePage({ onRefreshStats, initialClaimId, onSele
         <div className="max-w-2xl">
           <h1 className="text-[26px] sm:text-[28px] leading-tight font-extrabold tracking-[-0.015em]">Check the claims</h1>
           <p className="text-[15px] leading-6 text-on-surface-variant mt-1.5">
-            Each line is something Backstop believes Riya knew. Read the proof on the right, then approve, correct or reject it. Only approved lines reach the handover.
+            Each line is something Backstop believes Riya knew. Read its proof, then approve, correct or reject it. Only approved lines reach the handover.
           </p>
         </div>
         <div className="flex flex-col items-start lg:items-end gap-1.5 shrink-0">
-          <Button id="approve-all-btn" variant="primary" onClick={() => setDialog("bulk")} disabled={busy || pendingVerified === 0}>
+          <Button id="approve-all-btn" variant="outline" onClick={() => setDialog("bulk")} disabled={busy || pendingVerified === 0}>
             <CheckCheck size={16} aria-hidden="true" />
             {pendingVerified === 0 ? "All quote-matched claims approved" : `Approve all quote-matched (${pendingVerified})`}
           </Button>
@@ -705,13 +705,13 @@ export default function ReviewQueuePage({ onRefreshStats, initialClaimId, onSele
               </div>
 
               {/* Decision bar */}
-              <div className="sticky bottom-0 mt-auto px-5 py-3 border-t border-outline-variant bg-surface-container-lowest/95 backdrop-blur-[2px] flex flex-wrap items-center gap-2">
+              <div className="sticky bottom-0 mt-auto px-3 sm:px-5 py-3 border-t border-outline-variant bg-surface-container-lowest flex items-center gap-2">
                 <Button
                   id="btn-approve"
                   variant="primary"
                   onClick={handleApprove}
                   disabled={busy || selectedClaim.withheld || selectedClaim.review_state === "approved"}
-                  className="flex-1 sm:flex-none"
+                  className="flex-1 sm:flex-none px-2.5 sm:px-3.5"
                 >
                   <Check size={16} strokeWidth={2.5} aria-hidden="true" />
                   {selectedClaim.review_state === "approved" ? "Approved" : busy ? "Saving…" : "Approve"}

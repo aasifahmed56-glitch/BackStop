@@ -49,6 +49,9 @@ export const REVIEW = {
   rejected: { label: "Rejected", text: "text-error", tick: "bg-error" },
 };
 
+// Form number for the consignment, derived from the project id.
+export const consignmentNo = (id) => `BS-${String(id || 1).padStart(4, "0")}`;
+
 export const humanize = (t) => (t ? t.charAt(0).toUpperCase() + t.slice(1).replace(/_/g, " ") : "");
 
 export function StatusChip({ status, size = "md" }) {

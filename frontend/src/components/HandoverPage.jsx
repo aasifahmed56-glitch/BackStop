@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from "react"
 import { Lock, Printer, PenLine, ClipboardCheck, SearchX, Search } from "lucide-react";
 import { api, formatErrorMessage } from "../api";
 import { ROLES } from "./Navbar";
-import { Button, Field, Dialog, TextInput, Skeleton, humanize } from "./ui";
+import { Button, Field, Dialog, TextInput, Skeleton, humanize, consignmentNo } from "./ui";
 
 const PHASES = [
   { key: "day_1", name: "Day 1", purpose: "Blockers and critical dependencies.", empty: "Nothing approved for Day 1 in this view." },
@@ -35,7 +35,7 @@ function formatWhen(value) {
 function LoadingDocument() {
   return (
     <div className="flex flex-col gap-5" aria-busy="true" aria-label="Loading handover">
-      <div className="panel grid grid-cols-2 lg:grid-cols-5 gap-px bg-outline-variant overflow-hidden">
+      <div className="panel grid grid-cols-2 lg:grid-cols-6 gap-px bg-outline-variant overflow-hidden">
         {[0, 1, 2, 3, 4].map((i) => (
           <div key={i} className="bg-surface-container-lowest p-3 flex flex-col gap-2">
             <Skeleton className="h-3 w-16" />
@@ -285,8 +285,9 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
       ) : (
         <>
           {/* Consignment summary */}
-          <section aria-label="Consignment summary" className="grid grid-cols-2 lg:grid-cols-5 gap-px bg-outline-variant border border-outline-variant rounded-[3px] overflow-hidden print-shadow-none">
+          <section aria-label="Consignment summary" className="grid grid-cols-2 lg:grid-cols-6 gap-px bg-outline-variant border border-outline-variant rounded-[3px] overflow-hidden print-shadow-none">
             {[
+              ["Consignment no.", consignmentNo(project.id)],
               ["Consignor", project.leaver_name || "Not recorded"],
               ["Consignee", currentRoleObj.label],
               ["Project", project.name || "Not recorded"],
@@ -296,7 +297,7 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
                 `${visibleCount} approved ${visibleCount === 1 ? "item" : "items"}${withheldCount > 0 ? `, ${withheldCount} withheld` : ""}`,
               ],
             ].map(([label, value], i) => (
-              <div key={label} className={`bg-surface-container-lowest px-3 py-2 min-w-0 ${i === 4 ? "col-span-2 lg:col-span-1" : ""}`}>
+              <div key={label} className={`bg-surface-container-lowest px-3 py-2 min-w-0 ${i === 0 ? "font-mono" : ""}`}>
                 <div className="field-label">{label}</div>
                 <div className="text-[14px] leading-6 font-semibold text-on-surface break-words tnum">{value}</div>
               </div>
@@ -326,15 +327,16 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
                       <>
                       <ul className="divide-y divide-outline-variant">
                         {shown(ph.key, items).map((item, idx) => {
-                          const title = cleanTitle(item.title);
-                          const showDesc = item.description && !cleanTitle(item.description).startsWith(title.replace(/…$/, ""));
+                          // Show the approved claim's full text; the backend title is a truncated copy of it.
+                          const title = item.withheld ? cleanTitle(item.title) : item.description || cleanTitle(item.title);
+                          const showDesc = false;
                           return (
                           <li key={item.id ?? idx} className="px-3 py-2.5 flex flex-col gap-1">
                             <div className="flex items-center justify-between gap-2">
                               <TypeChip type={item.type} />
                               <AccessChip level={item.access_level} />
                             </div>
-                            <p className="text-[14px] leading-5 font-semibold text-on-surface break-words">{title}</p>
+                            <p className="text-[14px] leading-5 font-semibold text-on-surface break-words line-clamp-4">{title}</p>
                             {showDesc && (
                               <p className="text-[13px] leading-[18px] text-on-surface-variant line-clamp-2 break-words">{item.description}</p>
                             )}
@@ -476,36 +478,49 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
             </div>
           </section>
 
-          {/* Receipt */}
-          <Field label="Receipt" className="print-shadow-none" bodyClassName="min-h-24">
+          {/* Receipt: the slip that closes the consignment note */}
+          <section aria-labelledby="receipt-h" className="panel print-shadow-none overflow-hidden">
+            <div className="flex items-center justify-between gap-3 px-4 py-2.5 border-b border-dashed border-outline bg-surface-container-low">
+              <h2 id="receipt-h" className="text-[15px] font-bold">Receipt</h2>
+              <span className="font-mono text-[12px] text-on-surface-variant">No. {consignmentNo(project.id)}</span>
+            </div>
             {ackSuccess ? (
-              <div id="ack-banner" className="flex flex-col sm:flex-row sm:items-center gap-5 py-2 overflow-hidden">
-                <div className="stamp-in shrink-0 self-start border-2 border-tertiary text-tertiary rounded-[3px] px-4 py-1.5 text-[18px] leading-6 font-extrabold uppercase tracking-[0.14em] m-1" style={{ transform: "rotate(-3deg)" }}>
+              <div id="ack-banner" className="flex flex-col md:flex-row md:items-center gap-5 p-4 overflow-hidden">
+                <div className="stamp-in shrink-0 self-start md:self-center border-2 border-tertiary text-tertiary rounded-[3px] px-4 py-1.5 text-[18px] leading-6 font-extrabold uppercase tracking-[0.14em] m-1" style={{ transform: "rotate(-3deg)" }}>
                   Received
                 </div>
-                <div className="min-w-0">
-                  <p id="ack-success-title" className="text-[16px] leading-6 font-bold text-on-surface break-words">
-                    Signed for receipt by {ackSuccess.name}
-                  </p>
-                  <p className="text-[13px] leading-5 text-on-surface-variant">
-                    {ackSuccess.roleLabel} <span aria-hidden="true">&middot;</span>{" "}
-                    <span className="tnum">{formatWhen(ackSuccess.at)}</span>
-                  </p>
+                <dl className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-px bg-outline-variant border border-outline-variant rounded-[2px] min-w-0">
+                  {[
+                    ["Received by", <span key="n" id="ack-success-title">{ackSuccess.name}</span>],
+                    ["Role", ackSuccess.roleLabel],
+                    ["Signed at", <span key="t" className="tnum">{formatWhen(ackSuccess.at)}</span>],
+                  ].map(([l, v]) => (
+                    <div key={l} className="bg-surface-container-lowest px-3 py-2 min-w-0">
+                      <dt className="field-label">{l}</dt>
+                      <dd className="text-[14px] leading-6 font-semibold break-words">{v}</dd>
+                    </div>
+                  ))}
                   {ackSuccess.note && (
-                    <p className="text-[13px] leading-5 text-on-surface mt-1 break-words">Note: {ackSuccess.note}</p>
+                    <div className="bg-surface-container-lowest px-3 py-2 sm:col-span-3">
+                      <dt className="field-label">Note</dt>
+                      <dd className="text-[14px] leading-6 break-words">{ackSuccess.note}</dd>
+                    </div>
                   )}
-                </div>
+                </dl>
               </div>
             ) : (
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-1">
-                <p className="text-[14px] text-on-surface-variant">Not signed yet</p>
-                <Button variant="primary" onClick={openSign} disabled={!canSign} title={signDisabledReason} className="no-print self-start">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4">
+                <div className="flex-1 min-w-0">
+                  <div className="h-8 border-b border-outline max-w-sm" aria-hidden="true" />
+                  <p className="text-[13px] text-on-surface-variant mt-1">Not signed yet. The person taking over signs here.</p>
+                </div>
+                <Button variant="primary" onClick={openSign} disabled={!canSign} title={signDisabledReason} className="no-print self-start sm:self-center">
                   <PenLine size={16} aria-hidden="true" />
                   Sign for receipt
                 </Button>
               </div>
             )}
-          </Field>
+          </section>
         </>
       )}
 
