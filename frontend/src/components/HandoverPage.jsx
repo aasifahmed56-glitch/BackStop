@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { Lock, Printer, PenLine, ClipboardCheck, SearchX, Search } from "lucide-react";
+import { Lock, Printer, PenLine, ClipboardCheck, SearchX, Search, ListChecks } from "lucide-react";
 import { api, formatErrorMessage } from "../api";
 import { ROLES } from "./Navbar";
 import { Button, Field, Dialog, TextInput, Skeleton, humanize, consignmentNo } from "./ui";
@@ -200,6 +200,10 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2 no-print shrink-0">
+          <Button id="btn-check-change" variant="outline" onClick={() => setActiveTab("check")}>
+            <ListChecks size={16} aria-hidden="true" />
+            Check a change
+          </Button>
           <Button id="btn-print" variant="outline" onClick={() => window.print()}>
             <Printer size={16} aria-hidden="true" />
             Print or save PDF

@@ -6,17 +6,20 @@ import ReviewQueuePage from "./components/ReviewQueuePage";
 import HandoverPage from "./components/HandoverPage";
 import BacktestPage from "./components/BacktestPage";
 import TrustReportPage from "./components/TrustReportPage";
+import CheckChangePage from "./components/CheckChangePage";
 import { Button, Dialog } from "./components/ui";
 import { api, formatErrorMessage } from "./api";
 
 const TABS = NAV_ITEMS.map((n) => n.id);
+// Screens reached from a page rather than the step bar.
+const ROUTES = [...TABS, "check"];
 const LEGACY = { home: "overview" };
 
 // Route lives in the hash so refresh, back/forward and shared links all land on the same screen.
 function parseHash() {
   const raw = (window.location.hash || "").replace(/^#\/?/, "");
   const [first, second] = raw.split("/");
-  const tab = TABS.includes(LEGACY[first] || first) ? LEGACY[first] || first : "overview";
+  const tab = ROUTES.includes(LEGACY[first] || first) ? LEGACY[first] || first : "overview";
   const claimId = tab === "review" && /^\d+$/.test(second || "") ? Number(second) : null;
   return { tab, claimId };
 }
@@ -198,7 +201,7 @@ export default function App() {
         Skip to content
       </a>
       <Navbar
-        activeTab={activeTab}
+        activeTab={activeTab === "check" ? "handover" : activeTab}
         onNavigate={navigate}
         onResetSample={handleResetSample}
         isResetting={isLoading}
@@ -251,6 +254,8 @@ export default function App() {
 
           {activeTab === "backtest" && <BacktestPage onOpenTrust={() => navigate("trust")} />}
           {activeTab === "trust" && <TrustReportPage />}
+
+          {activeTab === "check" && <CheckChangePage role={role} setRole={setRole} setActiveTab={navigate} />}
         </div>
       </main>
 
@@ -291,7 +296,7 @@ export default function App() {
       <Dialog open={showShortcuts} onClose={() => setShowShortcuts(false)} title="Keyboard shortcuts" width="max-w-sm">
         <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2.5 text-[14px]">
           {[
-            ["1 – 4", "Go to a step"],
+            [`1 – ${TABS.length}`, "Go to a step"],
             ["J / K", "Next / previous claim"],
             ["A", "Approve the open claim"],
             ["E", "Correct the open claim"],
