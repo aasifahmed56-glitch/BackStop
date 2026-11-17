@@ -1,0 +1,770 @@
+{
+  "generated_at": "2026-11-17T14:34:24+00:00",
+  "llm_provider": "none",
+  "ai_check_ran": false,
+  "labels_file": "support_eval.json",
+  "rule": "A bad claim is caught when the verdict is 'no' or 'partly'. 'unchecked' = the AI check did not run.",
+  "note": "The AI support check did not run: no API key was available and no saved answer exists for these pairs, so every AI verdict is 'unchecked'. In the app an unchecked claim is never shown as Verified (fail closed). The live AI numbers still need a run with a key.",
+  "system": "AI support check + deterministic detail check (numbers, dates, names)",
+  "pairs": 40,
+  "bad_pairs": 25,
+  "correct_pairs": 15,
+  "ai_check_not_run": 30,
+  "caught": 10,
+  "catch_rate": 0.4,
+  "falsely_rejected": 0,
+  "false_reject_rate": 0.0,
+  "per_category": {
+    "correct": {
+      "pairs": 15,
+      "falsely_rejected": 0
+    },
+    "invented_detail": {
+      "pairs": 5,
+      "caught": 5
+    },
+    "opposite": {
+      "pairs": 5,
+      "caught": 0
+    },
+    "overstated": {
+      "pairs": 5,
+      "caught": 0
+    },
+    "partly": {
+      "pairs": 5,
+      "caught": 0
+    },
+    "unrelated": {
+      "pairs": 5,
+      "caught": 5
+    }
+  },
+  "confusion_matrix": {
+    "correct": {
+      "yes": 0,
+      "partly": 0,
+      "no": 0,
+      "unchecked": 15
+    },
+    "invented_detail": {
+      "yes": 0,
+      "partly": 5,
+      "no": 0,
+      "unchecked": 0
+    },
+    "opposite": {
+      "yes": 0,
+      "partly": 0,
+      "no": 0,
+      "unchecked": 5
+    },
+    "overstated": {
+      "yes": 0,
+      "partly": 0,
+      "no": 0,
+      "unchecked": 5
+    },
+    "partly": {
+      "yes": 0,
+      "partly": 0,
+      "no": 0,
+      "unchecked": 5
+    },
+    "unrelated": {
+      "yes": 0,
+      "partly": 5,
+      "no": 0,
+      "unchecked": 0
+    }
+  },
+  "misses": [
+    {
+      "id": "opp-21",
+      "category": "opposite",
+      "claim": "The polling implementation is unstable and keeps failing.",
+      "quote": "Polling implementation is stable.",
+      "verdict": "unchecked",
+      "why": "Support check unavailable: LLM_PROVIDER=none and cache missing for key a48c2cd857224e2aeff394f1c68dddcfd3b67f517e5617fcbe23fd268eb1c74e. Run with a live provider first to populate the cache."
+    },
+    {
+      "id": "opp-22",
+      "category": "opposite",
+      "claim": "Auth is not finished; password reset is still missing.",
+      "quote": "Auth: complete (JWT, multi-role, password reset).",
+      "verdict": "unchecked",
+      "why": "Support check unavailable: LLM_PROVIDER=none and cache missing for key 7124306bd943401bb4f46e86a523a871582f8a38c4228eed9aafeb42cc81bf98. Run with a live provider first to populate the cache."
+    },
+    {
+      "id": "opp-23",
+      "category": "opposite",
+      "claim": "Test keys should stay in the config for go-live.",
+      "quote": "Remove test keys from config before go-live.",
+      "verdict": "unchecked",
+      "why": "Support check unavailable: LLM_PROVIDER=none and cache missing for key 72b3258434110d55195a5076d42a92771ba960f1489590792821d3e8a179c951. Run with a live provider first to populate the cache."
+    },
+    {
+      "id": "opp-24",
+      "category": "opposite",
+      "claim": "Riya may merge the migration PR without reviewing it.",
+      "quote": "Kabir leads testing. Riya to review the PR before merging.",
+      "verdict": "unchecked",
+      "why": "Support check unavailable: LLM_PROVIDER=none and cache missing for key 40f9a936c0422d3fde06e6367d1f0501302c654c0d77bf6f701e521f421ff672. Run with a live provider first to populate the cache."
+    },
+    {
+      "id": "opp-25",
+      "category": "opposite",
+      "claim": "Sessions, not JWT, are the auth mechanism.",
+      "quote": "JWT is the auth mechanism.",
+      "verdict": "unchecked",
+      "why": "Support check unavailable: LLM_PROVIDER=none and cache missing for key e9a827cf72380f63d79ee0db747f9f01b7a5235733a3169ea0f20d3e4fb9c4a9. Run with a live provider first to populate the cache."
+    },
+    {
+      "id": "ove-26",
+      "category": "overstated",
+      "claim": "The deploy runbook is complete.",
+      "quote": "Deploy runbook: 70% done.",
+      "verdict": "unchecked",
+      "why": "Support check unavailable: LLM_PROVIDER=none and cache missing for key bda868d67e3bc1a05c0b090c76afd9640b8cacbc8313d9b1e2213d593d60c785. Run with a live provider first to populate the cache."
+    },
+    {
+      "id": "ove-27",
+      "category": "overstated",
+      "claim": "None of the deploy steps are documented.",
+      "quote": "Runbook is partial — some steps are undocumented.",
+      "verdict": "unchecked",
+      "why": "Support check unavailable: LLM_PROVIDER=none and cache missing for key 4b56d940dc42a8bde1c24a15b3142e73cc1c2457c42be40bebaedf9c275dc493. Run with a live provider first to populate the cache."
+    },
+    {
+      "id": "ove-28",
+      "category": "overstated",
+      "claim": "The Events API is fully finished and in production.",
+      "quote": "Events API: 80% complete.",
+      "verdict": "unchecked",
+      "why": "Support check unavailable: LLM_PROVIDER=none and cache missing for key f2d96df8879a01cc1affd2b79bce4b0d0f91a1757046b8759a57f9bca960a299. Run with a live provider first to populate the cache."
+    },
+    {
+      "id": "ove-29",
+      "category": "overstated",
+      "claim": "Kabir knows everything about payments and needs no handover.",
+      "quote": "Payments: Kabir has context.",
+      "verdict": "unchecked",
+      "why": "Support check unavailable: LLM_PROVIDER=none and cache missing for key 9c7513c78d0c21752e91055d6af391e3c136fc7793ce7ab93ae0424a4610ff5c. Run with a live provider first to populate the cache."
+    },
+    {
+      "id": "ove-30",
+      "category": "overstated",
+      "claim": "Notifications are completely broken and must be rewritten.",
+      "quote": "Notifications stale since late Jan — needs attention.",
+      "verdict": "unchecked",
+      "why": "Support check unavailable: LLM_PROVIDER=none and cache missing for key 2bc0f564e8e373498adfc2f003aefb0d83dc385affaa1c275df956441f2f14b7. Run with a live provider first to populate the cache."
+    },
+    {
+      "id": "par-36",
+      "category": "partly",
+      "claim": "Kabir leads testing and will also deploy the migration to production.",
+      "quote": "Kabir leads testing. Riya to review the PR before merging.",
+      "verdict": "unchecked",
+      "why": "Support check unavailable: LLM_PROVIDER=none and cache missing for key d615692c7f6bd42a03ff481392a2f5944c4864d69331b965c7d5d7714663ef04. Run with a live provider first to populate the cache."
+    },
+    {
+      "id": "par-37",
+      "category": "partly",
+      "claim": "Auth token refresh is complete, and so is two-factor login.",
+      "quote": "Auth: token refresh and multi-role support complete.",
+      "verdict": "unchecked",
+      "why": "Support check unavailable: LLM_PROVIDER=none and cache missing for key e5260ada015dad5f3980a4665b95fc9032670986c35ff625fb78c7032ff67551. Run with a live provider first to populate the cache."
+    },
+    {
+      "id": "par-38",
+      "category": "partly",
+      "claim": "Stripe v2 SDK is in use and the v3 migration is postponed because of budget limits.",
+      "quote": "Stripe v2 SDK in use. Migration to v3 is planned but postponed.",
+      "verdict": "unchecked",
+      "why": "Support check unavailable: LLM_PROVIDER=none and cache missing for key 516565e17a497738665ba5f2347178f9bf27a8359ec917d5c5276bf1e126f64b. Run with a live provider first to populate the cache."
+    },
+    {
+      "id": "par-39",
+      "category": "partly",
+      "claim": "Staging is live, and the production deploy planned for 1 Apr needs a load test first.",
+      "quote": "Deploy: staging live. Production deploy planned for 1 Apr.",
+      "verdict": "unchecked",
+      "why": "Support check unavailable: LLM_PROVIDER=none and cache missing for key 664ac2533768fdba91077871758e3f4b5e96d7d531956b8c58d9be4bb9efcae8. Run with a live provider first to populate the cache."
+    },
+    {
+      "id": "par-40",
+      "category": "partly",
+      "claim": "Meena is ramping up on auth, and Sara has stepped away from reviews.",
+      "quote": "Auth: Meena is ramping up. Sara as backup reviewer.",
+      "verdict": "unchecked",
+      "why": "Support check unavailable: LLM_PROVIDER=none and cache missing for key 8160537111933905ced9a759b63a8fb90bb3d8b18afc873b895050058e33851b. Run with a live provider first to populate the cache."
+    }
+  ],
+  "false_rejects": [],
+  "detail_check_alone": {
+    "pairs": 40,
+    "bad_pairs": 25,
+    "correct_pairs": 15,
+    "ai_check_not_run": 0,
+    "caught": 10,
+    "catch_rate": 0.4,
+    "falsely_rejected": 0,
+    "false_reject_rate": 0.0,
+    "per_category": {
+      "correct": {
+        "pairs": 15,
+        "falsely_rejected": 0
+      },
+      "invented_detail": {
+        "pairs": 5,
+        "caught": 5
+      },
+      "opposite": {
+        "pairs": 5,
+        "caught": 0
+      },
+      "overstated": {
+        "pairs": 5,
+        "caught": 0
+      },
+      "partly": {
+        "pairs": 5,
+        "caught": 0
+      },
+      "unrelated": {
+        "pairs": 5,
+        "caught": 5
+      }
+    },
+    "confusion_matrix": {
+      "correct": {
+        "yes": 15,
+        "partly": 0,
+        "no": 0,
+        "unchecked": 0
+      },
+      "invented_detail": {
+        "yes": 0,
+        "partly": 5,
+        "no": 0,
+        "unchecked": 0
+      },
+      "opposite": {
+        "yes": 5,
+        "partly": 0,
+        "no": 0,
+        "unchecked": 0
+      },
+      "overstated": {
+        "yes": 5,
+        "partly": 0,
+        "no": 0,
+        "unchecked": 0
+      },
+      "partly": {
+        "yes": 5,
+        "partly": 0,
+        "no": 0,
+        "unchecked": 0
+      },
+      "unrelated": {
+        "yes": 0,
+        "partly": 5,
+        "no": 0,
+        "unchecked": 0
+      }
+    },
+    "misses": [
+      {
+        "id": "opp-21",
+        "category": "opposite",
+        "claim": "The polling implementation is unstable and keeps failing.",
+        "quote": "Polling implementation is stable.",
+        "verdict": "yes",
+        "why": "all details found"
+      },
+      {
+        "id": "opp-22",
+        "category": "opposite",
+        "claim": "Auth is not finished; password reset is still missing.",
+        "quote": "Auth: complete (JWT, multi-role, password reset).",
+        "verdict": "yes",
+        "why": "all details found"
+      },
+      {
+        "id": "opp-23",
+        "category": "opposite",
+        "claim": "Test keys should stay in the config for go-live.",
+        "quote": "Remove test keys from config before go-live.",
+        "verdict": "yes",
+        "why": "all details found"
+      },
+      {
+        "id": "opp-24",
+        "category": "opposite",
+        "claim": "Riya may merge the migration PR without reviewing it.",
+        "quote": "Kabir leads testing. Riya to review the PR before merging.",
+        "verdict": "yes",
+        "why": "all details found"
+      },
+      {
+        "id": "opp-25",
+        "category": "opposite",
+        "claim": "Sessions, not JWT, are the auth mechanism.",
+        "quote": "JWT is the auth mechanism.",
+        "verdict": "yes",
+        "why": "all details found"
+      },
+      {
+        "id": "ove-26",
+        "category": "overstated",
+        "claim": "The deploy runbook is complete.",
+        "quote": "Deploy runbook: 70% done.",
+        "verdict": "yes",
+        "why": "all details found"
+      },
+      {
+        "id": "ove-27",
+        "category": "overstated",
+        "claim": "None of the deploy steps are documented.",
+        "quote": "Runbook is partial — some steps are undocumented.",
+        "verdict": "yes",
+        "why": "all details found"
+      },
+      {
+        "id": "ove-28",
+        "category": "overstated",
+        "claim": "The Events API is fully finished and in production.",
+        "quote": "Events API: 80% complete.",
+        "verdict": "yes",
+        "why": "all details found"
+      },
+      {
+        "id": "ove-29",
+        "category": "overstated",
+        "claim": "Kabir knows everything about payments and needs no handover.",
+        "quote": "Payments: Kabir has context.",
+        "verdict": "yes",
+        "why": "all details found"
+      },
+      {
+        "id": "ove-30",
+        "category": "overstated",
+        "claim": "Notifications are completely broken and must be rewritten.",
+        "quote": "Notifications stale since late Jan — needs attention.",
+        "verdict": "yes",
+        "why": "all details found"
+      },
+      {
+        "id": "par-36",
+        "category": "partly",
+        "claim": "Kabir leads testing and will also deploy the migration to production.",
+        "quote": "Kabir leads testing. Riya to review the PR before merging.",
+        "verdict": "yes",
+        "why": "all details found"
+      },
+      {
+        "id": "par-37",
+        "category": "partly",
+        "claim": "Auth token refresh is complete, and so is two-factor login.",
+        "quote": "Auth: token refresh and multi-role support complete.",
+        "verdict": "yes",
+        "why": "all details found"
+      },
+      {
+        "id": "par-38",
+        "category": "partly",
+        "claim": "Stripe v2 SDK is in use and the v3 migration is postponed because of budget limits.",
+        "quote": "Stripe v2 SDK in use. Migration to v3 is planned but postponed.",
+        "verdict": "yes",
+        "why": "all details found"
+      },
+      {
+        "id": "par-39",
+        "category": "partly",
+        "claim": "Staging is live, and the production deploy planned for 1 Apr needs a load test first.",
+        "quote": "Deploy: staging live. Production deploy planned for 1 Apr.",
+        "verdict": "yes",
+        "why": "all details found"
+      },
+      {
+        "id": "par-40",
+        "category": "partly",
+        "claim": "Meena is ramping up on auth, and Sara has stepped away from reviews.",
+        "quote": "Auth: Meena is ramping up. Sara as backup reviewer.",
+        "verdict": "yes",
+        "why": "all details found"
+      }
+    ],
+    "false_rejects": []
+  },
+  "effect_on_sample_claims": {
+    "verified": 83,
+    "inferred": 3,
+    "downgraded_by_detail_check": 0,
+    "ai_answers_missing_from_cache": 0,
+    "seeded_fixtures": 3
+  },
+  "rows": [
+    {
+      "id": "cor-01",
+      "category": "correct",
+      "expected": "yes",
+      "ai": "unchecked",
+      "detail": "yes",
+      "after": "unchecked",
+      "detail_reason": "all details found"
+    },
+    {
+      "id": "cor-02",
+      "category": "correct",
+      "expected": "yes",
+      "ai": "unchecked",
+      "detail": "yes",
+      "after": "unchecked",
+      "detail_reason": "all details found"
+    },
+    {
+      "id": "cor-03",
+      "category": "correct",
+      "expected": "yes",
+      "ai": "unchecked",
+      "detail": "yes",
+      "after": "unchecked",
+      "detail_reason": "all details found"
+    },
+    {
+      "id": "cor-04",
+      "category": "correct",
+      "expected": "yes",
+      "ai": "unchecked",
+      "detail": "yes",
+      "after": "unchecked",
+      "detail_reason": "all details found"
+    },
+    {
+      "id": "cor-05",
+      "category": "correct",
+      "expected": "yes",
+      "ai": "unchecked",
+      "detail": "yes",
+      "after": "unchecked",
+      "detail_reason": "all details found"
+    },
+    {
+      "id": "cor-06",
+      "category": "correct",
+      "expected": "yes",
+      "ai": "unchecked",
+      "detail": "yes",
+      "after": "unchecked",
+      "detail_reason": "all details found"
+    },
+    {
+      "id": "cor-07",
+      "category": "correct",
+      "expected": "yes",
+      "ai": "unchecked",
+      "detail": "yes",
+      "after": "unchecked",
+      "detail_reason": "all details found"
+    },
+    {
+      "id": "cor-08",
+      "category": "correct",
+      "expected": "yes",
+      "ai": "unchecked",
+      "detail": "yes",
+      "after": "unchecked",
+      "detail_reason": "all details found"
+    },
+    {
+      "id": "cor-09",
+      "category": "correct",
+      "expected": "yes",
+      "ai": "unchecked",
+      "detail": "yes",
+      "after": "unchecked",
+      "detail_reason": "all details found"
+    },
+    {
+      "id": "cor-10",
+      "category": "correct",
+      "expected": "yes",
+      "ai": "unchecked",
+      "detail": "yes",
+      "after": "unchecked",
+      "detail_reason": "all details found"
+    },
+    {
+      "id": "cor-11",
+      "category": "correct",
+      "expected": "yes",
+      "ai": "unchecked",
+      "detail": "yes",
+      "after": "unchecked",
+      "detail_reason": "all details found"
+    },
+    {
+      "id": "cor-12",
+      "category": "correct",
+      "expected": "yes",
+      "ai": "unchecked",
+      "detail": "yes",
+      "after": "unchecked",
+      "detail_reason": "all details found"
+    },
+    {
+      "id": "cor-13",
+      "category": "correct",
+      "expected": "yes",
+      "ai": "unchecked",
+      "detail": "yes",
+      "after": "unchecked",
+      "detail_reason": "all details found"
+    },
+    {
+      "id": "cor-14",
+      "category": "correct",
+      "expected": "yes",
+      "ai": "unchecked",
+      "detail": "yes",
+      "after": "unchecked",
+      "detail_reason": "all details found"
+    },
+    {
+      "id": "cor-15",
+      "category": "correct",
+      "expected": "yes",
+      "ai": "unchecked",
+      "detail": "yes",
+      "after": "unchecked",
+      "detail_reason": "all details found"
+    },
+    {
+      "id": "unr-16",
+      "category": "unrelated",
+      "expected": "no",
+      "ai": "unchecked",
+      "detail": "partly",
+      "after": "partly",
+      "detail_reason": "missing from quote and chunk: Payments"
+    },
+    {
+      "id": "unr-17",
+      "category": "unrelated",
+      "expected": "no",
+      "ai": "unchecked",
+      "detail": "partly",
+      "after": "partly",
+      "detail_reason": "missing from quote and chunk: 70"
+    },
+    {
+      "id": "unr-18",
+      "category": "unrelated",
+      "expected": "no",
+      "ai": "unchecked",
+      "detail": "partly",
+      "after": "partly",
+      "detail_reason": "missing from quote and chunk: Meena"
+    },
+    {
+      "id": "unr-19",
+      "category": "unrelated",
+      "expected": "no",
+      "ai": "unchecked",
+      "detail": "partly",
+      "after": "partly",
+      "detail_reason": "missing from quote and chunk: UI"
+    },
+    {
+      "id": "unr-20",
+      "category": "unrelated",
+      "expected": "no",
+      "ai": "unchecked",
+      "detail": "partly",
+      "after": "partly",
+      "detail_reason": "missing from quote and chunk: FCM"
+    },
+    {
+      "id": "opp-21",
+      "category": "opposite",
+      "expected": "no",
+      "ai": "unchecked",
+      "detail": "yes",
+      "after": "unchecked",
+      "detail_reason": "all details found"
+    },
+    {
+      "id": "opp-22",
+      "category": "opposite",
+      "expected": "no",
+      "ai": "unchecked",
+      "detail": "yes",
+      "after": "unchecked",
+      "detail_reason": "all details found"
+    },
+    {
+      "id": "opp-23",
+      "category": "opposite",
+      "expected": "no",
+      "ai": "unchecked",
+      "detail": "yes",
+      "after": "unchecked",
+      "detail_reason": "all details found"
+    },
+    {
+      "id": "opp-24",
+      "category": "opposite",
+      "expected": "no",
+      "ai": "unchecked",
+      "detail": "yes",
+      "after": "unchecked",
+      "detail_reason": "all details found"
+    },
+    {
+      "id": "opp-25",
+      "category": "opposite",
+      "expected": "no",
+      "ai": "unchecked",
+      "detail": "yes",
+      "after": "unchecked",
+      "detail_reason": "all details found"
+    },
+    {
+      "id": "ove-26",
+      "category": "overstated",
+      "expected": "no",
+      "ai": "unchecked",
+      "detail": "yes",
+      "after": "unchecked",
+      "detail_reason": "all details found"
+    },
+    {
+      "id": "ove-27",
+      "category": "overstated",
+      "expected": "no",
+      "ai": "unchecked",
+      "detail": "yes",
+      "after": "unchecked",
+      "detail_reason": "all details found"
+    },
+    {
+      "id": "ove-28",
+      "category": "overstated",
+      "expected": "no",
+      "ai": "unchecked",
+      "detail": "yes",
+      "after": "unchecked",
+      "detail_reason": "all details found"
+    },
+    {
+      "id": "ove-29",
+      "category": "overstated",
+      "expected": "no",
+      "ai": "unchecked",
+      "detail": "yes",
+      "after": "unchecked",
+      "detail_reason": "all details found"
+    },
+    {
+      "id": "ove-30",
+      "category": "overstated",
+      "expected": "no",
+      "ai": "unchecked",
+      "detail": "yes",
+      "after": "unchecked",
+      "detail_reason": "all details found"
+    },
+    {
+      "id": "inv-31",
+      "category": "invented_detail",
+      "expected": "no",
+      "ai": "unchecked",
+      "detail": "partly",
+      "after": "partly",
+      "detail_reason": "missing from quote and chunk: 5, Jan"
+    },
+    {
+      "id": "inv-32",
+      "category": "invented_detail",
+      "expected": "no",
+      "ai": "unchecked",
+      "detail": "partly",
+      "after": "partly",
+      "detail_reason": "missing from quote and chunk: Arjun"
+    },
+    {
+      "id": "inv-33",
+      "category": "invented_detail",
+      "expected": "no",
+      "ai": "unchecked",
+      "detail": "partly",
+      "after": "partly",
+      "detail_reason": "missing from quote and chunk: 95"
+    },
+    {
+      "id": "inv-34",
+      "category": "invented_detail",
+      "expected": "no",
+      "ai": "unchecked",
+      "detail": "partly",
+      "after": "partly",
+      "detail_reason": "missing from quote and chunk: 3"
+    },
+    {
+      "id": "inv-35",
+      "category": "invented_detail",
+      "expected": "no",
+      "ai": "unchecked",
+      "detail": "partly",
+      "after": "partly",
+      "detail_reason": "missing from quote and chunk: Kubernetes"
+    },
+    {
+      "id": "par-36",
+      "category": "partly",
+      "expected": "partly",
+      "ai": "unchecked",
+      "detail": "yes",
+      "after": "unchecked",
+      "detail_reason": "all details found"
+    },
+    {
+      "id": "par-37",
+      "category": "partly",
+      "expected": "partly",
+      "ai": "unchecked",
+      "detail": "yes",
+      "after": "unchecked",
+      "detail_reason": "all details found"
+    },
+    {
+      "id": "par-38",
+      "category": "partly",
+      "expected": "partly",
+      "ai": "unchecked",
+      "detail": "yes",
+      "after": "unchecked",
+      "detail_reason": "all details found"
+    },
+    {
+      "id": "par-39",
+      "category": "partly",
+      "expected": "partly",
+      "ai": "unchecked",
+      "detail": "yes",
+      "after": "unchecked",
+      "detail_reason": "all details found"
+    },
+    {
+      "id": "par-40",
+      "category": "partly",
+      "expected": "partly",
+      "ai": "unchecked",
+      "detail": "yes",
+      "after": "unchecked",
+      "detail_reason": "all details found"
+    }
+  ]
+}

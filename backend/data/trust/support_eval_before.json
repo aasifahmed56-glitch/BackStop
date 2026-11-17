@@ -1,0 +1,284 @@
+{
+  "generated_at": "2026-11-17T14:34:24+00:00",
+  "llm_provider": "none",
+  "ai_check_ran": false,
+  "labels_file": "support_eval.json",
+  "rule": "A bad claim is caught when the verdict is 'no' or 'partly'. 'unchecked' = the AI check did not run.",
+  "note": "The AI support check did not run: no API key was available and no saved answer exists for these pairs, so every AI verdict is 'unchecked'. In the app an unchecked claim is never shown as Verified (fail closed). The live AI numbers still need a run with a key.",
+  "system": "AI support check (existing prompt, unchanged)",
+  "pairs": 40,
+  "bad_pairs": 25,
+  "correct_pairs": 15,
+  "ai_check_not_run": 40,
+  "caught": 0,
+  "catch_rate": 0.0,
+  "falsely_rejected": 0,
+  "false_reject_rate": 0.0,
+  "per_category": {
+    "correct": {
+      "pairs": 15,
+      "falsely_rejected": 0
+    },
+    "invented_detail": {
+      "pairs": 5,
+      "caught": 0
+    },
+    "opposite": {
+      "pairs": 5,
+      "caught": 0
+    },
+    "overstated": {
+      "pairs": 5,
+      "caught": 0
+    },
+    "partly": {
+      "pairs": 5,
+      "caught": 0
+    },
+    "unrelated": {
+      "pairs": 5,
+      "caught": 0
+    }
+  },
+  "confusion_matrix": {
+    "correct": {
+      "yes": 0,
+      "partly": 0,
+      "no": 0,
+      "unchecked": 15
+    },
+    "invented_detail": {
+      "yes": 0,
+      "partly": 0,
+      "no": 0,
+      "unchecked": 5
+    },
+    "opposite": {
+      "yes": 0,
+      "partly": 0,
+      "no": 0,
+      "unchecked": 5
+    },
+    "overstated": {
+      "yes": 0,
+      "partly": 0,
+      "no": 0,
+      "unchecked": 5
+    },
+    "partly": {
+      "yes": 0,
+      "partly": 0,
+      "no": 0,
+      "unchecked": 5
+    },
+    "unrelated": {
+      "yes": 0,
+      "partly": 0,
+      "no": 0,
+      "unchecked": 5
+    }
+  },
+  "misses": [
+    {
+      "id": "unr-16",
+      "category": "unrelated",
+      "claim": "Payments use idempotency keys for retries.",
+      "quote": "Follow trunk-based development (short-lived branches).",
+      "verdict": "unchecked",
+      "why": "Support check unavailable: LLM_PROVIDER=none and cache missing for key 542bc3b274eecc40f8bd6f836be0fc3af224ebba173e41387c05eef1d7c566a0. Run with a live provider first to populate the cache."
+    },
+    {
+      "id": "unr-17",
+      "category": "unrelated",
+      "claim": "The deploy runbook is 70% done.",
+      "quote": "Web UI: organiser dashboard in progress.",
+      "verdict": "unchecked",
+      "why": "Support check unavailable: LLM_PROVIDER=none and cache missing for key 100160ce19822952cb706aca68c1956d7e6b12ac3b481fffec42351e2140f226. Run with a live provider first to populate the cache."
+    },
+    {
+      "id": "unr-18",
+      "category": "unrelated",
+      "claim": "Meena owns the notifications module.",
+      "quote": "Run all tests before any production deploy.",
+      "verdict": "unchecked",
+      "why": "Support check unavailable: LLM_PROVIDER=none and cache missing for key 8b22228b8be555fd7209a95cfc5bddc36a44d5cf6bad72eaf232d6a4e11343e7. Run with a live provider first to populate the cache."
+    },
+    {
+      "id": "unr-19",
+      "category": "unrelated",
+      "claim": "The web UI is now responsive on mobile.",
+      "quote": "Payments: Stripe integration done. Webhooks tested.",
+      "verdict": "unchecked",
+      "why": "Support check unavailable: LLM_PROVIDER=none and cache missing for key 0eb7e08467b353757c17768f2b66ac752d481f7bb553dfe4fa870ae96901e221. Run with a live provider first to populate the cache."
+    },
+    {
+      "id": "unr-20",
+      "category": "unrelated",
+      "claim": "The FCM push key has no owner.",
+      "quote": "[Sara]: I'll take the event creation form.",
+      "verdict": "unchecked",
+      "why": "Support check unavailable: LLM_PROVIDER=none and cache missing for key b69d4126960b632f2b2f9ee7dc9242452229530a5c2e9ba653329610cdf88fdb. Run with a live provider first to populate the cache."
+    },
+    {
+      "id": "opp-21",
+      "category": "opposite",
+      "claim": "The polling implementation is unstable and keeps failing.",
+      "quote": "Polling implementation is stable.",
+      "verdict": "unchecked",
+      "why": "Support check unavailable: LLM_PROVIDER=none and cache missing for key a48c2cd857224e2aeff394f1c68dddcfd3b67f517e5617fcbe23fd268eb1c74e. Run with a live provider first to populate the cache."
+    },
+    {
+      "id": "opp-22",
+      "category": "opposite",
+      "claim": "Auth is not finished; password reset is still missing.",
+      "quote": "Auth: complete (JWT, multi-role, password reset).",
+      "verdict": "unchecked",
+      "why": "Support check unavailable: LLM_PROVIDER=none and cache missing for key 7124306bd943401bb4f46e86a523a871582f8a38c4228eed9aafeb42cc81bf98. Run with a live provider first to populate the cache."
+    },
+    {
+      "id": "opp-23",
+      "category": "opposite",
+      "claim": "Test keys should stay in the config for go-live.",
+      "quote": "Remove test keys from config before go-live.",
+      "verdict": "unchecked",
+      "why": "Support check unavailable: LLM_PROVIDER=none and cache missing for key 72b3258434110d55195a5076d42a92771ba960f1489590792821d3e8a179c951. Run with a live provider first to populate the cache."
+    },
+    {
+      "id": "opp-24",
+      "category": "opposite",
+      "claim": "Riya may merge the migration PR without reviewing it.",
+      "quote": "Kabir leads testing. Riya to review the PR before merging.",
+      "verdict": "unchecked",
+      "why": "Support check unavailable: LLM_PROVIDER=none and cache missing for key 40f9a936c0422d3fde06e6367d1f0501302c654c0d77bf6f701e521f421ff672. Run with a live provider first to populate the cache."
+    },
+    {
+      "id": "opp-25",
+      "category": "opposite",
+      "claim": "Sessions, not JWT, are the auth mechanism.",
+      "quote": "JWT is the auth mechanism.",
+      "verdict": "unchecked",
+      "why": "Support check unavailable: LLM_PROVIDER=none and cache missing for key e9a827cf72380f63d79ee0db747f9f01b7a5235733a3169ea0f20d3e4fb9c4a9. Run with a live provider first to populate the cache."
+    },
+    {
+      "id": "ove-26",
+      "category": "overstated",
+      "claim": "The deploy runbook is complete.",
+      "quote": "Deploy runbook: 70% done.",
+      "verdict": "unchecked",
+      "why": "Support check unavailable: LLM_PROVIDER=none and cache missing for key bda868d67e3bc1a05c0b090c76afd9640b8cacbc8313d9b1e2213d593d60c785. Run with a live provider first to populate the cache."
+    },
+    {
+      "id": "ove-27",
+      "category": "overstated",
+      "claim": "None of the deploy steps are documented.",
+      "quote": "Runbook is partial — some steps are undocumented.",
+      "verdict": "unchecked",
+      "why": "Support check unavailable: LLM_PROVIDER=none and cache missing for key 4b56d940dc42a8bde1c24a15b3142e73cc1c2457c42be40bebaedf9c275dc493. Run with a live provider first to populate the cache."
+    },
+    {
+      "id": "ove-28",
+      "category": "overstated",
+      "claim": "The Events API is fully finished and in production.",
+      "quote": "Events API: 80% complete.",
+      "verdict": "unchecked",
+      "why": "Support check unavailable: LLM_PROVIDER=none and cache missing for key f2d96df8879a01cc1affd2b79bce4b0d0f91a1757046b8759a57f9bca960a299. Run with a live provider first to populate the cache."
+    },
+    {
+      "id": "ove-29",
+      "category": "overstated",
+      "claim": "Kabir knows everything about payments and needs no handover.",
+      "quote": "Payments: Kabir has context.",
+      "verdict": "unchecked",
+      "why": "Support check unavailable: LLM_PROVIDER=none and cache missing for key 9c7513c78d0c21752e91055d6af391e3c136fc7793ce7ab93ae0424a4610ff5c. Run with a live provider first to populate the cache."
+    },
+    {
+      "id": "ove-30",
+      "category": "overstated",
+      "claim": "Notifications are completely broken and must be rewritten.",
+      "quote": "Notifications stale since late Jan — needs attention.",
+      "verdict": "unchecked",
+      "why": "Support check unavailable: LLM_PROVIDER=none and cache missing for key 2bc0f564e8e373498adfc2f003aefb0d83dc385affaa1c275df956441f2f14b7. Run with a live provider first to populate the cache."
+    },
+    {
+      "id": "inv-31",
+      "category": "invented_detail",
+      "claim": "Kabir is to implement the refund endpoint by 5 Jan.",
+      "quote": "Kabir to implement refund endpoint by 20 Dec.",
+      "verdict": "unchecked",
+      "why": "Support check unavailable: LLM_PROVIDER=none and cache missing for key 4a911f4f0d6ff983a97d4e37a9079d87fa6442c02739d2819b80f15491d3af52. Run with a live provider first to populate the cache."
+    },
+    {
+      "id": "inv-32",
+      "category": "invented_detail",
+      "claim": "Meena takes over auth with support from Arjun.",
+      "quote": "Meena: takes over auth/ (with Sara's support).",
+      "verdict": "unchecked",
+      "why": "Support check unavailable: LLM_PROVIDER=none and cache missing for key 03619d79113d16711f6e2b92fe08951de2c7618b3e821e0319edaee68eb0bdfe. Run with a live provider first to populate the cache."
+    },
+    {
+      "id": "inv-33",
+      "category": "invented_detail",
+      "claim": "The Events API is 95% complete.",
+      "quote": "Events API: 80% complete.",
+      "verdict": "unchecked",
+      "why": "Support check unavailable: LLM_PROVIDER=none and cache missing for key fa2146e336df30cf9b2c7952113d42ebf4025b035a1da73d48898aed58f36cee. Run with a live provider first to populate the cache."
+    },
+    {
+      "id": "inv-34",
+      "category": "invented_detail",
+      "claim": "Kabir leads testing with a team of 3 testers.",
+      "quote": "Kabir leads testing.",
+      "verdict": "unchecked",
+      "why": "Support check unavailable: LLM_PROVIDER=none and cache missing for key 6d2e36f628dd495ec0a5fc6fba54bab820969c333f17f5e4b321f884252f80ec. Run with a live provider first to populate the cache."
+    },
+    {
+      "id": "inv-35",
+      "category": "invented_detail",
+      "claim": "Dev must read the nginx and Kubernetes configs carefully.",
+      "quote": "Dev: please read the nginx and docker-compose configs carefully.",
+      "verdict": "unchecked",
+      "why": "Support check unavailable: LLM_PROVIDER=none and cache missing for key 5bcbb31bf19925c304cb24b820b205ff321927a1c3caf6465fd01250c91e10d1. Run with a live provider first to populate the cache."
+    },
+    {
+      "id": "par-36",
+      "category": "partly",
+      "claim": "Kabir leads testing and will also deploy the migration to production.",
+      "quote": "Kabir leads testing. Riya to review the PR before merging.",
+      "verdict": "unchecked",
+      "why": "Support check unavailable: LLM_PROVIDER=none and cache missing for key d615692c7f6bd42a03ff481392a2f5944c4864d69331b965c7d5d7714663ef04. Run with a live provider first to populate the cache."
+    },
+    {
+      "id": "par-37",
+      "category": "partly",
+      "claim": "Auth token refresh is complete, and so is two-factor login.",
+      "quote": "Auth: token refresh and multi-role support complete.",
+      "verdict": "unchecked",
+      "why": "Support check unavailable: LLM_PROVIDER=none and cache missing for key e5260ada015dad5f3980a4665b95fc9032670986c35ff625fb78c7032ff67551. Run with a live provider first to populate the cache."
+    },
+    {
+      "id": "par-38",
+      "category": "partly",
+      "claim": "Stripe v2 SDK is in use and the v3 migration is postponed because of budget limits.",
+      "quote": "Stripe v2 SDK in use. Migration to v3 is planned but postponed.",
+      "verdict": "unchecked",
+      "why": "Support check unavailable: LLM_PROVIDER=none and cache missing for key 516565e17a497738665ba5f2347178f9bf27a8359ec917d5c5276bf1e126f64b. Run with a live provider first to populate the cache."
+    },
+    {
+      "id": "par-39",
+      "category": "partly",
+      "claim": "Staging is live, and the production deploy planned for 1 Apr needs a load test first.",
+      "quote": "Deploy: staging live. Production deploy planned for 1 Apr.",
+      "verdict": "unchecked",
+      "why": "Support check unavailable: LLM_PROVIDER=none and cache missing for key 664ac2533768fdba91077871758e3f4b5e96d7d531956b8c58d9be4bb9efcae8. Run with a live provider first to populate the cache."
+    },
+    {
+      "id": "par-40",
+      "category": "partly",
+      "claim": "Meena is ramping up on auth, and Sara has stepped away from reviews.",
+      "quote": "Auth: Meena is ramping up. Sara as backup reviewer.",
+      "verdict": "unchecked",
+      "why": "Support check unavailable: LLM_PROVIDER=none and cache missing for key 8160537111933905ced9a759b63a8fb90bb3d8b18afc873b895050058e33851b. Run with a live provider first to populate the cache."
+    }
+  ],
+  "false_rejects": []
+}

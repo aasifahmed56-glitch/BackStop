@@ -205,6 +205,10 @@ class LeakHarness:
                     self.raw_texts.append((src.name, src.raw_text.strip()))
         self.snapshot = self._state()
 
+    def _has_route(self, method: str, path: str) -> bool:
+        from app.main import app
+        return (method, path) in api_routes(app)
+
     def _admin_claims(self) -> list[dict]:
         r = self.client.get("/api/claims", params={"role": "admin"})
         assert r.status_code == 200, r.text
@@ -300,6 +304,26 @@ class LeakHarness:
                 for v in sweep_roles:
                     r = self._get(f"/api/claims/{c['id']}/{kind}", v)
                     self._record(f"sweep: every claim's {kind}", f"/api/claims/{{claim_id}}/{kind}", "GET", f"/api/claims/{c['id']}/{kind}", v, r)
+
+        # Tripwires (only when that feature is present in this build).
+        if self._has_route("GET", "/api/projects/{project_id}/tripwires"):
+            for v in ROLE_VARIANTS:
+                r = self._get("/api/projects/1/tripwires", v)
+                self._record("tripwire list", "/api/projects/{project_id}/tripwires", "GET", "/api/projects/1/tripwires", v, r)
+        if self._has_route("POST", "/api/projects/{project_id}/tripwires/check"):
+            probes = [
+                {"description": "Change the FictionalCloud contract hosting and vendor budget", "files": ["notes/budget-confidential.md"]},
+                {"description": "Advisor performance concern engagement one-on-one check-in", "files": ["notes/advisor-private.md"]},
+                {"description": "Rotate the Stripe test key in payments config", "files": ["payments/config.py"]},
+            ]
+            for body in probes:
+                for v in ROLE_VARIANTS + BODY_TAMPER_VARIANTS:
+                    r = self._post("/api/projects/1/tripwires/check", v, {**body, "diff": None})
+                    self._record("check a change with restricted words", "/api/projects/{project_id}/tripwires/check", "POST", "/api/projects/1/tripwires/check", v, r)
+        if self._has_route("GET", "/api/tripwires/replay"):
+            for v in ROLE_VARIANTS:
+                r = self._get("/api/tripwires/replay", v)
+                self._record("tripwire replay", "/api/tripwires/replay", "GET", "/api/tripwires/replay", v, r)
 
         # Path tricks on the dataset endpoint.
         for name in ("..%2Fsample", "../sample", "sample", "..", "%2e%2e"):
