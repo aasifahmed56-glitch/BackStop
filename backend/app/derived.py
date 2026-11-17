@@ -17,7 +17,7 @@ import json
 import re
 from collections import Counter, defaultdict
 from datetime import date, datetime, timedelta
-from typing import Optional
+from typing import Callable, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
@@ -355,20 +355,22 @@ def _module_of(filepath: str) -> str:
     return p.split("/")[0] if "/" in p else "root"
 
 
-def compute_ownership(commits: list[dict], leaver: str, cutoff: date) -> list[dict]:
+def compute_ownership(commits: list[dict], leaver: str, cutoff: date,
+                      module_fn: Callable[[str], str] = None) -> list[dict]:
     """
     For each module: total commits, top author, leaver commit count / share.
 
     Returns list of dicts (one per module), sorted by leaver_share descending.
     """
     pre = _pre_cutoff(commits, cutoff)
+    module_fn = module_fn or _module_of
 
     module_author: dict[str, Counter] = defaultdict(Counter)
     module_chunk_ids: dict[str, list[int]] = defaultdict(list)
 
     for c in pre:
         for f in c.get("files", []):
-            mod = _module_of(f)
+            mod = module_fn(f)
             module_author[mod][c["author"]] += 1
             cid = c.get("chunk_id")
             if cid is not None:
@@ -421,6 +423,7 @@ def compute_stale_modules(
     commits: list[dict],
     cutoff: date,
     stale_days: int = _DEFAULT_STALE_DAYS,
+    module_fn: Callable[[str], str] = None,
 ) -> list[dict]:
     """
     Modules with no commit in the *stale_days* window immediately before *cutoff*.
@@ -432,10 +435,11 @@ def compute_stale_modules(
     last_commit: dict[str, date] = {}
     last_chunk: dict[str, Optional[int]] = {}
 
+    module_fn = module_fn or _module_of
     for c in pre:
         c_date = c["date"]
         for f in c.get("files", []):
-            mod = _module_of(f)
+            mod = module_fn(f)
             if mod not in last_commit or last_commit[mod] < c_date:
                 last_commit[mod] = c_date
                 last_chunk[mod] = c.get("chunk_id")

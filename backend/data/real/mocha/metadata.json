@@ -1,0 +1,14 @@
+{
+  "name": "mocha",
+  "repository_url": "https://github.com/mochajs/mocha",
+  "licence": "MIT",
+  "retrieved": "2026-11-17",
+  "departure_date": "2014-05-16",
+  "departure_evidence": "https://medium.com/@tjholowaychuk/farewell-node-js-4ba9e7f3e52b",
+  "leaver": "Contributor A",
+  "commit_count": 1537,
+  "contributor_count": 243,
+  "first_commit": "2011-08-28",
+  "last_commit": "2015-05-14",
+  "privacy": "Contributors are pseudonymised; emails removed; messages and paths redacted for secrets."
+}

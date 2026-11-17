@@ -1,7 +1,70 @@
 import React, { useState, useEffect } from "react";
 import { api } from "../api";
+import RealBacktestView from "./RealBacktestView";
+import GithubImportPanel from "./GithubImportPanel";
+
+const DATASET_KEY = "backstop.backtestDataset";
 
 export default function BacktestPage() {
+  const [datasets, setDatasets] = useState([{ id: "sample", label: "Synthetic sample", kind: "synthetic" }]);
+  const [dataset, setDataset] = useState(() => {
+    try {
+      return localStorage.getItem(DATASET_KEY) || "sample";
+    } catch {
+      return "sample";
+    }
+  });
+
+  useEffect(() => {
+    api.getBacktestDatasets().then((d) => Array.isArray(d) && d.length && setDatasets(d)).catch(() => {});
+  }, []);
+
+  const choose = (id) => {
+    setDataset(id);
+    try {
+      localStorage.setItem(DATASET_KEY, id);
+    } catch {
+      /* storage unavailable */
+    }
+  };
+
+  return (
+    <div className="flex flex-col w-full gap-space-lg">
+      <fieldset className="flex flex-wrap items-center gap-space-sm">
+        <legend className="sr-only">Choose a dataset</legend>
+        <span className="font-label-md text-label-md text-on-surface-variant mr-1">Dataset</span>
+        {datasets.map((d) => (
+          <label
+            key={d.id}
+            className={`cursor-pointer px-3 py-1.5 rounded-lg border font-label-md text-label-md has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-primary ${
+              dataset === d.id ? "bg-primary text-on-primary border-primary" : "bg-surface-container-lowest text-on-surface border-outline-variant"
+            }`}
+          >
+            <input type="radio" name="dataset" value={d.id} checked={dataset === d.id} onChange={() => choose(d.id)} className="sr-only" />
+            {d.label}
+          </label>
+        ))}
+        <label
+          className={`cursor-pointer px-3 py-1.5 rounded-lg border font-label-md text-label-md has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-primary ${
+            dataset === "import" ? "bg-primary text-on-primary border-primary" : "bg-surface-container-lowest text-on-surface border-outline-variant"
+          }`}
+        >
+          <input type="radio" name="dataset" value="import" checked={dataset === "import"} onChange={() => choose("import")} className="sr-only" />
+          Analyse a GitHub repository
+        </label>
+      </fieldset>
+      {dataset === "import" ? (
+        <GithubImportPanel />
+      ) : dataset === "sample" || !datasets.some((d) => d.id === dataset) ? (
+        <SampleBacktest />
+      ) : (
+        <RealBacktestView name={dataset} />
+      )}
+    </div>
+  );
+}
+
+function SampleBacktest() {
   const [backtestData, setBacktestData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);

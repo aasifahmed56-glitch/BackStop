@@ -196,6 +196,7 @@ from app.verify import router as verify_router       # noqa: E402
 from app.review import router as review_router       # noqa: E402
 from app.views import router as views_router         # noqa: E402
 from app.backtest import router as backtest_router   # noqa: E402
+from app.githubimport import router as import_router  # noqa: E402
 
 app.include_router(ingest_router, prefix="/api")
 app.include_router(derived_router, prefix="/api")
@@ -203,6 +204,7 @@ app.include_router(verify_router, prefix="/api")
 app.include_router(review_router, prefix="/api")
 app.include_router(views_router, prefix="/api")
 app.include_router(backtest_router, prefix="/api")
+app.include_router(import_router, prefix="/api")
 
 
 # ---------------------------------------------------------------------------
