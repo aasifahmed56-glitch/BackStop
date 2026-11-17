@@ -1,261 +1,290 @@
 import React from "react";
+import { ArrowRight, FileText } from "lucide-react";
+import { Button, Field, Skeleton, StatusChip, STATUS, REVIEW } from "./ui.jsx";
+
+const ACCESS_CHIP = {
+  restricted: "bg-error-container text-on-error-container",
+  confidential: "bg-goldenrod-container text-on-goldenrod",
+  team: "bg-surface-container text-on-surface-variant",
+  public: "bg-tertiary-fixed text-on-tertiary-fixed",
+};
+
+const STEPS = [
+  {
+    n: 1,
+    title: "Inspect",
+    body: "Every claim is checked against its exact source quote, or the code that computed it.",
+    link: "Check the claims",
+    tab: "review",
+  },
+  {
+    n: 2,
+    title: "Sign off",
+    body: "A person approves, corrects or rejects each claim before it can reach anyone else.",
+    link: "Open the queue",
+    tab: "review",
+  },
+  {
+    n: 3,
+    title: "Receive",
+    body: "The newcomer gets a plan limited to their role, and signs for receipt.",
+    link: "See the handover",
+    tab: "handover",
+  },
+];
+
+const num = (v) => (Number.isFinite(v) ? v : 0);
 
 export default function HomePage({
   project,
   stats,
   onResetSample,
   onStartDemo,
+  onDerive,
+  onExtract,
   setActiveTab,
   isLoading,
   actionStatus,
 }) {
-  const totalClaims = stats?.total ?? 0;
-  const approvedCount = stats?.by_review?.approved ?? 0;
-  const approvedPercent = totalClaims > 0 ? Math.round((approvedCount / totalClaims) * 100) : 0;
-  const pendingCount = stats?.by_review?.pending ?? 0;
-  const sourcesCount = project?.source_count ?? 16;
-  const sources = project?.sources || [];
+  const hasStats = !!stats;
+  const total = num(stats?.total);
+  const review = stats?.by_review || {};
+  const byStatus = stats?.by_status || {};
+  const sources = Array.isArray(project?.sources) ? project.sources : [];
+  const sourceCount = project?.source_count ?? (project ? sources.length : null);
 
-  const handleTryDemo = async () => {
+  const order = ["approved", "corrected", "rejected", "pending"];
+  const counts = order.map((k) => num(review[k]));
+  const decided = counts[0] + counts[1] + counts[2];
+  const shown = Math.max(total, counts.reduce((a, b) => a + b, 0));
+  const ticks = [];
+  order.forEach((k, i) => {
+    for (let j = 0; j < counts[i]; j++) ticks.push(REVIEW[k].tick);
+  });
+  while (ticks.length < shown) ticks.push(REVIEW.pending.tick);
+
+  const handleStart = async () => {
     if (isLoading) return;
     try {
-      if (onStartDemo) {
-        await onStartDemo();
-      } else {
-        setActiveTab("review");
-      }
+      if (onStartDemo) await onStartDemo();
+      else setActiveTab("review");
     } catch (err) {
-      console.error("Failed to load sample demo", err);
+      console.error("Failed to start the demo", err);
       setActiveTab("review");
     }
   };
 
   return (
-    <div className="flex flex-col w-full gap-space-xl">
-      {/* Short Synthetic Data Note */}
-      <div className="w-full bg-surface-container-low rounded-xl px-space-md py-space-sm flex flex-col sm:flex-row items-center justify-between gap-space-sm shadow-xs border border-surface-container">
-        <div className="flex items-center gap-space-sm">
-          <span className="flex items-center justify-center w-5 h-5 rounded-full bg-secondary-fixed text-on-secondary-fixed shrink-0">
-            <span aria-hidden="true" className="material-symbols-outlined text-[14px]">info</span>
-          </span>
-          <span className="font-label-md text-label-md text-on-surface-variant">
-            Synthetic demonstration data. Automated checks reduce errors and a human approves.
-          </span>
-        </div>
-        <div className="flex items-center gap-1.5 text-tertiary font-label-sm text-label-sm font-semibold shrink-0">
-          <span className="w-2 h-2 rounded-full bg-tertiary"></span>
-          <span>{isLoading ? "Loading sample..." : "Demo Ready"}</span>
-        </div>
-      </div>
-
-      {/* Hero Section: 10-Second Value Proposition */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-space-xl py-space-md">
-        <div className="space-y-space-md max-w-2xl">
-          <h1 className="font-display-lg text-display-lg sm:text-4xl text-on-surface tracking-tight font-bold">
-            When someone leaves your team, their knowledge shouldn't.
+    <div className="flex flex-col w-full gap-14 lg:gap-16 pb-8">
+      {/* Opening */}
+      <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center pt-2 lg:pt-6">
+        <div className="lg:col-span-7 flex flex-col gap-5 min-w-0">
+          <h1 className="text-[34px] leading-[1.1] sm:text-[44px] font-bold tracking-tight text-on-surface text-balance">
+            When someone leaves, their knowledge ships with a receipt.
           </h1>
-          <p className="font-body-lg text-body-lg text-on-surface-variant leading-relaxed">
-            Backstop captures critical project knowledge, decisions, and system ownership from your tools before engineers move on. Built for small software teams, it turns scattered team activity into a verified, role-based handover plan in minutes.
+          <p className="text-[16px] leading-7 text-on-surface-variant max-w-[56ch]">
+            Backstop turns {project?.leaver_name || "a departing engineer"}'s project activity into a list of
+            claims. Each claim shows the exact quote or the code behind it, a lead approves it, and the
+            newcomer receives only what their role allows.
           </p>
-          <div className="pt-space-xs">
-            {/* ONE Primary Button */}
-            <button
-              id="btn-try-demo"
-              onClick={handleTryDemo}
-              disabled={isLoading}
-              className="px-space-xl py-3.5 rounded-xl bg-primary text-on-primary font-headline-sm text-headline-sm shadow-md hover:bg-primary/90 transition-all flex items-center gap-2.5 active:scale-[0.98] cursor-pointer disabled:opacity-50"
-              type="button"
-            >
-              <span aria-hidden="true" className={`material-symbols-outlined text-[22px] ${isLoading ? "animate-spin" : ""}`}>
-                {isLoading ? "refresh" : "play_circle"}
-              </span>
-              <span>{isLoading ? "Loading demo workspace..." : "Try the 2-minute demo"}</span>
-            </button>
+          <div className="flex flex-wrap items-center gap-3 pt-1">
+            <Button id="btn-try-demo" variant="primary" size="lg" onClick={handleStart} disabled={isLoading}>
+              {isLoading ? "Loading…" : "Check the claims"}
+              {!isLoading && <ArrowRight size={18} aria-hidden="true" />}
+            </Button>
+            <Button variant="outline" size="lg" onClick={() => setActiveTab("handover")}>
+              See the handover
+            </Button>
           </div>
-        </div>
-
-        {/* Small "Example Story" Card */}
-        <div className="w-full lg:max-w-md bg-surface-container-lowest rounded-2xl p-space-lg border border-surface-container shadow-sm flex flex-col gap-space-sm relative overflow-hidden">
-          <div className="flex items-center justify-between">
-            <span className="px-2.5 py-1 rounded-md bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm font-bold uppercase tracking-wider">
-              Example story
-            </span>
-            <span className="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1 font-medium">
-              <span className="w-2 h-2 rounded-full bg-secondary"></span>
-              Departing Nov 15
-            </span>
-          </div>
-
-          <div className="pt-space-xs">
-            <p className="font-headline-sm text-headline-sm text-on-surface font-semibold leading-snug">
-              “Riya is leaving. The new developer needs to know what only she knew.”
-            </p>
-            <p className="font-body-sm text-body-sm text-on-surface-variant mt-2 leading-relaxed">
-              Riya built the core campus event ticketing service. Before her last day, Backstop surfaces the components only she worked on, links every decision to real discussion threads, and drafts an onboarding plan so the next developer isn't stuck guessing.
-            </p>
-          </div>
-
-          <div className="pt-space-xs mt-space-xs border-t border-surface-container/60 flex items-center justify-between text-on-surface-variant font-body-sm text-body-sm">
-            <span className="font-medium text-on-surface">Campus Event App</span>
-            <span>Riya &rarr; New Developer</span>
-          </div>
-        </div>
-      </div>
-
-      {/* "How it works" Strip: 3 Short Steps in Plain Words */}
-      <section className="w-full space-y-space-md">
-        <div>
-          <h2 className="font-headline-lg text-headline-lg text-on-surface font-bold">How it works</h2>
-          <p className="font-body-md text-body-md text-on-surface-variant">
-            Three simple steps to keep your team's knowledge safe and actionable.
+          <p className="text-[12px] text-on-surface-variant" role="status">
+            {actionStatus || "Runs on synthetic sample data. Automated checks assist; a person decides."}
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-space-md">
-          {/* Step 1 */}
-          <div className="bg-surface-container-lowest rounded-xl p-space-lg border border-surface-container shadow-xs flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between mb-space-sm">
-                <span className="w-8 h-8 rounded-lg bg-primary-fixed text-on-primary-fixed flex items-center justify-center font-bold text-sm">
-                  1
-                </span>
-                <span aria-hidden="true" className="material-symbols-outlined text-outline text-[22px]">inbox</span>
-              </div>
-              <h3 className="font-headline-sm text-headline-sm text-on-surface font-semibold mb-space-xs">
-                1. We read the team's activity.
-              </h3>
-              <p className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
-                We gather commits, issues, pull requests, and documentation into a single searchable workspace so no vital context is forgotten.
-              </p>
+        {/* Specimen consignment note */}
+        <div className="lg:col-span-5 min-w-0">
+          <div className="panel p-3 sm:p-4 flex flex-col gap-3">
+            <div className="flex items-baseline justify-between gap-3">
+              <h2 className="text-[15px] font-bold text-on-surface truncate">Handover consignment note</h2>
+              <span className="field-label shrink-0">Specimen</span>
             </div>
-          </div>
-
-          {/* Step 2 */}
-          <div className="bg-surface-container-lowest rounded-xl p-space-lg border border-surface-container shadow-xs flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between mb-space-sm">
-                <span className="w-8 h-8 rounded-lg bg-secondary-fixed text-on-secondary-fixed flex items-center justify-center font-bold text-sm">
-                  2
-                </span>
-                <span aria-hidden="true" className="material-symbols-outlined text-secondary text-[22px]">fact_check</span>
-              </div>
-              <h3 className="font-headline-sm text-headline-sm text-on-surface font-semibold mb-space-xs">
-                2. Every claim shows its source; a person approves.
-              </h3>
-              <p className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
-                Every finding quotes the exact line or message it came from. A teammate reviews and confirms each item before it enters the plan.
-              </p>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Consignor">
+                {project ? (
+                  <p className="text-[14px] font-semibold text-on-surface truncate">{project.leaver_name || "—"}</p>
+                ) : (
+                  <Skeleton className="h-5 w-20" />
+                )}
+              </Field>
+              <Field label="Consignee">
+                <p className="text-[14px] font-semibold text-on-surface truncate">New developer</p>
+              </Field>
             </div>
-          </div>
-
-          {/* Step 3 */}
-          <div className="bg-surface-container-lowest rounded-xl p-space-lg border border-surface-container shadow-xs flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between mb-space-sm">
-                <span className="w-8 h-8 rounded-lg bg-surface-container-high text-on-surface flex items-center justify-center font-bold text-sm">
-                  3
-                </span>
-                <span aria-hidden="true" className="material-symbols-outlined text-tertiary text-[22px]">assignment_turned_in</span>
+            <Field label="Contents">
+              {hasStats && project ? (
+                <p className="font-mono text-[13px] text-on-surface tnum">
+                  {total} claims from {sourceCount ?? "—"} sources
+                </p>
+              ) : (
+                <Skeleton className="h-5 w-48" />
+              )}
+            </Field>
+            <Field label="Manifest tally">
+              {hasStats && shown > 0 ? (
+                <div className="flex flex-col gap-2">
+                  <div className="flex gap-px h-7" role="img" aria-label={`${decided} of ${shown} lines checked`}>
+                    {ticks.map((cls, i) => (
+                      <span key={i} className={`flex-1 min-w-0 rounded-[1px] ${cls}`} />
+                    ))}
+                  </div>
+                  <p className="text-[13px] text-on-surface-variant">
+                    <span className="font-bold text-on-surface tnum">{decided}</span> of{" "}
+                    <span className="tnum">{shown}</span> lines checked
+                  </p>
+                </div>
+              ) : hasStats ? (
+                <p className="text-[13px] text-on-surface-variant">No lines on the manifest yet.</p>
+              ) : (
+                <Skeleton className="h-10 w-full" />
+              )}
+            </Field>
+            <Field label="Example line" aside={<span className="text-[11px] text-outline">Illustration</span>}>
+              <div className="flex flex-col items-start gap-2">
+                <StatusChip status="verified" size="sm" />
+                <p className="font-mono text-[12px] leading-5 text-on-surface-variant bg-surface-container-low self-stretch px-2 py-1.5 rounded-[2px] break-words">
+                  “Quote copied word for word from the source file.”
+                </p>
               </div>
-              <h3 className="font-headline-sm text-headline-sm text-on-surface font-semibold mb-space-xs">
-                3. The new person gets a plan, limited to what they may see.
-              </h3>
-              <p className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
-                Incoming developers or project managers receive tailored Day 1, Week 1, and Month 1 checklists with access strictly matched to their role.
-              </p>
-            </div>
+            </Field>
           </div>
         </div>
       </section>
 
-      {/* Sample Handover Summary Card */}
-      <section className="w-full bg-surface-container-lowest rounded-xl shadow-xs p-space-lg border border-surface-container">
-        <div className="flex flex-col md:flex-row md:items-center justify-between pb-space-md mb-space-md border-b border-surface-container/60 gap-space-sm">
-          <div className="flex items-center gap-space-md">
-            <div className="w-11 h-11 rounded-xl bg-primary-fixed flex items-center justify-center text-primary">
-              <span aria-hidden="true" className="material-symbols-outlined text-[24px]">folder_shared</span>
-            </div>
-            <div>
-              <h3 className="font-headline-md text-headline-md text-on-surface font-semibold">
-                {project?.name || "Campus Event App"} Handover Workspace
-              </h3>
-              <p className="font-body-sm text-body-sm text-on-surface-variant">
-                Departing engineer: <strong className="text-on-surface">{project?.leaver_name || "Riya"}</strong> &bull; Cutoff date: {project?.departure_date || "Nov 15, 2026"}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-space-md">
-            <span className="px-3 py-1 rounded-full bg-tertiary/10 text-tertiary font-label-sm text-label-sm font-semibold flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-tertiary"></span>
-              Demo Project Active
-            </span>
-          </div>
-        </div>
+      {/* GitHub import box (owned by the backtest branch) mounts here */}
 
-        {/* High-level metrics */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-space-md mb-space-lg">
-          <div className="bg-surface-container-low rounded-xl p-space-md border border-surface-container/60">
-            <span className="font-label-sm text-label-sm uppercase font-semibold text-on-surface-variant block mb-1">
-              Team Sources
-            </span>
-            <div className="flex items-baseline gap-1.5">
-              <span className="font-display-lg text-display-lg text-on-surface font-bold">{sourcesCount}</span>
-              <span className="font-label-sm text-label-sm text-on-surface-variant">files analyzed</span>
-            </div>
-          </div>
-
-          <div className="bg-surface-container-low rounded-xl p-space-md border border-surface-container/60">
-            <span className="font-label-sm text-label-sm uppercase font-semibold text-on-surface-variant block mb-1">
-              Claims Found
-            </span>
-            <div className="flex items-baseline gap-1.5">
-              <span className="font-display-lg text-display-lg text-on-surface font-bold">{totalClaims}</span>
-              <span className="font-label-sm text-label-sm text-on-surface-variant">facts captured</span>
-            </div>
-          </div>
-
-          <div className="bg-surface-container-low rounded-xl p-space-md border border-surface-container/60">
-            <span className="font-label-sm text-label-sm uppercase font-semibold text-on-surface-variant block mb-1">
-              Approved
-            </span>
-            <div className="flex items-baseline gap-1.5">
-              <span className="font-display-lg text-display-lg text-secondary font-bold">{approvedCount}</span>
-              <span className="font-label-sm text-label-sm text-on-surface-variant">by reviewer</span>
-            </div>
-          </div>
-
-          <div className="bg-surface-container-low rounded-xl p-space-md border border-surface-container/60">
-            <span className="font-label-sm text-label-sm uppercase font-semibold text-on-surface-variant block mb-1">
-              Pending Review
-            </span>
-            <div className="flex items-baseline gap-1.5">
-              <span className="font-display-lg text-display-lg text-primary font-bold">{pendingCount}</span>
-              <span className="font-label-sm text-label-sm text-on-surface-variant">to check</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Team Activity Sources list */}
-        <div>
-          <h4 className="font-label-md text-label-md uppercase tracking-wider font-semibold text-on-surface-variant mb-space-sm">
-            Ingested Team Activity Files ({sources.length})
-          </h4>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-sm">
-            {sources.map((src) => (
-              <div
-                key={src.id}
-                className="p-space-sm bg-surface-container-low rounded-lg border border-surface-container/60 flex items-center justify-between"
-              >
-                <div className="flex items-center gap-2 truncate">
-                  <span aria-hidden="true" className="material-symbols-outlined text-[18px] text-outline">description</span>
-                  <span className="font-body-sm text-body-sm text-on-surface truncate font-medium">{src.name}</span>
-                </div>
-                <span className="px-1.5 py-0.5 rounded text-[11px] font-semibold uppercase bg-surface-container text-on-surface-variant">
-                  {src.access_level}
+      {/* Journey */}
+      <section aria-labelledby="journey-h">
+        <h2 id="journey-h" className="text-[22px] leading-7 font-bold text-on-surface mb-4">
+          How the consignment works
+        </h2>
+        <ol className="grid grid-cols-1 md:grid-cols-3 border-y border-outline-variant md:divide-x divide-y md:divide-y-0 divide-outline-variant">
+          {STEPS.map((s, i) => (
+            <li key={s.n} className="relative flex flex-col gap-2 py-5 md:px-5 md:first:pl-0 md:last:pr-0">
+              <div className="flex items-center gap-3">
+                <span className="font-mono tnum text-[13px] font-bold text-on-primary bg-ink px-1.5 py-0.5 rounded-[2px]">
+                  {s.n}
                 </span>
+                <h3 className="text-[17px] font-bold text-on-surface">{s.title}</h3>
+                {i < STEPS.length - 1 && (
+                  <ArrowRight size={16} aria-hidden="true" className="hidden md:block ml-auto text-outline" />
+                )}
               </div>
-            ))}
+              <p className="text-[14px] leading-6 text-on-surface-variant max-w-[40ch]">{s.body}</p>
+              <button
+                type="button"
+                onClick={() => setActiveTab(s.tab)}
+                className="self-start inline-flex items-center gap-1 text-[13px] font-semibold text-primary hover:underline cursor-pointer"
+              >
+                {s.link}
+                <ArrowRight size={14} aria-hidden="true" />
+              </button>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      {/* Legend */}
+      <section aria-labelledby="trust-h">
+        <h2 id="trust-h" className="text-[22px] leading-7 font-bold text-on-surface mb-4">
+          What makes a claim trustworthy
+        </h2>
+        <p className="text-[14px] leading-6 text-on-surface-variant max-w-[64ch] mb-4">
+          Automated checks compare each claim with its source and give it one of four statuses. The status
+          tells the reviewer how much to read before approving.
+        </p>
+        <div className="panel overflow-hidden">
+          <div className="hidden sm:grid grid-cols-[180px_1fr_72px] gap-4 px-4 py-2 bg-surface-container-low border-b border-outline-variant">
+            <span className="field-label">Status</span>
+            <span className="field-label">What it means</span>
+            <span className="field-label text-right">Claims</span>
           </div>
+          <ul className="divide-y divide-outline-variant">
+            {["verified", "inferred", "conflicting", "missing"].map((k) => (
+              <li
+                key={k}
+                className="grid grid-cols-[1fr_auto] sm:grid-cols-[180px_1fr_72px] gap-x-4 gap-y-1.5 px-4 py-3 items-start"
+              >
+                <div className="sm:self-center">
+                  <StatusChip status={k} />
+                </div>
+                <p className="text-[14px] leading-6 text-on-surface-variant order-3 sm:order-none col-span-2 sm:col-span-1">
+                  {STATUS[k].help}
+                </p>
+                <p className="tnum font-mono text-[15px] font-bold text-on-surface text-right sm:self-center">
+                  {hasStats ? num(byStatus[k]) : "—"}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      {/* Sources */}
+      <section aria-labelledby="sources-h">
+        <h2 id="sources-h" className="text-[22px] leading-7 font-bold text-on-surface mb-4">
+          Sources on the manifest{project ? ` (${sources.length})` : ""}
+        </h2>
+        {!project ? (
+          <div className="flex flex-col gap-2">
+            <Skeleton className="h-9 w-full" />
+            <Skeleton className="h-9 w-full" />
+            <Skeleton className="h-9 w-full" />
+          </div>
+        ) : sources.length === 0 ? (
+          <div className="panel p-5 flex flex-col items-start gap-3">
+            <p className="text-[14px] text-on-surface-variant">
+              No sources are loaded, so there is nothing to check yet.
+            </p>
+            <Button variant="outline" onClick={onResetSample} disabled={isLoading}>
+              Reload the sample
+            </Button>
+          </div>
+        ) : (
+          <ul className="panel divide-y divide-outline-variant">
+            {sources.map((src) => (
+              <li key={src.id ?? src.name} className="flex items-center justify-between gap-3 px-3 py-2">
+                <span className="flex items-center gap-2 min-w-0">
+                  <FileText size={15} aria-hidden="true" className="text-outline shrink-0" />
+                  <span className="font-mono text-[13px] text-on-surface truncate" title={src.name}>
+                    {src.name || "—"}
+                  </span>
+                </span>
+                <span
+                  className={`shrink-0 px-1.5 py-px rounded-[2px] text-[11px] leading-4 font-semibold uppercase ${
+                    ACCESS_CHIP[src.access_level] || ACCESS_CHIP.team
+                  }`}
+                >
+                  {src.access_level || "team"}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      {/* Behind the scenes */}
+      <section className="border-t border-outline-variant pt-5 flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
+        <p className="text-[13px] text-on-surface-variant max-w-[60ch]">
+          Behind the scenes: re-run extraction to rebuild the claims from the sources, or the derivations to
+          recompute the figures from code.
+        </p>
+        <div className="flex gap-2 flex-wrap">
+          <Button variant="outline" size="sm" onClick={onDerive} disabled={isLoading || !onDerive}>
+            Re-run derivations
+          </Button>
+          <Button variant="outline" size="sm" onClick={onExtract} disabled={isLoading || !onExtract}>
+            Re-run extraction
+          </Button>
         </div>
       </section>
     </div>
