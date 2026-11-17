@@ -15,25 +15,24 @@ export default function Navbar({ activeTab, setActiveTab, onResetSample, isReset
   ];
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 bg-surface-container-lowest no-print">
+    <div className="sticky top-0 z-40 bg-surface-container-lowest no-print">
       {/* Top Sandbox Playground Ribbon */}
       <div className="w-full bg-surface-container-low px-gutter py-1 flex items-center justify-between shadow-[0_1px_4px_rgba(0,0,0,0.02)]">
         <div className="max-w-7xl mx-auto w-full flex items-center justify-between gap-space-md">
           <div className="flex items-center gap-space-sm">
-            <span className="px-space-sm py-0.5 rounded bg-surface-container-lowest text-on-surface-variant font-code-sm text-code-sm border border-outline-variant/40">
-              SANDBOX PLAYGROUND
+            <span className="whitespace-nowrap px-space-sm py-0.5 rounded bg-surface-container-lowest text-on-surface-variant font-code-sm text-code-sm border border-outline-variant/40">
+              Sandbox
             </span>
             <span className="font-label-md text-label-md text-on-surface-variant hidden sm:inline">
-              Synthetic demonstration data. Automated checks reduce errors and a human approves.
+              Synthetic demonstration data.
             </span>
             <span className="font-label-md text-label-md text-on-surface-variant sm:hidden">
               Synthetic demonstration data.
             </span>
           </div>
           <div className="flex items-center gap-space-sm shrink-0">
-            <span className="flex items-center gap-1 font-label-sm text-label-sm text-tertiary">
-              <span className="w-1.5 h-1.5 rounded-full bg-tertiary animate-pulse"></span>
-              Automated Checks Active
+            <span className="font-label-sm text-label-sm text-on-surface-variant hidden sm:inline">
+              Roles are simulated; there is no sign-in.
             </span>
           </div>
         </div>
@@ -49,7 +48,7 @@ export default function Navbar({ activeTab, setActiveTab, onResetSample, isReset
               className="flex items-center gap-space-sm text-left cursor-pointer"
             >
               <div className="w-9 h-9 rounded-lg bg-secondary flex items-center justify-center">
-                <span className="material-symbols-outlined text-on-secondary text-[20px]">security</span>
+                <span aria-hidden="true" className="material-symbols-outlined text-on-secondary text-[20px]">security</span>
               </div>
               <div className="flex flex-col">
                 <span className="font-headline-sm text-headline-sm text-on-surface leading-none font-bold">Backstop</span>
@@ -90,7 +89,7 @@ export default function Navbar({ activeTab, setActiveTab, onResetSample, isReset
               type="button"
               title="Reset sample project database and re-derive claims"
             >
-              <span className={`material-symbols-outlined text-[16px] ${isResetting ? "animate-spin" : ""}`}>
+              <span aria-hidden="true" className={`material-symbols-outlined text-[16px] ${isResetting ? "animate-spin" : ""}`}>
                 restart_alt
               </span>
               <span className="hidden sm:inline">{isResetting ? "Resetting..." : "Reset Sample Data"}</span>

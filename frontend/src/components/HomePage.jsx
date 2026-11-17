@@ -36,7 +36,7 @@ export default function HomePage({
       <div className="w-full bg-surface-container-low rounded-xl px-space-md py-space-sm flex flex-col sm:flex-row items-center justify-between gap-space-sm shadow-xs border border-surface-container">
         <div className="flex items-center gap-space-sm">
           <span className="flex items-center justify-center w-5 h-5 rounded-full bg-secondary-fixed text-on-secondary-fixed shrink-0">
-            <span className="material-symbols-outlined text-[14px]">info</span>
+            <span aria-hidden="true" className="material-symbols-outlined text-[14px]">info</span>
           </span>
           <span className="font-label-md text-label-md text-on-surface-variant">
             Synthetic demonstration data. Automated checks reduce errors and a human approves.
@@ -66,7 +66,7 @@ export default function HomePage({
               className="px-space-xl py-3.5 rounded-xl bg-primary text-on-primary font-headline-sm text-headline-sm shadow-md hover:bg-primary/90 transition-all flex items-center gap-2.5 active:scale-[0.98] cursor-pointer disabled:opacity-50"
               type="button"
             >
-              <span className={`material-symbols-outlined text-[22px] ${isLoading ? "animate-spin" : ""}`}>
+              <span aria-hidden="true" className={`material-symbols-outlined text-[22px] ${isLoading ? "animate-spin" : ""}`}>
                 {isLoading ? "refresh" : "play_circle"}
               </span>
               <span>{isLoading ? "Loading demo workspace..." : "Try the 2-minute demo"}</span>
@@ -119,7 +119,7 @@ export default function HomePage({
                 <span className="w-8 h-8 rounded-lg bg-primary-fixed text-on-primary-fixed flex items-center justify-center font-bold text-sm">
                   1
                 </span>
-                <span className="material-symbols-outlined text-outline text-[22px]">inbox</span>
+                <span aria-hidden="true" className="material-symbols-outlined text-outline text-[22px]">inbox</span>
               </div>
               <h3 className="font-headline-sm text-headline-sm text-on-surface font-semibold mb-space-xs">
                 1. We read the team's activity.
@@ -137,7 +137,7 @@ export default function HomePage({
                 <span className="w-8 h-8 rounded-lg bg-secondary-fixed text-on-secondary-fixed flex items-center justify-center font-bold text-sm">
                   2
                 </span>
-                <span className="material-symbols-outlined text-secondary text-[22px]">fact_check</span>
+                <span aria-hidden="true" className="material-symbols-outlined text-secondary text-[22px]">fact_check</span>
               </div>
               <h3 className="font-headline-sm text-headline-sm text-on-surface font-semibold mb-space-xs">
                 2. Every claim shows its source; a person approves.
@@ -155,7 +155,7 @@ export default function HomePage({
                 <span className="w-8 h-8 rounded-lg bg-surface-container-high text-on-surface flex items-center justify-center font-bold text-sm">
                   3
                 </span>
-                <span className="material-symbols-outlined text-tertiary text-[22px]">assignment_turned_in</span>
+                <span aria-hidden="true" className="material-symbols-outlined text-tertiary text-[22px]">assignment_turned_in</span>
               </div>
               <h3 className="font-headline-sm text-headline-sm text-on-surface font-semibold mb-space-xs">
                 3. The new person gets a plan, limited to what they may see.
@@ -173,7 +173,7 @@ export default function HomePage({
         <div className="flex flex-col md:flex-row md:items-center justify-between pb-space-md mb-space-md border-b border-surface-container/60 gap-space-sm">
           <div className="flex items-center gap-space-md">
             <div className="w-11 h-11 rounded-xl bg-primary-fixed flex items-center justify-center text-primary">
-              <span className="material-symbols-outlined text-[24px]">folder_shared</span>
+              <span aria-hidden="true" className="material-symbols-outlined text-[24px]">folder_shared</span>
             </div>
             <div>
               <h3 className="font-headline-md text-headline-md text-on-surface font-semibold">
@@ -247,10 +247,10 @@ export default function HomePage({
                 className="p-space-sm bg-surface-container-low rounded-lg border border-surface-container/60 flex items-center justify-between"
               >
                 <div className="flex items-center gap-2 truncate">
-                  <span className="material-symbols-outlined text-[18px] text-outline">description</span>
+                  <span aria-hidden="true" className="material-symbols-outlined text-[18px] text-outline">description</span>
                   <span className="font-body-sm text-body-sm text-on-surface truncate font-medium">{src.name}</span>
                 </div>
-                <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase bg-surface-container text-on-surface-variant">
+                <span className="px-1.5 py-0.5 rounded text-[11px] font-semibold uppercase bg-surface-container text-on-surface-variant">
                   {src.access_level}
                 </span>
               </div>

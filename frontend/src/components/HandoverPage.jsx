@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import { api, formatErrorMessage } from "../api";
 import { ROLES } from "./Navbar";
 
+const humanizeType = (t) => (t ? t.charAt(0).toUpperCase() + t.slice(1).replace(/_/g, ' ') : '');
+
+
 export default function HandoverPage({ role, setRole, setActiveTab }) {
   const [handoverData, setHandoverData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -13,6 +16,17 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
   const [ackNote, setAckNote] = useState("");
   const [isSubmittingAck, setIsSubmittingAck] = useState(false);
   const [ackSuccess, setAckSuccess] = useState(null);
+  const [ackError, setAckError] = useState(null);
+
+  // Esc closes the acknowledge dialog
+  useEffect(() => {
+    if (!ackModalOpen) return undefined;
+    const onKey = (e) => {
+      if (e.key === "Escape") setAckModalOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [ackModalOpen]);
 
   const loadHandover = async () => {
     setIsLoading(true);
@@ -34,6 +48,7 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
   const handleAcknowledge = async () => {
     if (!recipientName.trim()) return;
     setIsSubmittingAck(true);
+    setAckError(null);
     try {
       const res = await api.acknowledgeHandover(1, {
         role,
@@ -43,7 +58,7 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
       setAckSuccess(res);
       setAckModalOpen(false);
     } catch (err) {
-      alert("Acknowledgment failed: " + formatErrorMessage(err));
+      setAckError("Acknowledgment failed: " + formatErrorMessage(err));
     } finally {
       setIsSubmittingAck(false);
     }
@@ -63,20 +78,11 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
       <section className="flex flex-col gap-space-md mb-space-sm">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
           <div>
-            <div className="flex items-center gap-space-sm mb-1">
-              <span className="font-code-sm text-code-sm text-primary uppercase tracking-wider font-semibold">
-                Ledger Digest // Production Transition
-              </span>
-              <span className="w-1 h-1 rounded-full bg-outline-variant"></span>
-              <span className="font-label-sm text-label-sm text-on-surface-variant font-medium">
-                Verified Ramp-up Dossier
-              </span>
-            </div>
             <h1 className="font-headline-lg text-headline-lg text-on-surface font-bold">
               Official Handover Dossier
             </h1>
             <p className="font-body-md text-body-md text-on-surface-variant mt-0.5 max-w-3xl">
-              Transition plan compiled strictly from human-approved claims. Sensitive items are role-gated. Automated checks reduce errors and a human approves.
+              Transition plan compiled strictly from human-approved claims. Sensitive items are role-gated.
             </p>
           </div>
           <div className="flex items-center gap-space-sm shrink-0">
@@ -86,20 +92,21 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
               onClick={() => window.print()}
               className="px-space-md py-2 bg-surface-container-low hover:bg-surface-container text-on-surface rounded-lg font-label-md text-label-md transition-colors flex items-center gap-1.5 cursor-pointer border border-surface-container"
             >
-              <span className="material-symbols-outlined text-[18px]">print</span>
+              <span aria-hidden="true" className="material-symbols-outlined text-[18px]">print</span>
               <span>Print Dossier (PDF Export)</span>
             </button>
             <button
               id="btn-ack"
               type="button"
               onClick={() => {
-                setRecipientName(`Engineer (${currentRoleObj.label})`);
+                setRecipientName("");
+                setAckError(null);
                 setAckModalOpen(true);
               }}
               disabled={!hasApprovedClaims}
               className="px-space-md py-2 bg-primary hover:bg-primary-container text-on-primary rounded-lg font-headline-sm text-headline-sm transition-all shadow-sm flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
             >
-              <span className="material-symbols-outlined text-[18px]">verified_user</span>
+              <span aria-hidden="true" className="material-symbols-outlined text-[18px]">verified_user</span>
               <span>Acknowledge Handover Receipt</span>
             </button>
           </div>
@@ -128,7 +135,7 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
             </div>
           </div>
           <div className="flex items-center gap-1.5 font-body-sm text-body-sm text-on-surface-variant pt-1 border-t border-surface-container/60">
-            <span className="material-symbols-outlined text-[15px] text-outline">info</span>
+            <span aria-hidden="true" className="material-symbols-outlined text-[15px] text-outline">info</span>
             <span id="role-caption">
               Current view: <strong className="text-on-surface">{currentRoleObj.label}</strong>.{" "}
               {role === "lead"
@@ -145,9 +152,9 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
             className="p-space-md rounded-xl bg-surface-container-high border border-outline-variant/60 flex items-center justify-between text-on-surface shadow-xs"
           >
             <div className="flex items-center gap-space-sm">
-              <span className="material-symbols-outlined text-outline text-[20px]">visibility_off</span>
+              <span aria-hidden="true" className="material-symbols-outlined text-outline text-[20px]">visibility_off</span>
               <span className="font-headline-sm text-headline-sm text-on-surface font-semibold">
-                This view hides {handoverData.claims_withheld} approved items that need higher access
+                This view hides {handoverData.claims_withheld} approved {handoverData.claims_withheld === 1 ? "item" : "items"} that need higher access
               </span>
             </div>
             <span className="font-code-sm text-code-sm text-on-surface-variant">
@@ -162,7 +169,7 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
             id="lead-full-access-line"
             className="p-space-sm rounded-xl bg-tertiary-fixed text-on-tertiary-fixed flex items-center gap-2 font-headline-sm text-sm font-semibold"
           >
-            <span className="material-symbols-outlined text-tertiary text-[18px]">verified_user</span>
+            <span aria-hidden="true" className="material-symbols-outlined text-tertiary text-[18px]">verified_user</span>
             <span>Lead view: full access to restricted items enabled. Restricted claims are shown in full below.</span>
           </div>
         )}
@@ -174,7 +181,7 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
             id="ack-banner"
           >
             <div className="flex items-center gap-space-sm">
-              <span className="material-symbols-outlined text-tertiary text-[22px]">check_circle</span>
+              <span aria-hidden="true" className="material-symbols-outlined text-tertiary text-[22px]">check_circle</span>
               <div>
                 <span className="font-headline-sm text-headline-sm text-tertiary font-bold" id="ack-success-title">
                   Receipt recorded at {new Date(ackSuccess.acknowledged_at || Date.now()).toLocaleTimeString()}
@@ -188,7 +195,7 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
               onClick={() => setAckSuccess(null)}
               className="text-on-tertiary-fixed-variant hover:text-on-tertiary-fixed cursor-pointer"
             >
-              <span className="material-symbols-outlined text-[18px]">close</span>
+              <span aria-hidden="true" className="material-symbols-outlined text-[18px]">close</span>
             </button>
           </div>
         )}
@@ -197,18 +204,30 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
       {/* Main Handover Content: Empty State vs Phased Plan & Claims List */}
       {isLoading ? (
         <div className="p-space-2xl text-center bg-surface-container-lowest rounded-xl border border-surface-container">
-          <span className="material-symbols-outlined text-[32px] text-primary animate-spin">refresh</span>
+          <span aria-hidden="true" className="material-symbols-outlined text-[32px] text-primary animate-spin">refresh</span>
           <p className="font-label-md text-label-md text-on-surface-variant mt-2">Loading approved handover claims...</p>
+        </div>
+      ) : error ? (
+        <div role="alert" className="p-space-xl text-center bg-surface-container-lowest rounded-xl border border-error/30">
+          <h2 className="font-headline-sm text-headline-sm text-on-surface font-semibold">The handover could not be loaded</h2>
+          <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">{error}</p>
+          <button
+            type="button"
+            onClick={loadHandover}
+            className="mt-space-md px-space-md py-2 bg-primary text-on-primary rounded-lg font-label-md text-label-md cursor-pointer"
+          >
+            Try again
+          </button>
         </div>
       ) : !hasApprovedClaims ? (
         /* Empty State */
         <div className="bg-surface-container-lowest rounded-xl p-space-2xl text-center shadow-sm border border-surface-container flex flex-col items-center justify-center my-space-lg">
           <div className="w-16 h-16 rounded-2xl bg-surface-container flex items-center justify-center text-primary mb-4">
-            <span className="material-symbols-outlined text-[32px]">fact_check</span>
+            <span aria-hidden="true" className="material-symbols-outlined text-[32px]">fact_check</span>
           </div>
-          <h3 className="font-headline-md text-headline-md text-on-surface font-bold">
+          <h2 className="font-headline-md text-headline-md text-on-surface font-bold">
             No Approved Claims Yet
-          </h3>
+          </h2>
           <p className="font-body-md text-body-md text-on-surface-variant max-w-md mt-2 mb-6">
             The handover dossier is compiled exclusively from reviewer-approved claims. Head to the Review Queue to check candidate claims and approve them.
           </p>
@@ -216,7 +235,7 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
             onClick={() => setActiveTab("review")}
             className="px-space-lg py-2.5 bg-primary hover:bg-primary-container text-on-primary rounded-lg font-headline-sm text-headline-sm transition-all shadow-sm flex items-center gap-2 cursor-pointer"
           >
-            <span className="material-symbols-outlined text-[20px]">assignment_turned_in</span>
+            <span aria-hidden="true" className="material-symbols-outlined text-[20px]">assignment_turned_in</span>
             <span>Check the claims</span>
           </button>
         </div>
@@ -270,10 +289,10 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
                         className="bg-surface-container-lowest p-space-md rounded-lg shadow-xs border border-surface-container/60 flex flex-col gap-1.5"
                       >
                         <div className="flex items-center justify-between text-xs">
-                          <span className="px-1.5 py-0.5 rounded bg-error-container text-on-error-container font-semibold uppercase text-[10px]">
-                            {item.type}
+                          <span className="px-1.5 py-0.5 rounded bg-error-container text-on-error-container font-semibold uppercase text-[11px]">
+                            {humanizeType(item.type)}
                           </span>
-                          <span className="font-code-sm text-[10px] text-outline uppercase">{item.access_level}</span>
+                          <span className="font-code-sm text-[11px] text-outline uppercase">{item.access_level}</span>
                         </div>
                         <h4 className="font-headline-sm text-sm text-on-surface font-semibold">{item.title}</h4>
                         <p className="font-body-sm text-xs text-on-surface-variant line-clamp-3">{item.description}</p>
@@ -314,10 +333,10 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
                         className="bg-surface-container-lowest p-space-md rounded-lg shadow-xs border border-surface-container/60 flex flex-col gap-1.5"
                       >
                         <div className="flex items-center justify-between text-xs">
-                          <span className="px-1.5 py-0.5 rounded bg-secondary-fixed text-on-secondary-fixed font-semibold uppercase text-[10px]">
-                            {item.type}
+                          <span className="px-1.5 py-0.5 rounded bg-secondary-fixed text-on-secondary-fixed font-semibold uppercase text-[11px]">
+                            {humanizeType(item.type)}
                           </span>
-                          <span className="font-code-sm text-[10px] text-outline uppercase">{item.access_level}</span>
+                          <span className="font-code-sm text-[11px] text-outline uppercase">{item.access_level}</span>
                         </div>
                         <h4 className="font-headline-sm text-sm text-on-surface font-semibold">{item.title}</h4>
                         <p className="font-body-sm text-xs text-on-surface-variant line-clamp-3">{item.description}</p>
@@ -358,10 +377,10 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
                         className="bg-surface-container-lowest p-space-md rounded-lg shadow-xs border border-surface-container/60 flex flex-col gap-1.5"
                       >
                         <div className="flex items-center justify-between text-xs">
-                          <span className="px-1.5 py-0.5 rounded bg-primary-fixed text-on-primary-fixed font-semibold uppercase text-[10px]">
-                            {item.type}
+                          <span className="px-1.5 py-0.5 rounded bg-primary-fixed text-on-primary-fixed font-semibold uppercase text-[11px]">
+                            {humanizeType(item.type)}
                           </span>
-                          <span className="font-code-sm text-[10px] text-outline uppercase">{item.access_level}</span>
+                          <span className="font-code-sm text-[11px] text-outline uppercase">{item.access_level}</span>
                         </div>
                         <h4 className="font-headline-sm text-sm text-on-surface font-semibold">{item.title}</h4>
                         <p className="font-body-sm text-xs text-on-surface-variant line-clamp-3">{item.description}</p>
@@ -404,7 +423,7 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
                         <span className="font-headline-sm text-xs font-bold uppercase text-primary">
                           {typeKey} ({items.length})
                         </span>
-                        <span className="font-code-sm text-[10px] text-outline">
+                        <span className="font-code-sm text-[11px] text-outline">
                           {lockedCount > 0 ? `${lockedCount} locked` : "All visible"}
                         </span>
                       </div>
@@ -416,7 +435,7 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
                           >
                             {it.withheld ? (
                               <span className="text-outline italic flex items-center gap-1">
-                                <span className="material-symbols-outlined text-[12px]">lock</span>
+                                <span aria-hidden="true" className="material-symbols-outlined text-[12px]">lock</span>
                                 Locked item (Requires {it.access_level} access)
                               </span>
                             ) : (
@@ -461,13 +480,13 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
                       <td className="py-3 px-4 font-code-sm text-xs text-outline font-bold">#{claim.id}</td>
                       <td className="py-3 px-4">
                         <span className="px-2 py-0.5 rounded bg-surface-container font-code-sm text-xs uppercase font-semibold">
-                          {claim.type}
+                          {humanizeType(claim.type)}
                         </span>
                       </td>
                       <td className="py-3 px-4">
                         {claim.withheld ? (
                           <span className="text-outline italic flex items-center gap-1.5">
-                            <span className="material-symbols-outlined text-[14px]">lock</span>
+                            <span aria-hidden="true" className="material-symbols-outlined text-[14px]">lock</span>
                             Withheld ({claim.reason}) — request access from lead
                           </span>
                         ) : (
@@ -503,7 +522,7 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
 
           {/* Dossier Footer Note */}
           <div className="p-space-md rounded-xl bg-surface-container-low text-on-surface-variant font-label-md text-label-md flex items-center justify-between border border-surface-container">
-            <span>Official handover record compiled for {currentRoleObj.label}. Automated checks reduce errors and a human approves.</span>
+            <span>Official handover record compiled for {currentRoleObj.label}.</span>
             <span className="font-code-sm text-xs text-outline">{approvedClaims.length} claims on record</span>
           </div>
         </>
@@ -511,33 +530,42 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
 
       {/* Acknowledge Modal */}
       {ackModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+        <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
           <div className="bg-surface-container-lowest rounded-xl shadow-lg border border-surface-container max-w-md w-full p-6 space-y-4">
-            <h3 className="font-headline-md text-headline-md text-on-surface font-bold">
+            <h2 className="font-headline-md text-headline-md text-on-surface font-bold">
               Acknowledge Handover Receipt
-            </h3>
+            </h2>
             <p className="font-body-sm text-body-sm text-on-surface-variant">
               Confirming receipt creates an audit log record for the project handover.
             </p>
             <div className="space-y-2">
-              <label className="text-xs font-semibold text-on-surface-variant block">Recipient Name / Title</label>
+              <label htmlFor="ack-recipient" className="text-xs font-semibold text-on-surface-variant block">Your name and role (the person taking over)</label>
               <input
+                id="ack-recipient"
+                autoFocus
                 type="text"
                 className="w-full p-2.5 rounded-lg border border-surface-container bg-surface-container-low text-on-surface font-body-sm focus:outline-primary"
+                placeholder="e.g. Dev, new backend developer"
                 value={recipientName}
                 onChange={(e) => setRecipientName(e.target.value)}
               />
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-semibold text-on-surface-variant block">Optional Acknowledgment Note</label>
+              <label htmlFor="ack-note" className="text-xs font-semibold text-on-surface-variant block">Optional Acknowledgment Note</label>
               <input
+                id="ack-note"
                 type="text"
                 className="w-full p-2.5 rounded-lg border border-surface-container bg-surface-container-low text-on-surface font-body-sm focus:outline-primary"
-                placeholder="e.g. Reviewed Day 1 blockers with departing lead..."
+                placeholder="e.g. Reviewed Day 1 blockers with Riya"
                 value={ackNote}
                 onChange={(e) => setAckNote(e.target.value)}
               />
             </div>
+            {ackError && (
+              <p role="alert" className="font-body-sm text-body-sm text-on-error-container bg-error-container rounded-lg p-2">
+                {ackError}
+              </p>
+            )}
             <div className="flex justify-end gap-2 pt-2">
               <button
                 onClick={() => setAckModalOpen(false)}

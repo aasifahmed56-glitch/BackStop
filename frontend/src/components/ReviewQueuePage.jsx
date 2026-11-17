@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { api, formatErrorMessage } from "../api";
 
+const humanizeType = (t) => (t ? t.charAt(0).toUpperCase() + t.slice(1).replace(/_/g, ' ') : '');
+
+
 const STATUS_HELP = {
   verified: "Quote matched: the quote exists word for word in the source, and the claim is supported by it (or was calculated by code).",
   inferred: "Inferred: the quote exists, but it only partly supports the claim, or the support check could not run. Read it before approving.",
@@ -53,6 +56,7 @@ export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
   const [editNote, setEditNote] = useState("");
   const [isSubmittingAction, setIsSubmittingAction] = useState(false);
   const [actionSuccessMessage, setActionSuccessMessage] = useState(null);
+  const [actionError, setActionError] = useState(null);
   const [copiedQuote, setCopiedQuote] = useState(false);
 
   const [isBulkApproving, setIsBulkApproving] = useState(false);
@@ -83,12 +87,30 @@ export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
   };
 
   useEffect(() => {
+    if (!rejectModalOpen && !editModalOpen) return;
+    const onKey = (e) => {
+      if (e.key === "Escape") {
+        setRejectModalOpen(false);
+        setEditModalOpen(false);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [rejectModalOpen, editModalOpen]);
+
+  useEffect(() => {
     loadClaims();
   }, [statusFilter, typeFilter]);
 
   // Load context and versions when a claim is selected
-  const selectClaim = async (claim) => {
+  const selectClaim = async (claim, { reveal = false } = {}) => {
     setSelectedClaim(claim);
+    // On narrow screens the detail panel sits below the list: bring it into view.
+    if (reveal && window.matchMedia("(max-width: 1023px)").matches) {
+      requestAnimationFrame(() =>
+        document.getElementById("inspect-claim-header")?.scrollIntoView({ behavior: "smooth", block: "start" })
+      );
+    }
     setClaimContext(null);
     setClaimVersions([]);
     if (claim.withheld) return;
@@ -130,7 +152,7 @@ export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
       const vers = await api.getClaimVersions(selectedClaim.id).catch(() => null);
       if (vers?.versions) setClaimVersions(vers.versions);
     } catch (err) {
-      alert("Approve failed: " + formatErrorMessage(err));
+      setActionError("Approve failed: " + formatErrorMessage(err));
     } finally {
       setIsSubmittingAction(false);
     }
@@ -149,7 +171,7 @@ export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
       await loadClaims();
       if (onRefreshStats) onRefreshStats();
     } catch (err) {
-      alert("Reject failed: " + formatErrorMessage(err));
+      setActionError("Reject failed: " + formatErrorMessage(err));
     } finally {
       setIsSubmittingAction(false);
     }
@@ -173,7 +195,7 @@ export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
       const vers = await api.getClaimVersions(selectedClaim.id).catch(() => null);
       if (vers?.versions) setClaimVersions(vers.versions);
     } catch (err) {
-      alert("Edit failed: " + formatErrorMessage(err));
+      setActionError("Edit failed: " + formatErrorMessage(err));
     } finally {
       setIsSubmittingAction(false);
     }
@@ -190,7 +212,7 @@ export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
       await loadClaims();
       if (onRefreshStats) onRefreshStats();
     } catch (err) {
-      alert("Bulk approve failed: " + formatErrorMessage(err));
+      setActionError("Bulk approve failed: " + formatErrorMessage(err));
     } finally {
       setIsBulkApproving(false);
     }
@@ -254,18 +276,9 @@ export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
       <div className="flex flex-col gap-space-md mb-space-sm">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
           <div>
-            <div className="flex items-center gap-space-sm mb-1">
-              <span className="font-code-sm text-code-sm text-primary uppercase tracking-wider font-semibold">
-                Audit Pipeline // Review Triage
-              </span>
-              <span className="w-1 h-1 rounded-full bg-outline-variant"></span>
-              <span className="font-label-sm text-label-sm text-on-surface-variant font-medium">
-                Dual-Track Verification
-              </span>
-            </div>
             <h1 className="font-headline-lg text-headline-lg text-on-surface font-bold">Claim Review Queue</h1>
             <p className="font-body-md text-body-md text-on-surface-variant mt-0.5 max-w-3xl">
-              Audit and approve candidate claims before compiling the handover dossier. Automated checks reduce errors and a human approves.
+              Audit and approve candidate claims before compiling the handover dossier.
             </p>
           </div>
 
@@ -277,22 +290,31 @@ export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
               disabled={isBulkApproving}
               className="px-space-md py-2 bg-primary hover:bg-primary-container text-on-primary rounded-lg font-headline-sm text-headline-sm transition-all shadow-sm flex items-center justify-center gap-space-sm cursor-pointer disabled:opacity-50"
             >
-              <span className={`material-symbols-outlined text-[18px] ${isBulkApproving ? "animate-spin" : ""}`}>
+              <span aria-hidden="true" className={`material-symbols-outlined text-[18px] ${isBulkApproving ? "animate-spin" : ""}`}>
                 {isBulkApproving ? "refresh" : "done_all"}
               </span>
               <span>{isBulkApproving ? "Approving…" : `Approve all quote-matched (${verifiedCount})`}</span>
             </button>
             <span className="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1">
-              <span className="material-symbols-outlined text-[14px] text-error">gavel</span>
+              <span aria-hidden="true" className="material-symbols-outlined text-[14px] text-error">gavel</span>
               <span>Conflicting and Missing claims require manual review</span>
             </span>
           </div>
         </div>
 
+        {/* Action error message */}
+        {actionError && (
+          <div role="alert" className="p-space-sm rounded-lg bg-error-container text-on-error-container font-label-md text-label-md flex items-start gap-2 border border-error/30">
+            <span className="material-symbols-outlined text-[18px]" aria-hidden="true">error</span>
+            <span className="flex-1">{actionError}</span>
+            <button type="button" onClick={() => setActionError(null)} className="underline underline-offset-2 shrink-0">Dismiss</button>
+          </div>
+        )}
+
         {/* Action success message */}
         {actionSuccessMessage && (
           <div className="p-space-sm rounded-lg bg-surface-container text-on-surface font-label-md text-label-md flex items-center gap-2 shadow-xs border border-tertiary">
-            <span className="material-symbols-outlined text-tertiary text-[18px]">check_circle</span>
+            <span aria-hidden="true" className="material-symbols-outlined text-tertiary text-[18px]">check_circle</span>
             <span>{actionSuccessMessage}</span>
           </div>
         )}
@@ -444,7 +466,7 @@ export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
           <div className="flex flex-col gap-space-sm lg:max-h-[calc(100vh-176px)] lg:overflow-y-auto pr-2" id="claims-ledger-container">
             {isLoading ? (
               <div className="p-space-xl text-center bg-surface-container-lowest rounded-xl border border-surface-container">
-                <span className="material-symbols-outlined text-[28px] text-primary animate-spin">refresh</span>
+                <span aria-hidden="true" className="material-symbols-outlined text-[28px] text-primary animate-spin">refresh</span>
                 <p className="font-label-md text-label-md text-on-surface-variant mt-2">Loading candidate claims...</p>
               </div>
             ) : filteredClaims.length === 0 ? (
@@ -458,7 +480,16 @@ export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
                 return (
                   <div
                     key={claim.id}
-                    onClick={() => selectClaim(claim)}
+                    role="button"
+                    tabIndex={0}
+                    aria-pressed={isSelected}
+                    onClick={() => selectClaim(claim, { reveal: true })}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        selectClaim(claim, { reveal: true });
+                      }
+                    }}
                     className={`claim-row group p-space-md rounded-xl transition-all cursor-pointer relative ${
                       isSelected
                         ? "bg-surface-container-lowest shadow-sm ring-2 ring-primary bg-surface-container-low"
@@ -480,7 +511,7 @@ export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
                         )}
                         {claim.status === "conflicting" && (
                           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-label-sm text-label-sm bg-error-container text-on-error-container font-semibold">
-                            <span className="material-symbols-outlined text-[12px]">error</span>Conflicting
+                            <span aria-hidden="true" className="material-symbols-outlined text-[12px]">error</span>Conflicting
                           </span>
                         )}
                         {claim.status === "missing" && (
@@ -501,7 +532,7 @@ export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
 
                         {/* Type Chip */}
                         <span className="inline-flex items-center px-2 py-0.5 rounded-md font-label-sm text-label-sm bg-surface-container text-on-surface-variant capitalize">
-                          {claim.type}
+                          {humanizeType(claim.type)}
                         </span>
                       </div>
 
@@ -532,7 +563,7 @@ export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
                     <div className="flex items-center justify-between text-on-surface-variant pt-2 border-t border-surface-container/60">
                       <div className="flex items-center gap-space-md font-label-sm text-label-sm">
                         <span className="flex items-center gap-1">
-                          <span className="material-symbols-outlined text-[14px]">lock</span>
+                          <span aria-hidden="true" className="material-symbols-outlined text-[14px]">lock</span>
                           {claim.access_level}
                         </span>
                         <span className="text-outline-variant">•</span>
@@ -547,7 +578,7 @@ export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
                           </span>
                         ) : claim.review_state === "approved" ? (
                           <span className="inline-flex items-center gap-1 font-label-sm text-label-sm text-tertiary font-semibold">
-                            <span className="material-symbols-outlined text-[14px]">check_circle</span>Approved
+                            <span aria-hidden="true" className="material-symbols-outlined text-[14px]">check_circle</span>Approved
                           </span>
                         ) : claim.review_state === "rejected" ? (
                           <span className="inline-flex items-center gap-1 font-label-sm text-label-sm text-error font-semibold">
@@ -577,7 +608,6 @@ export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
                 <div className="flex items-start justify-between gap-space-md">
                   <div className="flex flex-col">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="font-code-sm text-code-sm text-primary uppercase font-bold">Inspection Node</span>
                       <span
                         title={STATUS_HELP[selectedClaim.status]}
                         className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded font-label-sm text-label-sm font-semibold ${STATUS_STYLE[selectedClaim.status]?.chip || "bg-surface-container-high text-on-surface"}`}
@@ -602,7 +632,7 @@ export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
                   <div className="flex items-center gap-space-sm">
                     <span className="text-on-surface-variant">Claim Type:</span>
                     <span className="font-code-sm text-code-sm text-primary font-semibold capitalize">
-                      {selectedClaim.type}
+                      {humanizeType(selectedClaim.type)}
                     </span>
                   </div>
                   <div className="flex items-center gap-space-sm">
@@ -647,7 +677,7 @@ export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
                 ) : selectedClaim.kind === "derived" ? (
                   <div className="p-space-md bg-surface-container-low rounded-xl border border-surface-container/60 space-y-2">
                     <div className="flex items-center gap-2 font-headline-sm text-headline-sm text-on-surface font-semibold">
-                      <span className="material-symbols-outlined text-secondary text-[20px]">code</span>
+                      <span aria-hidden="true" className="material-symbols-outlined text-secondary text-[20px]">code</span>
                       <span>Derived from Git History</span>
                     </div>
                     <p className="font-body-sm text-body-sm text-on-surface-variant">
@@ -663,11 +693,11 @@ export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
                   <div className="flex flex-col gap-space-sm">
                     <div className="flex items-center justify-between font-label-sm text-label-sm">
                       <span className="text-on-surface-variant flex items-center gap-1 font-semibold">
-                        <span className="material-symbols-outlined text-[16px] text-primary">format_quote</span>
+                        <span aria-hidden="true" className="material-symbols-outlined text-[16px] text-primary">format_quote</span>
                         Exact Source Substring Quote
                       </span>
                       <span className="font-code-sm text-code-sm text-outline flex items-center gap-1">
-                        <span className="material-symbols-outlined text-[12px]">link</span>
+                        <span aria-hidden="true" className="material-symbols-outlined text-[12px]">link</span>
                         {currentContext?.source_name || "Source document"}
                       </span>
                     </div>
@@ -678,7 +708,7 @@ export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
                           className="p-1 rounded hover:bg-surface-container text-on-surface-variant text-[14px] cursor-pointer"
                           title="Copy exact raw quote"
                         >
-                          <span className="material-symbols-outlined text-[16px]">
+                          <span aria-hidden="true" className="material-symbols-outlined text-[16px]">
                             {copiedQuote ? "check" : "content_copy"}
                           </span>
                         </button>
@@ -710,7 +740,7 @@ export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
                   <div className="p-space-sm bg-surface-container rounded-lg flex items-center justify-between border border-surface-container/60">
                     <div className="flex items-center gap-space-sm">
                       <div className="w-6 h-6 rounded-full bg-tertiary-fixed text-on-tertiary-fixed flex items-center justify-center shrink-0">
-                        <span className="material-symbols-outlined text-[14px]">
+                        <span aria-hidden="true" className="material-symbols-outlined text-[14px]">
                           {selectedClaim.status === "verified" ? "done" : "info"}
                         </span>
                       </div>
@@ -753,7 +783,7 @@ export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
                             <span className="font-bold text-on-surface">v{v.version}</span>
                             <span className="text-on-surface-variant ml-2">{v.change_note || "Initial version"}</span>
                           </div>
-                          <span className="text-outline font-code-sm text-[10px]">{v.changed_by}</span>
+                          <span className="text-outline font-code-sm text-[11px]">{v.changed_by}</span>
                         </div>
                       ))}
                     </div>
@@ -770,7 +800,7 @@ export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
                     disabled={isSubmittingAction || selectedClaim.review_state === "approved"}
                     className="flex-1 py-2.5 rounded-lg bg-primary hover:bg-primary-container text-on-primary font-headline-sm text-headline-sm transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                   >
-                    <span className="material-symbols-outlined text-[18px]">check_circle</span>
+                    <span aria-hidden="true" className="material-symbols-outlined text-[18px]">check_circle</span>
                     <span>{selectedClaim.review_state === "approved" ? "Approved" : "Approve Claim"}</span>
                   </button>
                   <button
@@ -782,7 +812,7 @@ export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
                     disabled={isSubmittingAction}
                     className="px-space-md py-2.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-error font-headline-sm text-headline-sm transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
                   >
-                    <span className="material-symbols-outlined text-[18px]">cancel</span>
+                    <span aria-hidden="true" className="material-symbols-outlined text-[18px]">cancel</span>
                     <span>Reject</span>
                   </button>
                   <button
@@ -795,7 +825,7 @@ export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
                     disabled={isSubmittingAction}
                     className="px-space-md py-2.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-headline-sm text-headline-sm transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
                   >
-                    <span className="material-symbols-outlined text-[18px]">edit</span>
+                    <span aria-hidden="true" className="material-symbols-outlined text-[18px]">edit</span>
                     <span>Edit</span>
                   </button>
                 </div>
@@ -803,7 +833,7 @@ export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
             </div>
           ) : (
             <div className="p-space-xl text-center bg-surface-container-lowest rounded-xl border border-surface-container">
-              <span className="material-symbols-outlined text-[32px] text-outline">touch_app</span>
+              <span aria-hidden="true" className="material-symbols-outlined text-[32px] text-outline">touch_app</span>
               <p className="font-headline-sm text-headline-sm text-on-surface mt-2 font-semibold">
                 Select a Claim to Inspect
               </p>
@@ -817,7 +847,7 @@ export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
 
       {/* Reject Modal */}
       {rejectModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+        <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
           <div className="bg-surface-container-lowest rounded-xl shadow-lg border border-surface-container max-w-md w-full p-6 space-y-4">
             <h3 className="font-headline-md text-headline-md text-on-surface font-bold">Reject Claim</h3>
             <p className="font-body-sm text-body-sm text-on-surface-variant">
@@ -850,7 +880,7 @@ export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
 
       {/* Edit Modal */}
       {editModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+        <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
           <div className="bg-surface-container-lowest rounded-xl shadow-lg border border-surface-container max-w-lg w-full p-6 space-y-4">
             <h3 className="font-headline-md text-headline-md text-on-surface font-bold">Correct Claim Statement</h3>
             <p className="font-body-sm text-body-sm text-on-surface-variant">

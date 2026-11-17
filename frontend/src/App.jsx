@@ -120,7 +120,7 @@ export default function App() {
       />
 
       {/* Main Page Content */}
-      <main className="w-full flex-1 pt-[104px] bg-background">
+      <main className="w-full flex-1 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 min-h-[calc(100vh-168px)]">
           {activeTab === "home" && (
             <HomePage
@@ -189,12 +189,7 @@ export default function App() {
             <span className="font-label-md text-label-md text-on-surface font-bold">Backstop</span>
             <span className="text-outline-variant">•</span>
             <span className="font-body-sm text-body-sm text-on-surface-variant">
-              Developer Handover Assistant. Automated checks reduce errors and a human approves.
-            </span>
-          </div>
-          <div className="flex items-center gap-space-md shrink-0">
-            <span className="font-label-sm text-label-sm text-tertiary flex items-center gap-1 font-semibold">
-              <span className="w-2 h-2 rounded-full bg-tertiary"></span>Operational
+              Developer Handover Assistant. Automated checks find the evidence; a person approves every claim.
             </span>
           </div>
         </div>
