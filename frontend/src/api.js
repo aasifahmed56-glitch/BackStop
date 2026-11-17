@@ -143,5 +143,7 @@ export const api = {
 
   // Backtest
   getBacktest: (projectId = 1) => request(`/backtest/projects/${projectId}`),
+  getBacktestDatasets: () => request(`/backtest/datasets`),
+  getRealBacktest: (name) => request(`/backtest/real/${encodeURIComponent(name)}`),
 };
 
