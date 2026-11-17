@@ -87,6 +87,15 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
           </div>
           <div className="flex items-center gap-space-sm shrink-0">
             <button
+              id="btn-check-change"
+              type="button"
+              onClick={() => setActiveTab("check")}
+              className="px-space-md py-2 bg-surface-container-low hover:bg-surface-container text-on-surface rounded-lg font-label-md text-label-md transition-colors flex items-center gap-1.5 cursor-pointer border border-surface-container"
+            >
+              <span aria-hidden="true" className="material-symbols-outlined text-[18px]">rule</span>
+              <span>Check a change</span>
+            </button>
+            <button
               id="btn-print"
               type="button"
               onClick={() => window.print()}

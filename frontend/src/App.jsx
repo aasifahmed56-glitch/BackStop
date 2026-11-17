@@ -4,6 +4,7 @@ import HomePage from "./components/HomePage";
 import ReviewQueuePage from "./components/ReviewQueuePage";
 import HandoverPage from "./components/HandoverPage";
 import BacktestPage from "./components/BacktestPage";
+import CheckChangePage from "./components/CheckChangePage";
 import { api, formatErrorMessage } from "./api";
 
 export default function App() {
@@ -155,6 +156,10 @@ export default function App() {
           )}
 
           {activeTab === "backtest" && <BacktestPage />}
+
+          {activeTab === "check" && (
+            <CheckChangePage role={role} setRole={setRole} setActiveTab={setActiveTab} />
+          )}
         </div>
       </main>
 

@@ -146,5 +146,13 @@ export const api = {
   getBacktestDatasets: () => request(`/backtest/datasets`),
   importGithub: (body) => request(`/import/github`, { method: "POST", body: JSON.stringify(body) }),
   getRealBacktest: (name) => request(`/backtest/real/${encodeURIComponent(name)}`),
+
+  // Tripwires
+  checkChange: ({ projectId = 1, role = "incoming_dev", files = [], diff = null, description = "" } = {}) =>
+    request(`/projects/${projectId}/tripwires/check`, {
+      method: "POST",
+      body: JSON.stringify({ role, files, diff, description }),
+    }),
+  getTripwireReplay: () => request(`/tripwires/replay`),
 };
 
