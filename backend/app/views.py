@@ -31,6 +31,8 @@ from app.models import (
     Source,
     role_can_see,
 )
+from app.redact import redact
+from app.review import mask_evidence
 from app.verify import run_extraction_and_verification
 
 router = APIRouter(tags=["handover"])
@@ -196,11 +198,11 @@ def get_handover(
                     "withheld": False,
                     "kind": c.kind.value,
                     "type": c.type.value,
-                    "text": c.text,
+                    "text": redact(c.text),
                     "status": c.status.value,
                     "confidence": c.confidence,
                     "access_level": c.access_level.value,
-                    "evidence": c.evidence(),
+                    "evidence": mask_evidence(c.evidence()),
                 })
 
     # Group claims by role emphasis

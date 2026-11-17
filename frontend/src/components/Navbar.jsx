@@ -13,6 +13,7 @@ export const NAV_ITEMS = [
   { id: "review", n: 2, label: "Check the claims" },
   { id: "handover", n: 3, label: "Handover" },
   { id: "backtest", n: 4, label: "Backtest" },
+  { id: "trust", n: 5, label: "Trust report" },
 ];
 
 function Mark() {

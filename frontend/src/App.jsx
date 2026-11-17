@@ -5,6 +5,7 @@ import HomePage from "./components/HomePage";
 import ReviewQueuePage from "./components/ReviewQueuePage";
 import HandoverPage from "./components/HandoverPage";
 import BacktestPage from "./components/BacktestPage";
+import TrustReportPage from "./components/TrustReportPage";
 import { Button, Dialog } from "./components/ui";
 import { api, formatErrorMessage } from "./api";
 
@@ -96,7 +97,7 @@ export default function App() {
     loadInitialData();
   }, [loadInitialData]);
 
-  // Keyboard: 1-4 switch steps, ? opens the shortcut sheet. Ignored while typing.
+  // Keyboard: number keys switch steps, ? opens the shortcut sheet. Ignored while typing.
   useEffect(() => {
     const onKey = (e) => {
       const t = e.target;
@@ -106,7 +107,7 @@ export default function App() {
       if (e.key === "?") {
         e.preventDefault();
         setShowShortcuts(true);
-      } else if (/^[1-4]$/.test(e.key)) {
+      } else if (/^[1-9]$/.test(e.key) && Number(e.key) <= TABS.length) {
         navigate(TABS[Number(e.key) - 1]);
       }
     };
@@ -248,7 +249,8 @@ export default function App() {
             <HandoverPage key={`handover-${dataVersion}`} role={role} setRole={setRole} setActiveTab={navigate} />
           )}
 
-          {activeTab === "backtest" && <BacktestPage />}
+          {activeTab === "backtest" && <BacktestPage onOpenTrust={() => navigate("trust")} />}
+          {activeTab === "trust" && <TrustReportPage />}
         </div>
       </main>
 

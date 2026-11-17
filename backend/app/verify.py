@@ -38,6 +38,7 @@ from app.models import (
     compute_claim_access_from_evidence,
     strictest_access,
 )
+from app.detailcheck import check_claim_details
 from app.redact import redact
 
 router = APIRouter(tags=["extract"])
@@ -272,6 +273,7 @@ def run_extraction_and_verification(project_id: int, session: Session) -> dict[s
         "seeded": 0,
         "failed_sources": [],
         "merged_duplicates": 0,
+        "downgraded_by_detail_check": 0,
     }
     merged_claims: dict[tuple, Claim] = {}
 
@@ -468,9 +470,19 @@ def run_extraction_and_verification(project_id: int, session: Session) -> dict[s
                 status = ClaimStatus.inferred
                 confidence = 0.75
             else:
-                stats["verified"] += 1
-                status = ClaimStatus.verified
-                confidence = 1.0
+                # 4. DETAIL CHECK (plain code): every number, date and name in the
+                # claim must be in its quote or chunk, or it is not Verified.
+                detail = _detail_check(claim_text, valid_evidence, chunk_map)
+                if detail["ok"]:
+                    stats["verified"] += 1
+                    status = ClaimStatus.verified
+                    confidence = 1.0
+                else:
+                    stats["downgraded_by_detail_check"] += 1
+                    stats["inferred"] += 1
+                    status = ClaimStatus.inferred
+                    confidence = 0.75
+                    valid_evidence[0]["detail_check_missing"] = [d["text"] for d in detail["missing"]]
 
         # Merge duplicates: the same statement found in several places becomes
         # one claim that cites every source, instead of N near-identical rows.
@@ -503,6 +515,38 @@ def run_extraction_and_verification(project_id: int, session: Session) -> dict[s
 
     session.commit()
     return stats
+
+
+def _detail_check(claim_text: str, evidence: list[dict[str, Any]], chunk_map: dict[int, Chunk]) -> dict[str, Any]:
+    quotes = "\n".join(ev.get("quote", "") for ev in evidence)
+    chunks = "\n".join(chunk_map[ev["chunk_id"]].text for ev in evidence if ev.get("chunk_id") in chunk_map)
+    return check_claim_details(claim_text, quotes, chunks)
+
+
+STRICT_SUPPORT_CHECK_SYSTEM_PROMPT = (
+    "You check whether an exact quote fully supports a claim. Be strict. "
+    "Answer \"yes\" only if every part of the claim is stated in the quote, including every name, number and date. "
+    "Answer \"partly\" if the quote supports some of the claim but the claim adds, strengthens or generalises anything. "
+    "Answer \"no\" if the quote is unrelated or says the opposite. "
+    "Reply ONLY with a JSON object: {\"supports\": \"yes\" | \"partly\" | \"no\", \"reason\": \"<short reason>\"}."
+)
+
+
+def check_claim_support_strict(claim_text: str, quote: str) -> dict[str, str]:
+    """
+    A stricter support prompt, used by the evaluation script and available for
+    new uploads. It is a separate function so the original prompt, and the
+    saved sample results keyed by its text, stay unchanged.
+    """
+    user_prompt = f'Claim: "{claim_text}"\nQuote: "{quote}"\nDoes the quote fully support the claim?'
+    try:
+        resp = complete_json(STRICT_SUPPORT_CHECK_SYSTEM_PROMPT, user_prompt)
+        supports = str(resp.get("supports", "")).lower().strip()
+        if supports not in ("yes", "partly", "no"):
+            return {"supports": "unchecked", "reason": f"Unreadable support-check answer: {supports!r}"}
+        return {"supports": supports, "reason": resp.get("reason", "")}
+    except Exception as e:
+        return {"supports": "unchecked", "reason": f"Support check unavailable: {e}"}
 
 
 def recompute_claims_access_levels(session: Session, project_id: Optional[int] = None) -> dict[str, int]:
