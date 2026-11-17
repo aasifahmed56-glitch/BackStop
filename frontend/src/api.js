@@ -96,8 +96,11 @@ export const api = {
     return request(`/claims/stats?${params.toString()}`);
   },
 
-  getClaimContext: (claimId) => request(`/claims/${claimId}/context`),
-  getClaimVersions: (claimId) => request(`/claims/${claimId}/versions`),
+  // The server gives a request without a role the lowest access, so always send it.
+  getClaimContext: (claimId, role = "lead") =>
+    request(`/claims/${claimId}/context?role=${encodeURIComponent(role)}`),
+  getClaimVersions: (claimId, role = "lead") =>
+    request(`/claims/${claimId}/versions?role=${encodeURIComponent(role)}`),
 
   approveClaim: (claimId, { role = "lead", note } = {}) =>
     request(`/claims/${claimId}/approve`, {

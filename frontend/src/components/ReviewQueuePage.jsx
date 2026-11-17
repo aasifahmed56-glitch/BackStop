@@ -118,8 +118,8 @@ export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
     setIsDetailLoading(true);
     try {
       const [ctx, vers] = await Promise.all([
-        api.getClaimContext(claim.id).catch(() => null),
-        api.getClaimVersions(claim.id).catch(() => null),
+        api.getClaimContext(claim.id, role).catch(() => null),
+        api.getClaimVersions(claim.id, role).catch(() => null),
       ]);
       setClaimContext(ctx);
       setClaimVersions(vers?.versions || []);
@@ -149,7 +149,7 @@ export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
       setTimeout(() => setActionSuccessMessage(null), 3500);
       await loadClaims();
       if (onRefreshStats) onRefreshStats();
-      const vers = await api.getClaimVersions(selectedClaim.id).catch(() => null);
+      const vers = await api.getClaimVersions(selectedClaim.id, role).catch(() => null);
       if (vers?.versions) setClaimVersions(vers.versions);
     } catch (err) {
       setActionError("Approve failed: " + formatErrorMessage(err));
@@ -192,7 +192,7 @@ export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
       setTimeout(() => setActionSuccessMessage(null), 3500);
       await loadClaims();
       if (onRefreshStats) onRefreshStats();
-      const vers = await api.getClaimVersions(selectedClaim.id).catch(() => null);
+      const vers = await api.getClaimVersions(selectedClaim.id, role).catch(() => null);
       if (vers?.versions) setClaimVersions(vers.versions);
     } catch (err) {
       setActionError("Edit failed: " + formatErrorMessage(err));
