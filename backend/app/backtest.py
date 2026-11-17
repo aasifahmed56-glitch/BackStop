@@ -250,3 +250,38 @@ def backtest_project(project_id: int, session: Session = Depends(get_session)):
         "overall_f1": overall_f1,
         **benchmark,
     }
+
+
+# ---------------------------------------------------------------------------
+# Real-project datasets (saved results; no live computation per request)
+# ---------------------------------------------------------------------------
+
+@router.get("/datasets")
+def backtest_datasets():
+    """Datasets a judge can switch between: the synthetic sample plus saved real projects."""
+    from app.realbacktest import list_datasets
+    real = [
+        {
+            "id": m["name"],
+            "label": f"{m['name']} (real project)",
+            "kind": "real",
+            "repository_url": m.get("repository_url"),
+            "licence": m.get("licence"),
+        }
+        for m in list_datasets()
+    ]
+    return [{"id": "sample", "label": "Synthetic sample", "kind": "synthetic"}, *real]
+
+
+@router.get("/real/{name}")
+def backtest_real(name: str):
+    """Saved backtest result for a real-project dataset."""
+    from app.realbacktest import dataset_dir
+    try:
+        d = dataset_dir(name)
+    except ValueError:
+        raise HTTPException(status_code=404, detail="Unknown dataset.")
+    path = d / "backtest_result.json"
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="This dataset has no saved backtest result yet.")
+    return json.loads(path.read_text(encoding="utf-8"))
