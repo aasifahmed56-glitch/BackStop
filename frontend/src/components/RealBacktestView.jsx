@@ -9,12 +9,13 @@ const RANKINGS = [
 
 const pct = (x) => `${Math.round((x ?? 0) * 100)}%`;
 
-export default function RealBacktestView({ name }) {
-  const [data, setData] = useState(null);
+export default function RealBacktestView({ name, preloaded = null }) {
+  const [data, setData] = useState(preloaded);
   const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!preloaded);
 
   const load = async () => {
+    if (preloaded) return;
     setLoading(true);
     setError(null);
     try {
@@ -53,12 +54,12 @@ export default function RealBacktestView({ name }) {
     <div className="flex flex-col gap-space-lg">
       <section className="bg-surface-container-lowest rounded-xl p-space-lg border border-surface-container flex flex-col gap-space-md">
         <h2 className="font-headline-md text-headline-md text-on-surface font-semibold">
-          {ds.name}: a real public project
+          {ds.name}: {preloaded ? "your import" : "a real public project"}
         </h2>
         <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md font-body-sm text-body-sm">
           <div>
             <dt className="text-on-surface-variant">Repository</dt>
-            <dd><a className="text-primary underline underline-offset-2 break-all" href={ds.repository_url} target="_blank" rel="noreferrer">{ds.repository_url.replace("https://", "")}</a> ({ds.licence} licence)</dd>
+            <dd><a className="text-primary underline underline-offset-2 break-all" href={ds.repository_url} target="_blank" rel="noreferrer">{ds.repository_url.replace("https://", "")}</a> ({ds.licence === "not checked" ? "licence not checked" : `${ds.licence} licence`})</dd>
           </div>
           <div>
             <dt className="text-on-surface-variant">Leaver and cutoff</dt>
@@ -66,7 +67,7 @@ export default function RealBacktestView({ name }) {
           </div>
           <div>
             <dt className="text-on-surface-variant">How we know they left</dt>
-            <dd>{ds.departure_evidence ? <a className="text-primary underline underline-offset-2" href={ds.departure_evidence} target="_blank" rel="noreferrer">Public announcement</a> : "Commit record only"}</dd>
+            <dd>{ds.departure_evidence ? <a className="text-primary underline underline-offset-2" href={ds.departure_evidence} target="_blank" rel="noreferrer">Public announcement</a> : preloaded ? `Your date; leaver = ${ds.leaver_chosen}` : "Commit record only"}</dd>
           </div>
           <div>
             <dt className="text-on-surface-variant">Data</dt>

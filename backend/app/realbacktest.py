@@ -66,10 +66,7 @@ def dataset_dir(name: str) -> Path:
 
 
 def load_commits(d: Path) -> list[dict]:
-    chunks = parse_git_log((d / "git_log.txt").read_text(encoding="utf-8"), source_id=0)
-    for i, c in enumerate(chunks):
-        c.id = i + 1
-    return [c for c in parse_commits_from_chunks(chunks) if c.get("date")]
+    return commits_from_log((d / "git_log.txt").read_text(encoding="utf-8"))
 
 
 # ---------------------------------------------------------------------------
@@ -170,10 +167,20 @@ def _months_before(d: date, months: int) -> date:
     return date(d.year + y, m + 1, min(d.day, 28))
 
 
+def commits_from_log(raw: str) -> list[dict]:
+    chunks = parse_git_log(raw, source_id=0)
+    for i, c in enumerate(chunks):
+        c.id = i + 1
+    return [c for c in parse_commits_from_chunks(chunks) if c.get("date")]
+
+
 def run_real_backtest(name: str) -> dict[str, Any]:
     d = dataset_dir(name)
     meta = json.loads((d / "metadata.json").read_text(encoding="utf-8"))
-    commits = load_commits(d)
+    return evaluate_dataset(load_commits(d), meta)
+
+
+def evaluate_dataset(commits: list[dict], meta: dict[str, Any]) -> dict[str, Any]:
     cutoff = date.fromisoformat(meta["departure_date"])
     leaver = meta["leaver"]
     main = evaluate(commits, leaver, cutoff)

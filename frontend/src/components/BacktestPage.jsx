@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { api } from "../api";
 import RealBacktestView from "./RealBacktestView";
+import GithubImportPanel from "./GithubImportPanel";
 
 const DATASET_KEY = "backstop.backtestDataset";
 
@@ -43,8 +44,22 @@ export default function BacktestPage() {
             {d.label}
           </label>
         ))}
+        <label
+          className={`cursor-pointer px-3 py-1.5 rounded-lg border font-label-md text-label-md has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-primary ${
+            dataset === "import" ? "bg-primary text-on-primary border-primary" : "bg-surface-container-lowest text-on-surface border-outline-variant"
+          }`}
+        >
+          <input type="radio" name="dataset" value="import" checked={dataset === "import"} onChange={() => choose("import")} className="sr-only" />
+          Analyse a GitHub repository
+        </label>
       </fieldset>
-      {dataset === "sample" || !datasets.some((d) => d.id === dataset) ? <SampleBacktest /> : <RealBacktestView name={dataset} />}
+      {dataset === "import" ? (
+        <GithubImportPanel />
+      ) : dataset === "sample" || !datasets.some((d) => d.id === dataset) ? (
+        <SampleBacktest />
+      ) : (
+        <RealBacktestView name={dataset} />
+      )}
     </div>
   );
 }
