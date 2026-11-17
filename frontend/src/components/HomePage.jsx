@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { api } from "../api";
 import { ArrowRight, FileText } from "lucide-react";
 import { Button, Field, Skeleton, StatusChip, STATUS, REVIEW } from "./ui.jsx";
+import GithubImportPanel from "./GithubImportPanel";
 
 const ACCESS_CHIP = {
   restricted: "bg-error-container text-on-error-container",
@@ -213,7 +214,8 @@ export default function HomePage({
         </div>
       </section>
 
-      {/* GitHub import box (owned by the backtest branch) mounts here */}
+      {/* Try the risk ranking on a real public repository. */}
+      <GithubImportPanel title="Try it on a real repository" />
 
       {/* Journey */}
       <section aria-labelledby="journey-h">

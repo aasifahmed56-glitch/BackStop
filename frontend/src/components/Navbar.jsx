@@ -10,10 +10,10 @@ export const ROLES = [
 
 export const NAV_ITEMS = [
   { id: "overview", n: 1, label: "Overview" },
-  { id: "review", n: 2, label: "Check the claims" },
+  { id: "review", n: 2, label: "Check the claims", short: "Check" },
   { id: "handover", n: 3, label: "Handover" },
   { id: "backtest", n: 4, label: "Backtest" },
-  { id: "trust", n: 5, label: "Trust report" },
+  { id: "trust", n: 5, label: "Trust report", short: "Trust" },
 ];
 
 function Mark() {
@@ -129,7 +129,7 @@ export default function Navbar({ activeTab, onNavigate, onResetSample, isResetti
               <span className={`tnum inline-flex items-center justify-center w-5 h-5 rounded-[2px] text-[11px] font-bold ${active ? "bg-canary text-on-canary" : "border border-ink-line"}`}>
                 {item.n}
               </span>
-              <span className="truncate max-w-full px-1">{item.id === "review" ? "Check" : item.label}</span>
+              <span className="truncate max-w-full px-1">{item.short || item.label}</span>
               {active && <span aria-hidden="true" className="absolute inset-x-3 bottom-0 h-[3px] bg-canary" />}
             </a>
           );
