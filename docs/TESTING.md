@@ -43,3 +43,9 @@ The following table documents manual user journeys and edge cases executed again
 | **7** | **Wrong File Type / Executable Upload** | 1. Send `POST /api/projects/1/upload` with an executable file (e.g. `malicious.exe` or `script.py`). | - Request is rejected with HTTP 400 Bad Request.<br>- Error message explicitly lists allowed extensions (`.txt`, `.json`, `.md`, `.csv`).<br>- File is never executed or written to disk. | HTTP 400 returned: *"Extension '.exe' not allowed. Use: ['.csv', '.json', '.md', '.txt']"*. Zero execution. | **PASS** |
 | **8** | **API Failure / Offline Fallback** | 1. Set `LLM_PROVIDER=none` in `.env` or run without network access.<br>2. Trigger claim extraction via `POST /api/projects/1/extract`. | - System does not crash or stall.<br>- Reads pre-computed deterministic responses from `backend/data/cache/`.<br>- Extraction finishes successfully and loads claims. | All 84 cached responses loaded from disk; extraction succeeded 100% offline without network calls. | **PASS** |
 
+
+## Trust tests
+
+`backend/tests/trust/` holds the leak harness (every API route, every role and tampered role value), the
+deterministic detail-check tests and the Trust report endpoint test. They run with the normal suite.
+Results, fixes and limits are in [TRUST_REPORT.md](TRUST_REPORT.md).
