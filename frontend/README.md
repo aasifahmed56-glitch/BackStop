@@ -17,7 +17,9 @@ Start the backend first (`uvicorn app.main:app --reload --port 8000 --app-dir ba
 
 | Path | What it is |
 |---|---|
-| `src/App.jsx` | Shell, hash routing, role switcher |
+| `src/App.jsx` | Shell, hash routing, handover role preview |
+| `src/components/AuthGate.jsx`, `LoginPage.jsx` | Sign-in gate: `/login` for team members, `/admin/login` for admins |
+| `src/components/AccountsPage.jsx` | Admin page for managing accounts (`#/accounts`) |
 | `src/api.js` | Every call to the backend |
 | `src/components/` | One file per page (Home, Review queue, Debrief, Handover, Check a change, Backtest, Trust report, Projects, Records) plus shared UI |
 | `src/index.css` | Design tokens and global styles; see `docs/design/DESIGN.md` |

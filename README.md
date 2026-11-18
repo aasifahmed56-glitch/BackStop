@@ -4,7 +4,7 @@
 
 Backstop turns a departing engineer's scattered activity (git log, issues, meeting notes, tasks and chat) into a checked, role-gated handover. Every statement it makes carries proof: either a deterministic calculation over the history, or an exact quote from a source record. A lead approves, corrects or rejects each claim before the successor sees it.
 
-> **Demo notice.** There is no sign-in. Roles are simulated with a switcher in the app. The sample project and everyone in it are fictional. The real-project backtest uses the public, MIT-licensed history of [mochajs/mocha](https://github.com/mochajs/mocha) with every contributor pseudonymised.
+> **Demo notice.** Everyone signs in: team members at `/login`, admins at `/admin/login`. The demo deployment has ready-made accounts (`lead`, `dev`, `pm`, and `admin`), all with the password `backstop-demo`. The sample project and everyone in it are fictional. The real-project backtest uses the public, MIT-licensed history of [mochajs/mocha](https://github.com/mochajs/mocha) with every contributor pseudonymised.
 
 ---
 
@@ -222,9 +222,30 @@ BackStop/
 └── requirements.txt    Python dependencies
 ```
 
+## Sign-in and roles
+
+| Who | Signs in at | Can |
+|---|---|---|
+| Admin | `/admin/login` | Manage accounts on the Accounts page (`#/accounts`), see every access level, act as any role |
+| Lead | `/login` | Review claims, edit records and projects, see restricted notes, preview the newcomer handovers |
+| New developer / New project manager | `/login` | Read their own handover and check a change; reviewer screens are closed to them |
+
+- Each page refuses the other kind of account, so an admin cannot sign in through `/login` and a lead cannot sign in through `/admin/login`.
+- Passwords are stored as scrypt hashes. A session is a random token kept on the server and sent as an HttpOnly cookie that lasts 12 hours (`SESSION_HOURS`).
+- Every `/api` request needs a session. The server refuses any `role` value, in the query or the body, that the signed-in account may not act as, so choosing a role in the browser no longer grants access.
+- Changing an account's role or password, or disabling it, ends its open sessions. The last active admin cannot be removed.
+- Sign-in attempts are rate-limited to 10 a minute per address and recorded in the audit log.
+
+| Setting | Effect |
+|---|---|
+| `ADMIN_USERNAME`, `ADMIN_PASSWORD` | Create the first admin on an empty database |
+| `DEMO_ACCOUNTS=1` | Create `admin`, `lead`, `dev` and `pm` for a public demo |
+| `DEMO_PASSWORD` | Password for the demo accounts (default `backstop-demo`) |
+| `COOKIE_SECURE=1` | Send the session cookie over HTTPS only (set on Render) |
+
 ## 11. Limitations
 
-- **No real sign-in.** Roles are simulated; access control is enforced on the server for whichever role is chosen.
+- **Username and password sign-in only.** No SSO, password-reset email or two-factor yet. Admins reset passwords from the Accounts page.
 - **Synthetic sample.** Results on the sample show the mechanics, not real-world accuracy.
 - **Weak real-world ranking.** On mocha, the knowledge-at-risk score did worse than a plain commit count.
 - **Support check not measured live.** The live support check needs a provider key; only the deterministic detail check was evaluated.
@@ -236,7 +257,7 @@ BackStop/
 | Next | Why |
 |---|---|
 | Re-weight the risk score using the mocha findings, then test on more departures | Make the ranking beat the commit-count baseline before trusting it |
-| Real sign-in (OAuth / SSO) mapped to roles | Replace the simulated role switcher |
+| SSO (GitHub / Google) for sign-in | Let teams use the accounts they already have |
 | Live GitHub / GitLab webhooks | Keep claims current instead of importing once |
 | Measure the live support check on the labelled set | Close the one open trust measurement |
 | Tune tripwires to cut noise | Reach a precision teams will act on |

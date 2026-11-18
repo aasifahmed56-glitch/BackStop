@@ -227,7 +227,7 @@ def get_handover(
         },
         "role": role.value,
         "role_emphasis": [t.value for t in emphasis_types],
-        "disclaimer": "⚠️ Roles are simulated for demo purposes. No login system.",
+        "disclaimer": "Shown for the signed-in account's role. Items above that access level are withheld.",
         "claims_total": len(rendered_claims),
         "claims_visible": visible_count,
         "claims_withheld": withheld_count,

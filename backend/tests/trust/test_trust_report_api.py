@@ -14,7 +14,7 @@ def test_trust_report_serves_saved_results():
     assert d["leak"]["found_before_fixes"] and d["leak"]["fixes"]
     assert d["support_eval"]["after"]["pairs"] == 40
     assert d["support_eval"]["after"]["ai_check_ran"] is False
-    assert any("simulated" in l for l in d["limitations"])
+    assert any("sign-in" in l for l in d["limitations"])
     for planted in ("sk_test_FAKE", "1,20,000", "FictionalCloud", "engagement level", "example.org"):
         assert planted not in r.text
     assert "results" not in d["leak"]

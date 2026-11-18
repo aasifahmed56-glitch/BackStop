@@ -1,6 +1,7 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { Check, ChevronDown, Keyboard, MoreHorizontal, Plus, RotateCcw, Search } from "lucide-react";
-import { api } from "../api";
+import { Check, ChevronDown, Keyboard, LogOut, MoreHorizontal, Plus, RotateCcw, Search, Users } from "lucide-react";
+import { api, canReview, getCurrentUser } from "../api";
+import { signOut } from "./AuthGate";
 import { consignmentNo } from "./ui";
 
 export const ROLES = [
@@ -154,6 +155,7 @@ function ProjectSwitcher({ project, projectId, onSwitchProject, onNavigate, data
 }
 
 function MoreMenu({ isSample, onResetSample, isResetting, onShowShortcuts }) {
+  const account = getCurrentUser();
   const { open, setOpen, wrap, btn } = usePopover();
   const item = "w-full px-3.5 py-2 flex items-center gap-2.5 text-[13.5px] text-left hover:bg-surface-container cursor-pointer disabled:opacity-50";
   return (
@@ -174,13 +176,22 @@ function MoreMenu({ isSample, onResetSample, isResetting, onShowShortcuts }) {
           <button type="button" role="menuitem" className={item} onClick={() => (setOpen(false), onShowShortcuts())}>
             <Keyboard size={15} aria-hidden="true" className="text-outline" /> Keyboard shortcuts
           </button>
-          {isSample && (
+          {isSample && canReview() && (
             <button type="button" role="menuitem" className={item} disabled={isResetting} onClick={() => (setOpen(false), onResetSample())}>
               <RotateCcw size={15} aria-hidden="true" className="text-outline" /> {isResetting ? "Resetting…" : "Reset sample"}
             </button>
           )}
+          {account?.is_admin && (
+            <button type="button" role="menuitem" className={item} onClick={() => (setOpen(false), (window.location.hash = "#/accounts"))}>
+              <Users size={15} aria-hidden="true" className="text-outline" /> Manage accounts
+            </button>
+          )}
+          <button type="button" role="menuitem" className={item} onClick={() => (setOpen(false), signOut())}>
+            <LogOut size={15} aria-hidden="true" className="text-outline" /> Sign out
+          </button>
           <p className="px-3.5 pt-2.5 pb-1.5 mt-1 border-t border-outline-variant text-[12px] leading-[17px] text-on-surface-variant">
-            {isSample ? "Synthetic sample data. " : ""}Roles are simulated; there is no sign-in. A person approves every claim.
+            {account && <>Signed in as <strong className="text-on-surface">{account.display_name}</strong> ({account.role.replace("_", " ")}). </>}
+            {isSample ? "Synthetic sample data. " : ""}A person approves every claim.
           </p>
         </div>
       )}

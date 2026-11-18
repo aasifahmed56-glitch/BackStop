@@ -89,7 +89,7 @@ def trust_report():
         },
         "tripwire_replay": replay,
         "limitations": [
-            "Roles are simulated with a switcher and there is no sign-in. The server trusts the role value it is sent, so these are tested cases of the access rules, not a test of authentication.",
+            "Each person signs in with their own account, and the server refuses any role the account may not act as. The leak harness runs with sign-in switched off so it can send every role value; it tests the access rules, and tests/test_auth.py tests the sign-in guard separately.",
             "The leak harness checks for known planted strings and the text of known restricted and confidential claims. Text it was not told to look for would not be flagged.",
             "The support-check evaluation has 40 hand-written pairs from one synthetic project. It is a small set and the rates can move a lot with a few pairs.",
             "The AI support check has not been run on the evaluation pairs yet because no API key was available. Only the deterministic detail check has real numbers.",

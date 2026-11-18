@@ -24,6 +24,48 @@ export function setCurrentProject(id) {
 }
 const cur = () => currentProject;
 
+// ---------------------------------------------------------------------------
+// Signed-in account. The server decides which roles an account may act as and
+// refuses any other; the client asks only for roles it is allowed, falling
+// back to the account's own role, so pages written for the lead still work
+// for a newcomer with their narrower view.
+// ---------------------------------------------------------------------------
+let currentUser = null;
+export const getCurrentUser = () => currentUser;
+export function setCurrentUser(u) {
+  currentUser = u || null;
+}
+export const canActAs = (role) => !!currentUser && currentUser.acting_roles.includes(role);
+export const canReview = () => canActAs("lead");
+export function clampRole(role) {
+  if (!currentUser || !role) return role;
+  return currentUser.acting_roles.includes(role) ? role : currentUser.role;
+}
+export const SIGNED_OUT_EVENT = "backstop:signed-out";
+
+function clampPath(path) {
+  const [base, query] = path.split("?");
+  if (!query) return path;
+  const params = new URLSearchParams(query);
+  if (!params.has("role")) return path;
+  params.set("role", clampRole(params.get("role")));
+  return `${base}?${params.toString()}`;
+}
+
+function clampBody(body) {
+  if (typeof body !== "string") return body;
+  try {
+    const obj = JSON.parse(body);
+    if (obj && typeof obj === "object" && typeof obj.role === "string") {
+      obj.role = clampRole(obj.role);
+      return JSON.stringify(obj);
+    }
+  } catch {
+    /* not JSON: send as is */
+  }
+  return body;
+}
+
 export function formatErrorMessage(err) {
   if (!err) return "Unknown error";
   if (typeof err === "string") return err;
@@ -60,13 +102,16 @@ export function formatErrorMessage(err) {
 }
 
 async function request(path, options = {}) {
-  const url = `${BASE_URL}${path}`;
+  const url = `${BASE_URL}${clampPath(path)}`;
   const headers = {
     "Content-Type": "application/json",
     ...(options.headers || {}),
   };
 
-  const response = await fetch(url, { ...options, headers });
+  const response = await fetch(url, { ...options, body: clampBody(options.body), headers, credentials: "same-origin" });
+  if (response.status === 401 && !path.startsWith("/auth/")) {
+    window.dispatchEvent(new Event(SIGNED_OUT_EVENT));
+  }
   if (!response.ok) {
     let errorDetail = `Request failed: ${response.status} ${response.statusText}`;
     try {
@@ -89,6 +134,20 @@ async function request(path, options = {}) {
 }
 
 export const api = {
+  // Sign-in
+  me: () => request("/auth/me", { cache: "no-store" }),
+  authConfig: () => request("/auth/config", { cache: "no-store" }),
+  login: ({ username, password, admin = false }) =>
+    request(admin ? "/auth/admin/login" : "/auth/login", { method: "POST", body: JSON.stringify({ username, password }) }),
+  logout: () => request("/auth/logout", { method: "POST" }),
+
+  // Accounts (admin only)
+  listUsers: () => request("/admin/users", { cache: "no-store" }),
+  createUser: ({ username, displayName, role, password }) =>
+    request("/admin/users", { method: "POST", body: JSON.stringify({ username, display_name: displayName, role, password }) }),
+  updateUser: (id, changes) => request(`/admin/users/${id}`, { method: "PUT", body: JSON.stringify(changes) }),
+  deleteUser: (id) => request(`/admin/users/${id}`, { method: "DELETE" }),
+
   // Project & Samples
   getProject: (id = cur()) => request(`/projects/${id}`),
   resetSample: () => request("/sample/reset", { method: "POST" }),

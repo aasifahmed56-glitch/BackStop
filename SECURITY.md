@@ -14,7 +14,9 @@ Please do not open a public issue for a security problem. Contact the maintainer
 
 ## Known gaps
 
-- Roles are chosen by the client; there is no sign-in. Do not put real confidential data into a public deployment.
+- Everyone signs in. Team members use `/login` and admins use `/admin/login`; each page refuses the other kind of account. Passwords are stored as scrypt hashes and sessions are HttpOnly cookies.
+- The server takes the role from the signed-in account and refuses any role that account may not act as.
+- The demo accounts (`DEMO_ACCOUNTS=1`) share a known password. Turn them off, or set `DEMO_PASSWORD`, before putting real confidential data into a deployment.
 - Rate limits are in memory and reset on restart.
 
 Results and the list of fixed leaks are in [docs/TRUST_REPORT.md](docs/TRUST_REPORT.md).

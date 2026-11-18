@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { Lock, Printer, PenLine, ClipboardCheck, SearchX, Search, ListChecks } from "lucide-react";
-import { api, formatErrorMessage } from "../api";
-import { ROLES } from "./Navbar";
+import { api, formatErrorMessage, canActAs } from "../api";
+import { ROLES as ALL_ROLES } from "./Navbar";
 import { Button, Field, Dialog, TextInput, Skeleton, humanize, consignmentNo } from "./ui";
 
 const PHASES = [
@@ -67,6 +67,8 @@ function LoadingDocument() {
 const cleanTitle = (t) => String(t || "").replace(/^\[[A-Z_ ]+\]\s*/, "").replace(/\.{2,}$/, "…").trim();
 
 export default function HandoverPage({ role, setRole, setActiveTab }) {
+  // Only the views this account may open; the server refuses the rest.
+  const ROLES = ALL_ROLES.filter((r) => canActAs(r.id));
   const [handoverData, setHandoverData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);

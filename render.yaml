@@ -11,3 +11,11 @@ services:
         value: 20.11.0
       - key: LLM_PROVIDER
         value: none
+      - key: DEMO_ACCOUNTS
+        value: "1"
+      - key: COOKIE_SECURE
+        value: "1"
+      - key: ADMIN_USERNAME
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
