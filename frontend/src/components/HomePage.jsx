@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { api } from "../api";
-import { ArrowRight, FileText } from "lucide-react";
+import { ArrowRight, Check, FileText } from "lucide-react";
 import { Button, Skeleton, STATUS, REVIEW, humanize } from "./ui.jsx";
 import Readiness from "./Readiness";
 import SpecimenStack from "./SpecimenStack";
@@ -60,6 +60,88 @@ function FeatureRow({ title, body, action, visual, flip = false }) {
         )}
       </div>
     </section>
+  );
+}
+
+function whenLeaving(iso) {
+  const d = new Date(iso + "T00:00:00");
+  if (Number.isNaN(d.getTime())) return "";
+  const days = Math.round((d - new Date(new Date().toDateString())) / 86400000);
+  const date = d.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+  if (days > 1) return `Their last day is ${date}, in ${days} days.`;
+  if (days === 1) return `Their last day is tomorrow, ${date}.`;
+  if (days === 0) return `Today, ${date}, is their last day.`;
+  return `They left on ${date}.`;
+}
+
+/* A new project with nothing in it: the overview becomes the three steps that fill it. */
+function FirstRun({ project, sourceCount, setActiveTab }) {
+  const steps = [
+    {
+      title: "Add their records",
+      body: "Paste or upload a git log, notes, issues, tasks or chat, or import a public GitHub history.",
+      done: sourceCount > 0,
+      state: sourceCount ? `${sourceCount} added` : null,
+      action: ["Add records", () => setActiveTab("records")],
+    },
+    {
+      title: "Build the claims",
+      body: "Code ranks who owns what; keyword rules or the AI extractor read the rest. Every claim quotes its source.",
+      done: false,
+      action: sourceCount ? ["Build claims", () => setActiveTab("records")] : null,
+    },
+    {
+      title: "Check, ask, hand over",
+      body: "Stamp each claim, ask the debrief questions before the last day, and give the newcomer what their role may read.",
+      done: false,
+    },
+  ];
+  const next = steps.findIndex((s) => !s.done);
+  return (
+    <div className="flex flex-col gap-10 max-w-[880px] pt-2 lg:pt-6">
+      <header className="flex flex-col gap-4">
+        <h1 className="text-[36px] leading-[1.05] sm:text-[52px] font-bold tracking-[-0.03em] text-balance">
+          Start {project?.leaver_name || "their"}'s handover.
+        </h1>
+        <p className="text-[17px] leading-7 text-on-surface-variant max-w-[56ch]">
+          {whenLeaving(project?.departure_date)} {project?.name} has no claims yet. Three steps get it to a handover a newcomer can sign for.
+        </p>
+      </header>
+      <ol className="flex flex-col">
+        {steps.map((s, i) => {
+          const current = i === next;
+          return (
+            <li key={s.title} className={`grid grid-cols-[40px_1fr] sm:grid-cols-[48px_1fr_auto] gap-x-4 gap-y-3 py-6 border-t border-outline-variant items-start ${current ? "" : "opacity-70"}`}>
+              <span
+                aria-hidden="true"
+                className={`w-9 h-9 rounded-full inline-flex items-center justify-center font-mono tnum text-[14px] ${
+                  s.done ? "bg-stamp text-white" : current ? "border-2 border-on-surface text-on-surface" : "border border-outline-variant text-on-surface-variant"
+                }`}
+              >
+                {s.done ? <Check size={16} strokeWidth={2.5} /> : i + 1}
+              </span>
+              <div className="min-w-0">
+                <h2 className="text-[20px] font-bold tracking-[-0.01em]">
+                  {s.title}
+                  {s.state && <span className="ml-2 text-[13px] font-medium text-stamp">{s.state}</span>}
+                  <span className="sr-only">{s.done ? " (done)" : current ? " (next)" : ""}</span>
+                </h2>
+                <p className="text-[14.5px] leading-6 text-on-surface-variant mt-1 max-w-[58ch]">{s.body}</p>
+              </div>
+              {s.action && (
+                <Button className="col-start-2 sm:col-start-3 justify-self-start" variant={current ? "primary" : "outline"} onClick={s.action[1]}>
+                  {s.action[0]} <ArrowRight size={15} aria-hidden="true" />
+                </Button>
+              )}
+            </li>
+          );
+        })}
+      </ol>
+      <p className="text-[13px] text-on-surface-variant border-t border-outline-variant pt-5">
+        Want to see a finished handover first?{" "}
+        <a href="#/projects" className="font-semibold text-primary hover:underline underline-offset-2">Open the synthetic sample</a> from the project list.
+      </p>
+    </div>
   );
 }
 
@@ -163,6 +245,10 @@ export default function HomePage({
       setActiveTab("review");
     }
   };
+
+  if (!isSample && hasStats && total === 0) {
+    return <FirstRun project={project} sourceCount={sources.length} setActiveTab={setActiveTab} />;
+  }
 
   return (
     <div className="flex flex-col w-full gap-24 lg:gap-32 pb-8 overflow-x-clip">
@@ -383,11 +469,11 @@ export default function HomePage({
         )}
       </section>
 
-      {/* Try the risk ranking on a real public repository. */}
-      <GithubImportPanel title="Try it on a real repository" />
+      {/* Try the risk ranking on a real public repository (the sample's showcase; projects import on Records). */}
+      {isSample && <GithubImportPanel title="Try it on a real repository" />}
 
       {/* Behind the scenes */}
-      <section className="border-t border-outline-variant pt-5 flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
+      {isSample && <section className="border-t border-outline-variant pt-5 flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
         <p className="text-[13px] text-on-surface-variant max-w-[60ch]">
           Behind the scenes: re-run extraction to rebuild the claims from the sources, or the derivations to
           recompute the figures from code.
@@ -400,7 +486,7 @@ export default function HomePage({
             Re-run extraction
           </Button>
         </div>
-      </section>
+      </section>}
     </div>
   );
 }

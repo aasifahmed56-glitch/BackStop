@@ -87,7 +87,7 @@ function SourceExcerpt({ text, quote, lineStart }) {
   );
 }
 
-export default function ReviewQueuePage({ onRefreshStats, initialClaimId, onSelectClaimId, leaverName }) {
+export default function ReviewQueuePage({ onRefreshStats, initialClaimId, onSelectClaimId, leaverName, setActiveTab }) {
   const projectLeaver = leaverName || "the person leaving";
   const [claims, setClaims] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -403,6 +403,9 @@ export default function ReviewQueuePage({ onRefreshStats, initialClaimId, onSele
         <p className="text-[14px] text-on-surface-variant">
           Add records to this project and build claims on the Records page. For the sample, use <strong>Reset sample</strong> in the side bar.
         </p>
+        <Button variant="primary" className="self-start" onClick={() => setActiveTab?.("records")}>
+          Go to records
+        </Button>
       </div>
     );
   }

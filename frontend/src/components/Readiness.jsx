@@ -45,6 +45,8 @@ export default function Readiness({ readiness, compact = false }) {
 function ReadinessView({ readiness, compact }) {
   const { score, verdict, parts = [] } = readiness;
   const v = VERDICT[verdict] || VERDICT.in_progress;
+  // With nothing to check, every part is vacuously complete; show no score rather than a misleading one.
+  const isEmpty = verdict === "empty";
   const shownScore = useCountUp(score ?? 0);
   // Bars start empty and grow to their value once, so the reading is seen being taken.
   const [grown, setGrown] = useState(false);
@@ -59,22 +61,29 @@ function ReadinessView({ readiness, compact }) {
           Handover readiness
         </h2>
         <p className="text-[14px]">
-          <span className="font-mono tnum text-[22px] font-bold text-on-surface" aria-hidden="true">{shownScore}</span>
-          <span className="sr-only">{score}</span>
-          <span className="text-on-surface-variant"> / 100 · </span>
+          {isEmpty ? (
+            <span className="font-mono text-[22px] font-bold text-outline">–</span>
+          ) : (
+            <>
+              <span className="font-mono tnum text-[22px] font-bold text-on-surface" aria-hidden="true">{shownScore}</span>
+              <span className="sr-only">{score}</span>
+              <span className="text-on-surface-variant"> / 100</span>
+            </>
+          )}
+          <span className="text-on-surface-variant"> · </span>
           <span className={`font-semibold ${v.tone}`}>{v.label}</span>
         </p>
       </div>
       <div
         className="flex h-3 gap-[3px]"
         role="img"
-        aria-label={`Readiness ${score} out of 100. ${parts.map((p) => `${p.label}: ${p.done} of ${p.total}`).join(". ")}.`}
+        aria-label={isEmpty ? "Readiness: nothing to check yet." : `Readiness ${score} out of 100. ${parts.map((p) => `${p.label}: ${p.done} of ${p.total}`).join(". ")}.`}
       >
         {parts.map((p) => (
           <span key={p.key} className="relative h-full rounded-[2px] bg-surface-container-high overflow-hidden" style={{ flexGrow: p.weight, flexBasis: 0 }}>
             <span
               className="absolute inset-y-0 left-0 bg-stamp transition-[width] duration-[900ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
-              style={{ width: grown ? `${Math.round((p.fraction ?? 0) * 100)}%` : "0%" }}
+              style={{ width: grown && !isEmpty ? `${Math.round((p.fraction ?? 0) * 100)}%` : "0%" }}
             />
           </span>
         ))}
