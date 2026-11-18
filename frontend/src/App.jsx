@@ -291,7 +291,7 @@ export default function App() {
         <div
           role={actionStatus.tone === "error" ? "alert" : "status"}
           aria-live="polite"
-          className={`rise-in no-print fixed bottom-4 right-4 left-4 sm:left-auto z-50 sm:max-w-md flex items-start gap-3 pl-4 pr-2 py-3 rounded-[8px] border shadow-[0_16px_36px_-14px_rgb(23_41_31/0.5)] text-[14px] leading-5 ${
+          className={`rise-in no-print fixed bottom-4 right-4 left-4 sm:left-auto z-50 sm:max-w-md flex items-start gap-3 pl-4 pr-2 py-3 rounded-[8px] border shadow-[0_16px_36px_-14px_rgb(29_32_31/0.5)] text-[14px] leading-5 ${
             actionStatus.tone === "error"
               ? "bg-error-container text-on-error-container border-error/40"
               : actionStatus.tone === "warn"

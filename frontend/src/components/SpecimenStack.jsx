@@ -161,7 +161,7 @@ export default function SpecimenStack({ claims, onOpen }) {
         </button>
         <div className="flex items-center gap-1.5" aria-hidden="true">
           {claims.map((c, i) => (
-            <span key={c.id} className={`h-1.5 rounded-full transition-all duration-300 ${i === front ? "w-6 bg-stamp" : "w-1.5 bg-outline-variant"}`} />
+            <span key={c.id} className={`h-1.5 rounded-full transition-all duration-300 ${i === front ? "w-6 bg-on-surface" : "w-1.5 bg-outline-variant"}`} />
           ))}
         </div>
         <button type="button" onClick={() => go(1)} aria-label="Next claim" className="w-8 h-8 inline-flex items-center justify-center rounded-full border border-outline-variant hover:border-outline bg-surface-container-lowest cursor-pointer">

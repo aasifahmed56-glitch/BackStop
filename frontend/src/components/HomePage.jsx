@@ -54,7 +54,7 @@ function FeatureRow({ title, body, action, visual, flip = false }) {
         <h2 className="text-[30px] sm:text-[38px] leading-[1.08] font-bold tracking-[-0.03em] text-on-surface text-balance">{title}</h2>
         <p className="text-[15.5px] leading-7 text-on-surface-variant">{body}</p>
         {action && (
-          <button type="button" onClick={action[1]} className="self-start inline-flex items-center gap-1 text-[14px] font-semibold text-stamp hover:underline cursor-pointer">
+          <button type="button" onClick={action[1]} className="self-start inline-flex items-center gap-1 text-[14px] font-semibold text-primary hover:underline cursor-pointer">
             {action[0]} <ArrowRight size={15} aria-hidden="true" />
           </button>
         )}
