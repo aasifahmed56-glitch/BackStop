@@ -468,6 +468,27 @@ class LeakHarness:
         r = self.client.post("/api/sample/reset")
         self._record("reset sample", "/api/sample/reset", "POST", "/api/sample/reset", lowest, r)
 
+        # Sign-in and account routes: no session here, so admin routes must refuse.
+        _clear_rate_limits()
+        bad = {"username": "nobody", "password": "wrong-password"}
+        for attack, method, path, url, body in (
+            ("sign-in config", "GET", "/api/auth/config", "/api/auth/config", None),
+            ("current account", "GET", "/api/auth/me", "/api/auth/me", None),
+            ("user sign-in, wrong password", "POST", "/api/auth/login", "/api/auth/login", bad),
+            ("admin sign-in, wrong password", "POST", "/api/auth/admin/login", "/api/auth/admin/login", bad),
+            ("sign out", "POST", "/api/auth/logout", "/api/auth/logout", None),
+            ("list accounts", "GET", "/api/admin/users", "/api/admin/users", None),
+            ("create account", "POST", "/api/admin/users", "/api/admin/users",
+             {"username": "harness", "display_name": "H", "role": "admin", "password": "harness-pass"}),
+            ("change account", "PUT", "/api/admin/users/{user_id}", "/api/admin/users/1", {"role": "admin"}),
+            ("delete account", "DELETE", "/api/admin/users/{user_id}", "/api/admin/users/1", None),
+        ):
+            r = self.client.request(method, url, json=body)
+            fail = ""
+            if path.startswith("/api/admin/") and r.status_code < 400:
+                fail = f"account route accepted without an admin session (HTTP {r.status_code})"
+            self._record(attack, path, method, url, lowest, r, fail)
+
     def run(self) -> dict[str, Any]:
         self.setup()
         self.run_reads()
