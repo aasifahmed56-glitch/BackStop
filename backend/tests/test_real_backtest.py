@@ -82,3 +82,28 @@ def test_dataset_endpoints():
     assert r.status_code == 200 and r.json()["dataset"]["leaver"] == "Contributor A"
     for bad in ["../sample", "MOCHA", "nope", "a;b"]:
         assert c.get(f"/api/backtest/real/{bad}").status_code == 404
+
+
+def test_score_v2_formula_hand_example():
+    from app.derived import compute_exposure_weighted_score
+    own = [
+        {"module": "big", "leaver_share": 0.5, "leaver_count": 16},    # 0.5 × 4 = 2.0
+        {"module": "tiny", "leaver_share": 1.0, "leaver_count": 1},    # 1.0 × 1 = 1.0
+        {"module": "none", "leaver_share": 0.0, "leaver_count": 0},
+    ]
+    s = compute_exposure_weighted_score(own)
+    assert s == {"big": 2.0, "tiny": 1.0, "none": 0.0}
+    assert list(s) == ["big", "tiny", "none"]
+
+
+def test_v2_ranking_present_and_never_reads_post_cutoff_data():
+    base = rank_modules(PRE + POST, "A", CUT)
+    assert {r["module"] for r in base["backstop_v2"]} == {r["module"] for r in base["backstop"]}
+    assert rank_modules(PRE, "A", CUT)["backstop_v2"] == base["backstop_v2"]
+
+
+def test_saved_mocha_v2_result_is_reported_as_measured():
+    saved = json.loads((REAL_DIR / "mocha" / "backtest_result.json").read_text())
+    hits = {k: next(m["hit_count"] for m in v if m["k"] == 5) for k, v in saved["result"]["metrics"].items()}
+    assert hits == {"backstop": 0, "backstop_v2": 4, "commit_count": 5, "commit_share": 2}
+    assert any("in-sample" in x for x in saved["limitations"])

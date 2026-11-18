@@ -176,6 +176,7 @@ The full list is in [CHANGELOG.md](CHANGELOG.md).
 | Detail check on 40 labelled claim/quote pairs | Caught **5 of 5** invented details, **0** correct claims rejected. Cannot catch right words with the wrong meaning |
 | Backtest, synthetic sample | Backstop's ranking finds the troubled modules (overall F1 0.76). The data is generated, so this is a demonstration, not evidence |
 | Backtest, real mocha history | Backstop's top 5 hit **0 of 8** troubled modules; a plain commit count got **5 of 5**. Backstop over-weights small test folders the leaver owned alone |
+| Candidate score v2 on mocha (share × √commits) | Top 5 hit **4 of 5** at the real departure and at all three control dates, up from 0 or 1 for today's score. The commit count still gets 5 at three of the four dates and ties at 4 on the fourth. v2 was chosen after seeing the mocha result, so this is in-sample; it is shown on the Backtest page but not used for claims yet |
 | Tripwire replay on mocha | 36.7 % precision against a 31.7 % base rate, 89 % recall. Useful as a warning, too noisy to block changes |
 
 The real-project numbers are weak, and we report them as they are. One project and one departure is a case study, not proof either way.
@@ -257,7 +258,7 @@ BackStop/
 
 | Next | Why |
 |---|---|
-| Re-weight the risk score using the mocha findings, then test on more departures | Make the ranking beat the commit-count baseline before trusting it |
+| Test score v2 on a second real departure, then adopt it for claims if it holds | v2 closes most of the gap to the commit-count baseline on mocha, but only in-sample |
 | SSO (GitHub / Google) for sign-in | Let teams use the accounts they already have |
 | Live GitHub / GitLab webhooks | Keep claims current instead of importing once |
 | Measure the live support check on the labelled set | Close the one open trust measurement |

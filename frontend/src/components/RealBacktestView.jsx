@@ -3,11 +3,69 @@ import { api } from "../api";
 
 const RANKINGS = [
   { id: "backstop", label: "Backstop risk score" },
+  { id: "backstop_v2", label: "Score v2 (candidate)" },
   { id: "commit_count", label: "Leaver's commit count" },
   { id: "commit_share", label: "Leaver's commit share" },
 ];
 
 const pct = (x) => `${Math.round((x ?? 0) * 100)}%`;
+
+const CHART_COLORS = {
+  backstop: "var(--color-error)",
+  backstop_v2: "var(--color-tertiary)",
+  commit_count: "var(--color-outline)",
+  commit_share: "var(--color-tertiary-fixed-dim)",
+};
+
+function HitsChart({ groups, rankings }) {
+  const W = 640, H = 240, L = 32, R = 8, T = 16, B = 196;
+  const y = (v) => B - ((B - T) * v) / 5;
+  const gw = (W - L - R) / groups.length;
+  const bw = Math.min(28, (gw - 16) / rankings.length - 4);
+  return (
+    <figure className="flex flex-col gap-space-sm">
+      <div className="overflow-x-auto">
+        <svg viewBox={`0 0 ${W} ${H}`} className="w-full min-w-[480px]" role="img"
+          aria-label="Troubled modules found in the top 5, for each ranking at each cutoff">
+          {[0, 1, 2, 3, 4, 5].map((v) => (
+            <g key={v}>
+              <line x1={L} x2={W - R} y1={y(v)} y2={y(v)} stroke="var(--color-outline-variant)" strokeWidth="1" />
+              <text x={L - 8} y={y(v) + 4} textAnchor="end" fontSize="11" fill="var(--color-on-surface-variant)">{v}</text>
+            </g>
+          ))}
+          {groups.map((g, i) => {
+            const cx = L + gw * i + gw / 2;
+            const start = cx - (rankings.length * (bw + 4) - 4) / 2;
+            return (
+              <g key={g.label}>
+                {rankings.map((rk, j) => {
+                  const v = g.hits[rk.id];
+                  const x = start + j * (bw + 4);
+                  return (
+                    <g key={rk.id}>
+                      <rect x={x} y={y(v)} width={bw} height={B - y(v)} rx="3" fill={CHART_COLORS[rk.id]} />
+                      <text x={x + bw / 2} y={y(v) - 5} textAnchor="middle" fontSize="11" fill="var(--color-on-surface)">{v}</text>
+                    </g>
+                  );
+                })}
+                <text x={cx} y={B + 18} textAnchor="middle" fontSize="11" fill="var(--color-on-surface)">{g.label}</text>
+                <text x={cx} y={B + 32} textAnchor="middle" fontSize="10" fill="var(--color-on-surface-variant)">{g.sub}</text>
+              </g>
+            );
+          })}
+        </svg>
+      </div>
+      <figcaption className="flex flex-wrap gap-x-space-md gap-y-1 font-body-sm text-body-sm text-on-surface-variant">
+        {rankings.map((rk) => (
+          <span key={rk.id} className="inline-flex items-center gap-1.5">
+            <span aria-hidden="true" className="inline-block w-2.5 h-2.5 rounded-sm" style={{ background: CHART_COLORS[rk.id] }} />
+            {rk.label}
+          </span>
+        ))}
+      </figcaption>
+    </figure>
+  );
+}
 
 export default function RealBacktestView({ name, preloaded = null }) {
   const [data, setData] = useState(preloaded);
@@ -49,6 +107,12 @@ export default function RealBacktestView({ name, preloaded = null }) {
   const { dataset: ds, result: r, controls, method, limitations } = data;
   const at = (rk, k) => r.metrics[rk].find((m) => m.k === k);
   const best = RANKINGS.reduce((a, b) => (at(b.id, 5).precision > at(a.id, 5).precision ? b : a));
+  const hits5 = (metrics) => Object.fromEntries(RANKINGS.map((rk) => [rk.id, metrics[rk.id].find((m) => m.k === 5).hit_count]));
+  const groups = [
+    { label: r.cutoff, sub: "real departure", hits: hits5(r.metrics) },
+    ...controls.map((c) => ({ label: c.cutoff, sub: `${c.months_before} months earlier`, hits: hits5(c.metrics) })),
+  ];
+  const v2 = at("backstop_v2", 5).hit_count;
 
   return (
     <div className="flex flex-col gap-space-lg">
@@ -80,7 +144,7 @@ export default function RealBacktestView({ name, preloaded = null }) {
         <h2 className="font-headline-md text-headline-md text-on-surface font-semibold">What happened</h2>
         <p className="font-body-md text-body-md text-on-surface mt-2 max-w-3xl">
           {r.positive_count} of the {r.modules_ranked} modules the leaver worked on ran into trouble in the {method.window_days} days after the cutoff.
-          {" "}In the top 5, Backstop found {at("backstop", 5).hit_count}, the leaver&apos;s commit count found {at("commit_count", 5).hit_count}
+          {" "}In the top 5, Backstop found {at("backstop", 5).hit_count}, the candidate score v2 found {v2}, the leaver&apos;s commit count found {at("commit_count", 5).hit_count}
           {" "}and the commit share found {at("commit_share", 5).hit_count}. A random order would find about {Math.round(r.chance_precision * 5)}.
         </p>
         {best.id !== "backstop" && (
@@ -90,6 +154,18 @@ export default function RealBacktestView({ name, preloaded = null }) {
             count ranks first. The control dates below show the same pattern, so this ground truth mostly tracks how busy a module is.
           </p>
         )}
+      </section>
+
+      <section className="bg-surface-container-lowest rounded-xl p-space-lg border border-surface-container flex flex-col gap-space-md">
+        <div>
+          <h2 className="font-headline-md text-headline-md text-on-surface font-semibold">Troubled modules found in the top 5</h2>
+          <p className="font-body-md text-body-md text-on-surface-variant mt-1 max-w-3xl">
+            The real departure and three earlier control dates. Score v2 weights the leaver&apos;s share by how many commits they made
+            (share × √commits) instead of dividing by the number of other contributors. It was chosen after seeing this project&apos;s
+            result, so these numbers are in-sample and v2 is not yet used for claims.
+          </p>
+        </div>
+        <HitsChart groups={groups} rankings={RANKINGS} />
       </section>
 
       <section className="bg-surface-container-lowest rounded-xl border border-surface-container overflow-hidden">
@@ -122,7 +198,7 @@ export default function RealBacktestView({ name, preloaded = null }) {
         <p className="font-body-sm text-body-sm text-on-surface-variant px-space-lg py-space-sm">Each cell: precision / recall. Random order averages {pct(r.chance_precision)} precision.</p>
       </section>
 
-      <section className="grid grid-cols-1 lg:grid-cols-3 gap-space-md">
+      <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-space-md">
         {RANKINGS.map((rk) => (
           <div key={rk.id} className="bg-surface-container-lowest rounded-xl p-space-md border border-surface-container">
             <h3 className="font-headline-sm text-headline-sm text-on-surface font-semibold">{rk.label}: top 5</h3>
