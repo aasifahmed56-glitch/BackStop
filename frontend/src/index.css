@@ -225,6 +225,12 @@
   @keyframes tick-in { from { opacity: 0; transform: translateY(6px) scaleY(0.4); } to { opacity: 1; transform: none; } }
   .tick { transition: transform 150ms ease, outline-color 150ms ease; }
   .tick:hover, .tick:focus-visible { transform: translateY(-2px); }
+  /* Feature rows: tiles start slightly low and settle once the row is seen. */
+  .reveal .tile { transition: transform 700ms cubic-bezier(0.16, 1, 0.3, 1), opacity 600ms ease, box-shadow 200ms ease; }
+  .reveal:not(.is-in) .tile { opacity: 0.001; transform: translateY(28px) scale(0.97); }
+  .reveal.is-in .tile { transition-delay: var(--d, 0ms); }
+  button.tile:hover { transform: translateY(-3px); }
+  @media (prefers-reduced-motion: reduce) { .reveal:not(.is-in) .tile { opacity: 1; transform: none; } }
   .rise-in { animation: rise-in 220ms cubic-bezier(0.16, 1, 0.3, 1) both; }
   @keyframes rise-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
   dialog.sheet::backdrop { background: rgb(29 32 31 / 0.4); }

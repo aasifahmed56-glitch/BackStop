@@ -37,13 +37,13 @@ export default function GithubImportPanel({ title = "Analyse a public repository
   const [today] = useState(() => new Date().toISOString().slice(0, 10));
 
   const input =
-    "w-full h-10 px-2.5 rounded-[3px] border border-outline-variant bg-surface-container-lowest text-[14px] text-on-surface placeholder:text-outline focus:outline-2 focus:outline-primary focus:border-primary";
+    "w-full h-10 px-2.5 rounded-[10px] border border-outline-variant bg-surface-container-lowest text-[14px] text-on-surface placeholder:text-outline focus:outline-2 focus:outline-primary focus:border-primary";
 
   return (
     <div className="flex flex-col gap-5 min-w-0">
-      <form onSubmit={submit} className="panel p-4 sm:p-5 flex flex-col gap-4" aria-busy={busy} aria-labelledby="gh-import-h">
+      <form onSubmit={submit} className="bg-surface-container-lowest rounded-[22px] p-6 sm:p-10 flex flex-col gap-5" aria-busy={busy} aria-labelledby="gh-import-h">
         <div>
-          <h2 id="gh-import-h" className="text-[22px] leading-[28px] font-bold text-on-surface">{title}</h2>
+          <h2 id="gh-import-h" className="text-[28px] sm:text-[34px] leading-[1.1] font-bold tracking-[-0.025em] text-on-surface">{title}.</h2>
           <p className="text-[14px] leading-[22px] text-on-surface-variant mt-1 max-w-3xl">
             Backstop downloads the commit history (no file contents), replaces every name with a pseudonym, ranks modules as of the
             date you pick and checks the ranking against what happened in the next 180 days. Nothing is stored. Up to 3 imports per hour; large repositories may time out after 60 seconds.

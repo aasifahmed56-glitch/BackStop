@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { api } from "../api";
 import { ArrowRight, FileText } from "lucide-react";
-import { Button, Skeleton, StatusChip, STATUS, REVIEW, humanize } from "./ui.jsx";
+import { Button, Skeleton, STATUS, REVIEW, humanize } from "./ui.jsx";
 import Readiness from "./Readiness";
 import SpecimenStack from "./SpecimenStack";
 import GithubImportPanel from "./GithubImportPanel";
@@ -13,38 +13,55 @@ const ACCESS_CHIP = {
   public: "bg-tertiary-fixed text-on-tertiary-fixed",
 };
 
-const STEPS = [
-  {
-    n: 1,
-    title: "Inspect",
-    body: "Every claim is checked against its exact source quote, or the code that computed it.",
-    link: "Check the claims",
-    tab: "review",
-  },
-  {
-    n: 2,
-    title: "Sign off",
-    body: "A person approves, corrects or rejects each claim before it can reach anyone else.",
-    link: "Open the queue",
-    tab: "review",
-  },
-  {
-    n: 3,
-    title: "Ask",
-    body: "Whatever the records could not settle becomes a question for the person leaving. Their answers are checked like any claim.",
-    link: "See the questions",
-    tab: "debrief",
-  },
-  {
-    n: 4,
-    title: "Receive",
-    body: "The newcomer gets a plan limited to their role, and signs for receipt.",
-    link: "See the handover",
-    tab: "handover",
-  },
-];
 
 const num = (v) => (Number.isFinite(v) ? v : 0);
+
+const TILE = {
+  verified: "bg-tertiary-fixed",
+  inferred: "bg-goldenrod-container",
+  conflicting: "bg-error-container",
+  missing: "bg-surface-container-high",
+};
+
+/* Adds .is-in once the row is on screen, so its tiles settle in. Content is visible without JS. */
+function useReveal() {
+  const ref = useRef(null);
+  const [inView, setInView] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (e.isIntersecting) {
+          setInView(true);
+          io.disconnect();
+        }
+      },
+      { threshold: 0.25 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  return [ref, inView];
+}
+
+function FeatureRow({ title, body, action, visual, flip = false }) {
+  const [ref, inView] = useReveal();
+  return (
+    <section ref={ref} className={`reveal grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center ${inView ? "is-in" : ""}`}>
+      <div className={`min-w-0 ${flip ? "lg:order-2" : ""}`}>{visual}</div>
+      <div className={`flex flex-col gap-4 max-w-[460px] ${flip ? "lg:order-1" : ""}`}>
+        <h2 className="text-[30px] sm:text-[38px] leading-[1.08] font-bold tracking-[-0.03em] text-on-surface text-balance">{title}</h2>
+        <p className="text-[15.5px] leading-7 text-on-surface-variant">{body}</p>
+        {action && (
+          <button type="button" onClick={action[1]} className="self-start inline-flex items-center gap-1 text-[14px] font-semibold text-stamp hover:underline cursor-pointer">
+            {action[0]} <ArrowRight size={15} aria-hidden="true" />
+          </button>
+        )}
+      </div>
+    </section>
+  );
+}
 
 export default function HomePage({
   project,
@@ -94,6 +111,7 @@ export default function HomePage({
 
   const [readiness, setReadiness] = useState(null);
   const [openQuestions, setOpenQuestions] = useState(null);
+  const [topQuestions, setTopQuestions] = useState([]);
   useEffect(() => {
     let live = true;
     api
@@ -102,6 +120,7 @@ export default function HomePage({
         if (!live) return;
         setReadiness(d?.readiness || null);
         setOpenQuestions(Array.isArray(d?.questions) ? d.questions.filter((q) => !q.answered).length : null);
+        setTopQuestions(Array.isArray(d?.questions) ? d.questions.filter((q) => !q.answered).slice(0, 3) : []);
       })
       .catch(() => {});
     return () => {
@@ -110,6 +129,12 @@ export default function HomePage({
   }, [stats]);
 
   const hasStats = !!stats;
+  const RANK = { public: 0, team: 1, restricted: 2, confidential: 3 };
+  const countFor = (ceil) => {
+    const visible = allClaims.filter((c) => (RANK[c.access_level] ?? 3) <= ceil).length;
+    return { visible, locked: allClaims.length - visible };
+  };
+  const roleCounts = { team: countFor(1), restricted: countFor(2) };
   const total = num(stats?.total);
   const review = stats?.by_review || {};
   const byStatus = stats?.by_status || {};
@@ -137,7 +162,7 @@ export default function HomePage({
   };
 
   return (
-    <div className="flex flex-col w-full gap-16 lg:gap-20 pb-8">
+    <div className="flex flex-col w-full gap-24 lg:gap-32 pb-8 overflow-x-clip">
       {/* Opening: the claim, mounted like a specimen with its label */}
       <section className="grid grid-cols-1 xl:grid-cols-12 gap-10 xl:gap-14 items-center pt-2 lg:pt-6">
         <div className="xl:col-span-6 flex flex-col gap-6 min-w-0">
@@ -240,104 +265,109 @@ export default function HomePage({
         </div>
       </section>
 
-      {/* Try the risk ranking on a real public repository. */}
-      <GithubImportPanel title="Try it on a real repository" />
-
-      {/* Journey */}
-      <section aria-labelledby="journey-h">
-        <h2 id="journey-h" className="text-[24px] leading-8 font-bold tracking-[-0.015em] text-on-surface mb-5">
-          How a handover works
-        </h2>
-        <ol className="flex flex-col max-w-[880px]">
-          {STEPS.map((s) => (
-            <li key={s.n} className="grid grid-cols-[2rem_7rem_1fr] sm:grid-cols-[2rem_9rem_1fr_auto] gap-x-4 gap-y-1 items-baseline py-3 border-t border-outline-variant last:border-b">
-              <span className="font-mono tnum text-[13px] text-outline">{s.n}</span>
-              <h3 className="text-[16px] font-semibold text-on-surface">{s.title}</h3>
-              <p className="text-[14px] leading-6 text-on-surface-variant">{s.body}</p>
+      {/* Feature rows: one visual, one sentence, alternating sides */}
+      <FeatureRow
+        title="Every claim shows its proof."
+        body="Automated checks compare each claim with its source word for word, and sort it into one of four states. The state tells the reviewer how much to read before stamping."
+        action={["Check the claims", () => setActiveTab("review")]}
+        visual={
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 max-w-[420px]">
+            {["verified", "inferred", "conflicting", "missing"].map((k, i) => (
               <button
-                type="button"
-                onClick={() => setActiveTab(s.tab)}
-                className="col-start-3 sm:col-start-auto justify-self-start inline-flex items-center gap-1 text-[13px] font-semibold text-primary hover:underline cursor-pointer whitespace-nowrap"
-              >
-                {s.link}
-                <ArrowRight size={14} aria-hidden="true" />
-              </button>
-            </li>
-          ))}
-        </ol>
-      </section>
-
-      {/* Legend */}
-      <section aria-labelledby="trust-h">
-        <h2 id="trust-h" className="text-[24px] leading-8 font-bold tracking-[-0.015em] text-on-surface mb-4">
-          What makes a claim trustworthy
-        </h2>
-        <p className="text-[14px] leading-6 text-on-surface-variant max-w-[64ch] mb-4">
-          Automated checks compare each claim with its source and give it one of four statuses. The status
-          tells the reviewer how much to read before approving.
-        </p>
-        <div className="panel overflow-hidden">
-          <div className="hidden sm:grid grid-cols-[180px_1fr_72px] gap-4 px-4 py-2 bg-surface-container-low border-b border-outline-variant">
-            <span className="field-label">Status</span>
-            <span className="field-label">What it means</span>
-            <span className="field-label text-right">Claims</span>
-          </div>
-          <ul className="divide-y divide-outline-variant">
-            {["verified", "inferred", "conflicting", "missing"].map((k) => (
-              <li
                 key={k}
-                className="grid grid-cols-[1fr_auto] sm:grid-cols-[180px_1fr_72px] gap-x-4 gap-y-1.5 px-4 py-3 items-start"
+                type="button"
+                onClick={() => setActiveTab("review")}
+                title={STATUS[k].help}
+                className={`tile group relative aspect-square rounded-[22px] p-4 sm:p-5 flex flex-col justify-end text-left cursor-pointer ${TILE[k]}`}
+                style={{ "--d": `${i * 80}ms` }}
               >
-                <div className="sm:self-center">
-                  <StatusChip status={k} />
-                </div>
-                <p className="text-[14px] leading-6 text-on-surface-variant order-3 sm:order-none col-span-2 sm:col-span-1">
-                  {STATUS[k].help}
-                </p>
-                <p className="tnum text-[15px] font-bold text-on-surface text-right sm:self-center">
-                  {hasStats ? num(byStatus[k]) : "—"}
-                </p>
-              </li>
+                <span className="absolute top-3 right-3 sm:top-4 sm:right-4 min-w-8 h-8 px-2 rounded-full bg-on-surface text-surface-container-lowest font-mono tnum text-[14px] font-bold inline-flex items-center justify-center">
+                  {hasStats ? num(byStatus[k]) : "·"}
+                </span>
+                <span className="text-[16px] sm:text-[17px] font-semibold text-on-surface">{STATUS[k].label}</span>
+                <span className="text-[12.5px] leading-[17px] text-on-surface-variant line-clamp-2">{STATUS[k].help}</span>
+              </button>
             ))}
-          </ul>
-        </div>
-      </section>
-
-      {/* Sources */}
-      <section aria-labelledby="sources-h">
-        <h2 id="sources-h" className="text-[24px] leading-8 font-bold tracking-[-0.015em] text-on-surface mb-4">
-          Where the claims come from{project ? ` (${sources.length})` : ""}
-        </h2>
-        {!project ? (
-          <div className="flex flex-col gap-2">
-            <Skeleton className="h-9 w-full" />
-            <Skeleton className="h-9 w-full" />
-            <Skeleton className="h-9 w-full" />
           </div>
-        ) : sources.length === 0 ? (
-          <div className="panel p-5 flex flex-col items-start gap-3">
-            <p className="text-[14px] text-on-surface-variant">
-              No sources are loaded, so there is nothing to check yet.
-            </p>
-            <Button variant="outline" onClick={onResetSample} disabled={isLoading}>
-              Reload the sample
-            </Button>
+        }
+      />
+
+      <FeatureRow
+        flip
+        title="Gaps become questions, while there is still time."
+        body={`What the records could not settle turns into a question for ${project?.leaver_name || "the person leaving"}. Type their answer in and it becomes a claim with its own quote, checked like any other.`}
+        action={["See the debrief questions", () => setActiveTab("debrief")]}
+        visual={
+          <div className="relative h-[300px] max-w-[460px]">
+            {(topQuestions.length ? topQuestions : [null, null, null]).map((q, i) => (
+              <div
+                key={q?.claim_id ?? i}
+                className="tile absolute bg-surface-container-lowest rounded-[18px] px-5 py-4 w-[88%] border border-outline-variant"
+                style={{ top: `${i * 84}px`, left: `${i * 6}%`, zIndex: 3 - i, "--d": `${i * 90}ms` }}
+              >
+                {q ? (
+                  <>
+                    <p className="text-[12px] text-on-surface-variant flex items-center gap-1.5">
+                      <span aria-hidden="true" className={`w-1.5 h-1.5 rounded-full ${q.priority === "high" ? "bg-error" : q.priority === "medium" ? "bg-goldenrod" : "bg-outline"}`} />
+                      {q.reason}
+                    </p>
+                    <p className="text-[14.5px] leading-5 font-semibold text-on-surface line-clamp-2 mt-1">{q.question}</p>
+                  </>
+                ) : (
+                  <Skeleton className="h-10 w-full" />
+                )}
+              </div>
+            ))}
+          </div>
+        }
+      />
+
+      <FeatureRow
+        title="Each role sees only what it may."
+        body="The newcomer's handover is built from approved claims, filtered by role on the server. What a role may not read is shown as a locked line that says it exists, never what it says."
+        action={["Open the handover", () => setActiveTab("handover")]}
+        visual={
+          <div className="flex flex-col gap-3 max-w-[440px]">
+            {[
+              ["New developer", "Team level", roleCounts.team],
+              ["Lead", "Restricted level", roleCounts.restricted],
+            ].map(([who, lvl, c], i) => (
+              <div key={who} className="tile rounded-[18px] bg-surface-container-lowest border border-outline-variant px-5 py-4 flex items-center gap-4" style={{ "--d": `${i * 90}ms` }}>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[15px] font-semibold">{who}</p>
+                  <p className="text-[12.5px] text-on-surface-variant">{lvl}</p>
+                </div>
+                <p className="text-right">
+                  <span className="font-mono tnum text-[22px] font-bold">{allClaims.length ? c.visible : "·"}</span>
+                  <span className="block text-[12px] text-on-surface-variant">{allClaims.length ? `${c.locked} locked` : ""}</span>
+                </p>
+              </div>
+            ))}
+            <p className="text-[12.5px] text-on-surface-variant px-1">Claims each role can read, out of {allClaims.length || "all"} in the sample.</p>
+          </div>
+        }
+      />
+
+      {/* Sources, as a quiet list of names */}
+      <section aria-labelledby="sources-h" className="flex flex-col gap-4">
+        <h2 id="sources-h" className="text-[28px] sm:text-[34px] leading-[1.1] font-bold tracking-[-0.025em]">
+          Where the claims come from.
+        </h2>
+        <p className="text-[15px] leading-6 text-on-surface-variant max-w-[60ch]">
+          {project ? `${sources.length} synthetic sources: commits, issues, meeting notes, tasks and chat.` : "Loading the sources…"} Secrets and contact details are masked before anything is analysed.
+        </p>
+        {project && sources.length === 0 ? (
+          <div className="flex flex-col items-start gap-3">
+            <p className="text-[14px] text-on-surface-variant">No sources are loaded, so there is nothing to check yet.</p>
+            <Button variant="outline" onClick={onResetSample} disabled={isLoading}>Reload the sample</Button>
           </div>
         ) : (
-          <ul className="panel divide-y divide-outline-variant">
-            {sources.map((src) => (
-              <li key={src.id ?? src.name} className="flex items-center justify-between gap-3 px-3 py-2">
-                <span className="flex items-center gap-2 min-w-0">
-                  <FileText size={15} aria-hidden="true" className="text-outline shrink-0" />
-                  <span className="font-mono text-[13px] text-on-surface truncate" title={src.name}>
-                    {src.name || "—"}
-                  </span>
-                </span>
-                <span
-                  className={`shrink-0 px-2 py-px rounded-full text-[11.5px] leading-4 font-medium ${
-                    ACCESS_CHIP[src.access_level] || ACCESS_CHIP.team
-                  }`}
-                >
+          <ul className="flex flex-wrap gap-2">
+            {(project ? sources : []).map((src) => (
+              <li key={src.id ?? src.name} className="inline-flex items-center gap-2 h-9 pl-3 pr-2 rounded-full bg-surface-container-lowest border border-outline-variant">
+                <FileText size={14} aria-hidden="true" className="text-outline" />
+                <span className="font-mono text-[13px]">{src.name}</span>
+                <span className={`px-2 py-px rounded-full text-[11.5px] leading-4 font-medium ${ACCESS_CHIP[src.access_level] || ACCESS_CHIP.team}`}>
                   {humanize(src.access_level || "team")}
                 </span>
               </li>
@@ -345,6 +375,9 @@ export default function HomePage({
           </ul>
         )}
       </section>
+
+      {/* Try the risk ranking on a real public repository. */}
+      <GithubImportPanel title="Try it on a real repository" />
 
       {/* Behind the scenes */}
       <section className="border-t border-outline-variant pt-5 flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
