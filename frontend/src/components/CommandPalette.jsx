@@ -42,8 +42,8 @@ export default function CommandPalette({ open, onClose, onNavigate, dataVersion 
   const items = useMemo(() => {
     const q = query.trim().toLowerCase();
     const pages = NAV_ITEMS.concat([{ id: "check", label: "Check a change" }])
-      .filter((p) => !q || p.label.toLowerCase().includes(q))
-      .map((p) => ({ key: `p-${p.id}`, kind: "page", label: p.label, go: () => onNavigate(p.id) }));
+      .filter((p) => !q || (p.long || p.label).toLowerCase().includes(q))
+      .map((p) => ({ key: `p-${p.id}`, kind: "page", label: p.long || p.label, go: () => onNavigate(p.id) }));
     const idMatch = q.replace(/^#/, "");
     const cl = (claims || [])
       .filter((c) => q && (String(c.id) === idMatch || c.text?.toLowerCase().includes(q)))

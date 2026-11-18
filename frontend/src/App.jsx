@@ -246,12 +246,15 @@ export default function App() {
         onResetSample={handleResetSample}
         isResetting={isLoading}
         project={project}
+        projectId={projectId}
+        onSwitchProject={switchProject}
+        dataVersion={dataVersion}
         progress={progress}
         onShowShortcuts={() => setShowShortcuts(true)}
         onOpenPalette={() => setShowPalette(true)}
       />
 
-      <main id="main" className="w-full flex-1 lg:pl-[248px] [view-transition-name:page]">
+      <main id="main" className="w-full flex-1 [view-transition-name:page]">
         <div className="max-w-[1280px] mx-auto px-4 sm:px-8 lg:px-12 py-7 sm:py-10">
           {loadError && (
             <div role="alert" className="mb-6 panel border-error/40 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
