@@ -1,0 +1,57 @@
+{
+  "description": "What each leak found by the harness on the old code was, how it was fixed, and which test now guards it. Written by hand; the counts on the Trust report come from leak_report_before.json.",
+  "fixes": [
+    {
+      "endpoints": [
+        "GET /api/claims",
+        "GET /api/projects/{project_id}/claims"
+      ],
+      "leak": "A request with no role was treated as lead, so it received the text and quotes of restricted advisor claims.",
+      "fix": "A missing role now means the lowest access (incoming_dev). Unknown, empty or tampered values are refused with 422.",
+      "test": "tests/trust/test_leak_harness.py::test_controls_permitted_roles_still_see_their_claims"
+    },
+    {
+      "endpoints": [
+        "GET /api/claims/{claim_id}/versions"
+      ],
+      "leak": "Claim history had no role check: any caller who guessed a claim id received the text of restricted and confidential claims and their old versions.",
+      "fix": "History takes a role (lowest by default) and returns 403 unless the role may see the claim and every one of its versions.",
+      "test": "tests/trust/test_leak_harness.py::test_no_leaks_on_any_route_or_role"
+    },
+    {
+      "endpoints": [
+        "GET /api/claims/{claim_id}/context"
+      ],
+      "leak": "Chunk context had no role check: any caller received the full advisor and budget notes (including the rupee amounts) behind a claim id. For every role, including admin, cited chunks also showed the planted fake API key.",
+      "fix": "Context takes a role (lowest by default), returns 403 above the ceiling, skips chunks from sources above the ceiling, and masks secrets, emails and phone numbers in chunk text and quotes for every role.",
+      "test": "tests/trust/test_leak_harness.py::test_secret_in_cited_chunk_is_masked_for_every_role"
+    },
+    {
+      "endpoints": [
+        "POST /api/claims/{claim_id}/approve",
+        "POST /api/claims/{claim_id}/reject",
+        "POST /api/claims/{claim_id}/edit"
+      ],
+      "leak": "A request body without a role was treated as lead, so anyone could approve, reject or overwrite team and restricted claims.",
+      "fix": "A missing role now means the lowest access, which may not review, so these requests get 403 and the claim is unchanged.",
+      "test": "tests/trust/test_leak_harness.py::test_lower_role_cannot_review_and_missing_role_cannot_review"
+    },
+    {
+      "endpoints": [
+        "POST /api/claims/bulk-approve-verified",
+        "POST /api/projects/{project_id}/claims/bulk-approve-verified"
+      ],
+      "leak": "Bulk approve with no role in the body ran as lead and approved every verified claim.",
+      "fix": "Same lowest-access default: the request gets 403 and nothing changes.",
+      "test": "tests/trust/test_leak_harness.py::test_lower_role_cannot_review_and_missing_role_cannot_review"
+    },
+    {
+      "endpoints": [
+        "POST /api/projects/{project_id}/tripwires/check"
+      ],
+      "leak": "Found after the tripwires and the harness were merged: the check echoed the caller's description back, so restricted words such as the vendor budget or the advisor check-in came out in the response for roles below their level.",
+      "fix": "The response no longer repeats the description. The caller already has it; only the matched tripwires, each within the role's ceiling, are returned.",
+      "test": "tests/trust/test_leak_harness.py::test_no_leaks_on_any_route_or_role"
+    }
+  ]
+}

@@ -106,4 +106,5 @@ def test_sample_load_and_reset_idempotent():
         restricted = [c for c in claims_2 if c.access_level == AccessLevel.restricted]
         confidential = [c for c in claims_2 if c.access_level == AccessLevel.confidential]
         assert len(restricted) >= 2, f"Expected at least 2 restricted claims, got {len(restricted)}"
-        assert len(confidential) >= 3, f"Expected at least 3 confidential claims, got {len(confidential)}"
+        # 1 AI-extracted (contract renewal) + 1 labelled seeded fixture (vendor cost).
+        assert len(confidential) >= 2, f"Expected at least 2 confidential claims, got {len(confidential)}"

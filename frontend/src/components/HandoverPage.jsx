@@ -1,430 +1,401 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { Lock, Printer, PenLine, ClipboardCheck, SearchX, Search, ListChecks } from "lucide-react";
 import { api, formatErrorMessage } from "../api";
 import { ROLES } from "./Navbar";
+import { Button, Field, Dialog, TextInput, Skeleton, humanize, consignmentNo } from "./ui";
+
+const PHASES = [
+  { key: "day_1", name: "Day 1", purpose: "Blockers and critical dependencies.", empty: "Nothing approved for Day 1 in this view." },
+  { key: "week_1", name: "Week 1", purpose: "Key decisions and architecture context.", empty: "Nothing approved for Week 1 in this view." },
+  { key: "month_1", name: "Month 1", purpose: "Long-term ownership and upkeep.", empty: "Nothing approved for Month 1 in this view." },
+];
+
+const TypeChip = ({ type }) => (
+  <span className="inline-block rounded-[2px] bg-surface-container px-1.5 py-px text-[11px] leading-4 font-semibold text-on-surface whitespace-nowrap">
+    {humanize(type)}
+  </span>
+);
+
+const AccessChip = ({ level }) =>
+  level === "restricted" ? (
+    <span className="inline-block rounded-[2px] bg-error-container px-1.5 py-px font-mono text-[11px] leading-4 font-semibold text-on-error-container">
+      restricted
+    </span>
+  ) : (
+    <span className="font-mono text-[11px] leading-4 text-on-surface-variant">{level || "team"}</span>
+  );
+
+function formatWhen(value) {
+  const d = value ? new Date(value) : new Date();
+  const ok = !Number.isNaN(d.getTime());
+  const dt = ok ? d : new Date();
+  return dt.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
+}
+
+function LoadingDocument() {
+  return (
+    <div className="flex flex-col gap-5" aria-busy="true" aria-label="Loading handover">
+      <div className="panel grid grid-cols-2 lg:grid-cols-6 gap-px bg-outline-variant overflow-hidden">
+        {[0, 1, 2, 3, 4].map((i) => (
+          <div key={i} className="bg-surface-container-lowest p-3 flex flex-col gap-2">
+            <Skeleton className="h-3 w-16" />
+            <Skeleton className="h-5 w-28" />
+          </div>
+        ))}
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="panel p-3 flex flex-col gap-3">
+            <Skeleton className="h-5 w-24" />
+            <Skeleton className="h-3 w-48" />
+            <Skeleton className="h-14 w-full" />
+            <Skeleton className="h-14 w-full" />
+          </div>
+        ))}
+      </div>
+      <div className="panel p-3 flex flex-col gap-2">
+        <Skeleton className="h-5 w-40" />
+        <Skeleton className="h-9 w-full" />
+        <Skeleton className="h-9 w-full" />
+        <Skeleton className="h-9 w-full" />
+      </div>
+    </div>
+  );
+}
+
+// Plan titles arrive as "[TYPE] text...."; the type already has its own chip.
+const cleanTitle = (t) => String(t || "").replace(/^\[[A-Z_ ]+\]\s*/, "").replace(/\.{2,}$/, "…").trim();
 
 export default function HandoverPage({ role, setRole, setActiveTab }) {
   const [handoverData, setHandoverData] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [filter, setFilter] = useState("");
 
-  // Acknowledge Modal
   const [ackModalOpen, setAckModalOpen] = useState(false);
   const [recipientName, setRecipientName] = useState("");
   const [ackNote, setAckNote] = useState("");
   const [isSubmittingAck, setIsSubmittingAck] = useState(false);
   const [ackSuccess, setAckSuccess] = useState(null);
+  const [ackError, setAckError] = useState(null);
 
-  const loadHandover = async () => {
+  const requestId = useRef(0);
+  const submitting = useRef(false);
+
+  const loadHandover = useCallback(async () => {
+    const myId = ++requestId.current;
     setIsLoading(true);
     setError(null);
     try {
       const data = await api.getHandover({ projectId: 1, role });
+      if (myId !== requestId.current) return;
       setHandoverData(data);
     } catch (err) {
-      setError(err.message || "Failed to load handover");
+      if (myId !== requestId.current) return;
+      setError(formatErrorMessage(err) || "Failed to load handover");
     } finally {
-      setIsLoading(false);
+      if (myId === requestId.current) setIsLoading(false);
     }
-  };
+  }, [role]);
 
   useEffect(() => {
     loadHandover();
-  }, [role]);
+    return () => {
+      requestId.current += 1;
+    };
+  }, [loadHandover]);
+
+  const currentRoleObj = ROLES.find((r) => r.id === role) || ROLES[0];
+  const approvedClaims = useMemo(() => handoverData?.claims || [], [handoverData]);
+  const plan = handoverData?.plan || {};
+  const hasApprovedClaims = approvedClaims.length > 0;
+  const visibleCount = handoverData?.claims_visible ?? approvedClaims.filter((c) => !c.withheld).length;
+  const withheldCount = handoverData?.claims_withheld ?? 0;
+  const project = handoverData?.project || {};
+  const roleSections = handoverData?.role_sections || {};
+  const canSign = hasApprovedClaims && visibleCount > 0;
+  const [expanded, setExpanded] = useState({});
+  const toggle = (k) => setExpanded((e) => ({ ...e, [k]: !e[k] }));
+  const CAP = 5;
+  const shown = (k, list) => (expanded[k] ? list : list.slice(0, CAP));
+  const MoreButton = ({ k, total, cap = CAP }) =>
+    total > cap ? (
+      <button
+        type="button"
+        onClick={() => toggle(k)}
+        aria-expanded={!!expanded[k]}
+        className="no-print w-full px-3 py-2 text-left text-[13px] font-semibold text-primary hover:bg-surface-container-low border-t border-outline-variant cursor-pointer"
+      >
+        {expanded[k] ? "Show fewer" : `Show all ${total}`}
+      </button>
+    ) : null;
+
+  const filteredClaims = useMemo(() => {
+    const q = filter.trim().toLowerCase();
+    if (!q) return approvedClaims;
+    return approvedClaims.filter((c) => {
+      const hay = [`#${c.id}`, String(c.id), c.type, humanize(c.type), c.withheld ? "" : c.text, c.access_level]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      return hay.includes(q);
+    });
+  }, [approvedClaims, filter]);
+
+  const openSign = () => {
+    setRecipientName("");
+    setAckNote("");
+    setAckError(null);
+    setAckModalOpen(true);
+  };
+
+  const closeSign = () => {
+    if (submitting.current) return;
+    setAckModalOpen(false);
+  };
 
   const handleAcknowledge = async () => {
-    if (!recipientName.trim()) return;
+    const name = recipientName.trim();
+    if (!name || submitting.current) return;
+    submitting.current = true;
     setIsSubmittingAck(true);
+    setAckError(null);
     try {
       const res = await api.acknowledgeHandover(1, {
         role,
-        recipientName: recipientName.trim(),
+        recipientName: name,
         note: ackNote.trim() || undefined,
       });
-      setAckSuccess(res);
+      setAckSuccess({
+        name: res?.recipient_name || res?.actor_name || name,
+        note: res?.note || ackNote.trim() || "",
+        at: res?.acknowledged_at || null,
+        roleLabel: currentRoleObj.label,
+      });
       setAckModalOpen(false);
     } catch (err) {
-      alert("Acknowledgment failed: " + formatErrorMessage(err));
+      setAckError("Signing failed: " + formatErrorMessage(err));
     } finally {
+      submitting.current = false;
       setIsSubmittingAck(false);
     }
   };
 
-  const currentRoleObj = ROLES.find((r) => r.id === role) || ROLES[0];
-  const approvedClaims = handoverData?.claims || [];
-  const plan = handoverData?.plan || {};
-  const day1Items = plan.day_1 || [];
-  const week1Items = plan.week_1 || [];
-  const month1Items = plan.month_1 || [];
-  const hasApprovedClaims = approvedClaims.length > 0;
+  const signDisabledReason = isLoading
+    ? "Loading the handover"
+    : !canSign
+      ? "Nothing visible to this role has been approved yet, so there is nothing to sign for."
+      : undefined;
 
   return (
-    <div className="flex flex-col w-full gap-space-lg">
-      {/* Top Header Section */}
-      <section className="flex flex-col gap-space-md mb-space-sm">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
-          <div>
-            <div className="flex items-center gap-space-sm mb-1">
-              <span className="font-code-sm text-code-sm text-primary uppercase tracking-wider font-semibold">
-                Ledger Digest // Production Transition
-              </span>
-              <span className="w-1 h-1 rounded-full bg-outline-variant"></span>
-              <span className="font-label-sm text-label-sm text-on-surface-variant font-medium">
-                Verified Ramp-up Dossier
-              </span>
-            </div>
-            <h1 className="font-headline-lg text-headline-lg text-on-surface font-bold">
-              Official Handover Dossier
-            </h1>
-            <p className="font-body-md text-body-md text-on-surface-variant mt-0.5 max-w-3xl">
-              Transition plan compiled strictly from human-approved claims. Sensitive items are role-gated. Automated checks reduce errors and a human approves.
-            </p>
-          </div>
-          <div className="flex items-center gap-space-sm shrink-0">
-            <button
-              id="btn-print"
-              type="button"
-              onClick={() => window.print()}
-              className="px-space-md py-2 bg-surface-container-low hover:bg-surface-container text-on-surface rounded-lg font-label-md text-label-md transition-colors flex items-center gap-1.5 cursor-pointer border border-surface-container"
-            >
-              <span className="material-symbols-outlined text-[18px]">print</span>
-              <span>Print Dossier (PDF Export)</span>
-            </button>
-            <button
-              id="btn-ack"
-              type="button"
-              onClick={() => {
-                setRecipientName(`Engineer (${currentRoleObj.label})`);
-                setAckModalOpen(true);
-              }}
-              disabled={!hasApprovedClaims}
-              className="px-space-md py-2 bg-primary hover:bg-primary-container text-on-primary rounded-lg font-headline-sm text-headline-sm transition-all shadow-sm flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-            >
-              <span className="material-symbols-outlined text-[18px]">verified_user</span>
-              <span>Acknowledge Handover Receipt</span>
-            </button>
-          </div>
+    <div className="flex flex-col w-full gap-5 min-w-0">
+      {/* Document header */}
+      <header className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+        <div className="min-w-0">
+          <h1 className="text-[26px] leading-[34px] font-bold tracking-[-0.015em] text-on-surface">
+            Handover for {currentRoleObj.label.toLowerCase()}
+          </h1>
+          <p className="text-[14px] leading-[22px] text-on-surface-variant mt-1 max-w-2xl">
+            Compiled only from claims a person approved. Items above this role&apos;s access are hidden.
+          </p>
         </div>
-
-        {/* Role Switcher Strip */}
-        <div className="bg-surface-container-lowest p-space-md rounded-xl shadow-sm border border-surface-container flex flex-col gap-space-sm">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold mr-1">
-                Role View:
-              </span>
-              {ROLES.map((r) => (
-                <button
-                  key={r.id}
-                  onClick={() => setRole(r.id)}
-                  className={`role-btn px-3 py-1.5 rounded-lg font-label-md text-label-md transition-all cursor-pointer ${
-                    role === r.id
-                      ? "bg-secondary-fixed text-on-secondary-fixed font-bold shadow-xs"
-                      : "bg-surface-container-low text-on-surface-variant hover:bg-surface-container"
-                  }`}
-                >
-                  {r.label} ({r.access})
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="flex items-center gap-1.5 font-body-sm text-body-sm text-on-surface-variant pt-1 border-t border-surface-container/60">
-            <span className="material-symbols-outlined text-[15px] text-outline">info</span>
-            <span id="role-caption">
-              Current view: <strong className="text-on-surface">{currentRoleObj.label}</strong>.{" "}
-              {role === "lead"
-                ? "Full unrestricted access enabled for this tier (sees restricted items)."
-                : "Claims citing restricted documents are withheld as locked placeholders."}
-            </span>
-          </div>
+        <div className="flex flex-wrap items-center gap-2 no-print shrink-0">
+          <Button id="btn-check-change" variant="outline" onClick={() => setActiveTab("check")}>
+            <ListChecks size={16} aria-hidden="true" />
+            Check a change
+          </Button>
+          <Button id="btn-print" variant="outline" onClick={() => window.print()}>
+            <Printer size={16} aria-hidden="true" />
+            Print or save PDF
+          </Button>
+          <Button id="btn-ack" variant="primary" onClick={openSign} disabled={!canSign || isLoading} title={signDisabledReason}>
+            <PenLine size={16} aria-hidden="true" />
+            Sign for receipt
+          </Button>
         </div>
+      </header>
 
-        {/* Visible line: Hides N approved items that need higher access */}
-        {handoverData && handoverData.claims_withheld > 0 && (
-          <div
-            id="withheld-notice-line"
-            className="p-space-md rounded-xl bg-surface-container-high border border-outline-variant/60 flex items-center justify-between text-on-surface shadow-xs"
-          >
-            <div className="flex items-center gap-space-sm">
-              <span className="material-symbols-outlined text-outline text-[20px]">visibility_off</span>
-              <span className="font-headline-sm text-headline-sm text-on-surface font-semibold">
-                This view hides {handoverData.claims_withheld} approved items that need higher access
-              </span>
-            </div>
-            <span className="font-code-sm text-code-sm text-on-surface-variant">
-              Role ceiling: {currentRoleObj.access}
-            </span>
-          </div>
-        )}
-
-        {/* Lead View confirmation banner */}
-        {role === "lead" && handoverData && (
-          <div
-            id="lead-full-access-line"
-            className="p-space-sm rounded-xl bg-tertiary-fixed text-on-tertiary-fixed flex items-center gap-2 font-headline-sm text-sm font-semibold"
-          >
-            <span className="material-symbols-outlined text-tertiary text-[18px]">verified_user</span>
-            <span>Lead view: full access to restricted items enabled. Restricted claims are shown in full below.</span>
-          </div>
-        )}
-
-        {/* Acknowledgement Toast */}
-        {ackSuccess && (
-          <div
-            className="bg-tertiary-fixed text-on-tertiary-fixed p-space-md rounded-lg flex items-center justify-between transition-all shadow-xs"
-            id="ack-banner"
-          >
-            <div className="flex items-center gap-space-sm">
-              <span className="material-symbols-outlined text-tertiary text-[22px]">check_circle</span>
-              <div>
-                <span className="font-headline-sm text-headline-sm text-tertiary font-bold" id="ack-success-title">
-                  Receipt recorded at {new Date(ackSuccess.acknowledged_at || Date.now()).toLocaleTimeString()}
+      {/* Role switcher */}
+      <div className="flex flex-col gap-2 no-print">
+        <div role="radiogroup" aria-label="View the handover as" className="grid grid-cols-1 md:grid-cols-3 gap-2">
+          {ROLES.map((r, i) => {
+            const on = role === r.id;
+            return (
+              <button
+                key={r.id}
+                type="button"
+                role="radio"
+                aria-checked={on}
+                tabIndex={on ? 0 : -1}
+                onClick={() => setRole(r.id)}
+                onKeyDown={(e) => {
+                  const dir = e.key === "ArrowRight" || e.key === "ArrowDown" ? 1 : e.key === "ArrowLeft" || e.key === "ArrowUp" ? -1 : 0;
+                  if (!dir) return;
+                  e.preventDefault();
+                  const next = ROLES[(i + dir + ROLES.length) % ROLES.length];
+                  setRole(next.id);
+                  const sibs = e.currentTarget.parentElement.querySelectorAll('[role="radio"]');
+                  sibs[(i + dir + ROLES.length) % ROLES.length]?.focus();
+                }}
+                className={`role-btn text-left rounded-[3px] border px-3 py-2 cursor-pointer transition-colors ${
+                  on
+                    ? "border-ink bg-ink text-on-ink"
+                    : "border-outline-variant bg-surface-container-lowest text-on-surface hover:border-outline hover:bg-surface-container-low"
+                }`}
+              >
+                <span className="flex items-baseline justify-between gap-2">
+                  <span className="text-[14px] font-semibold">{r.label}</span>
+                  <span className={`text-[11px] font-semibold uppercase tracking-[0.05em] ${on ? "text-canary" : "text-on-surface-variant"}`}>{r.access}</span>
                 </span>
-                <p className="font-code-sm text-code-sm text-on-tertiary-fixed-variant mt-0.5">
-                  Signer: {ackSuccess.recipient_name || ackSuccess.actor_name || `simulated_${role}`} | Handover successfully acknowledged.
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => setAckSuccess(null)}
-              className="text-on-tertiary-fixed-variant hover:text-on-tertiary-fixed cursor-pointer"
-            >
-              <span className="material-symbols-outlined text-[18px]">close</span>
-            </button>
-          </div>
+                <span className={`block text-[12px] leading-[18px] mt-0.5 ${on ? "text-on-ink-muted" : "text-on-surface-variant"}`}>{r.desc}</span>
+              </button>
+            );
+          })}
+        </div>
+        {handoverData && withheldCount > 0 && (
+          <p id="withheld-notice-line" className="flex items-center gap-2 text-[13px] font-semibold text-on-surface">
+            <Lock size={15} aria-hidden="true" className="text-outline shrink-0" />
+            This view hides {withheldCount} approved {withheldCount === 1 ? "item that needs" : "items that need"} higher access
+          </p>
         )}
-      </section>
+        {handoverData && role === "lead" && (
+          <p id="lead-full-access-line" className="text-[13px] text-on-surface-variant">
+            Lead view: restricted items are shown in full.
+          </p>
+        )}
+      </div>
 
-      {/* Main Handover Content: Empty State vs Phased Plan & Claims List */}
       {isLoading ? (
-        <div className="p-space-2xl text-center bg-surface-container-lowest rounded-xl border border-surface-container">
-          <span className="material-symbols-outlined text-[32px] text-primary animate-spin">refresh</span>
-          <p className="font-label-md text-label-md text-on-surface-variant mt-2">Loading approved handover claims...</p>
+        <LoadingDocument />
+      ) : error ? (
+        <div role="alert" className="panel p-6 flex flex-col items-start gap-2 border-error">
+          <h2 className="text-[17px] leading-6 font-bold text-on-surface">The handover could not be loaded</h2>
+          <p className="text-[14px] text-on-surface-variant break-words max-w-full">{error}</p>
+          <Button variant="primary" onClick={loadHandover} className="mt-2">
+            Try again
+          </Button>
         </div>
       ) : !hasApprovedClaims ? (
-        /* Empty State */
-        <div className="bg-surface-container-lowest rounded-xl p-space-2xl text-center shadow-sm border border-surface-container flex flex-col items-center justify-center my-space-lg">
-          <div className="w-16 h-16 rounded-2xl bg-surface-container flex items-center justify-center text-primary mb-4">
-            <span className="material-symbols-outlined text-[32px]">fact_check</span>
-          </div>
-          <h3 className="font-headline-md text-headline-md text-on-surface font-bold">
-            No Approved Claims Yet
-          </h3>
-          <p className="font-body-md text-body-md text-on-surface-variant max-w-md mt-2 mb-6">
-            The handover dossier is compiled exclusively from reviewer-approved claims. Head to the Review Queue to check candidate claims and approve them.
+        <div className="panel p-8 flex flex-col items-start gap-2 max-w-2xl">
+          <ClipboardCheck size={24} aria-hidden="true" className="text-primary" />
+          <h2 className="text-[20px] leading-7 font-bold text-on-surface">Nothing has been approved yet</h2>
+          <p className="text-[14px] leading-[22px] text-on-surface-variant">
+            The handover is built only from claims a person has approved. Review the claims, approve the ones that hold up, and they will appear here for the new owner to read and sign for.
           </p>
-          <button
-            onClick={() => setActiveTab("review")}
-            className="px-space-lg py-2.5 bg-primary hover:bg-primary-container text-on-primary rounded-lg font-headline-sm text-headline-sm transition-all shadow-sm flex items-center gap-2 cursor-pointer"
-          >
-            <span className="material-symbols-outlined text-[20px]">assignment_turned_in</span>
-            <span>Check the claims</span>
-          </button>
+          <Button variant="primary" size="lg" onClick={() => setActiveTab("review")} className="mt-3">
+            Check the claims
+          </Button>
         </div>
       ) : (
         <>
-          {/* Phased Ramp-up Roadmap: 3 Columns */}
-          <section className="flex flex-col gap-space-md">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="font-headline-md text-headline-md text-on-surface font-semibold">
-                  Phased Ramp-up Roadmap
-                </h2>
-                <p className="font-body-sm text-body-sm text-on-surface-variant">
-                  Milestones partitioned by priority and verified code ownership.
-                </p>
+          {/* Consignment summary */}
+          <section aria-label="Consignment summary" className="grid grid-cols-2 lg:grid-cols-6 gap-px bg-outline-variant border border-outline-variant rounded-[3px] overflow-hidden print-shadow-none">
+            {[
+              ["Consignment no.", consignmentNo(project.id)],
+              ["Consignor", project.leaver_name || "Not recorded"],
+              ["Consignee", currentRoleObj.label],
+              ["Project", project.name || "Not recorded"],
+              ["Departure", project.departure_date || "Not recorded"],
+              [
+                "Contents",
+                `${visibleCount} approved ${visibleCount === 1 ? "item" : "items"}${withheldCount > 0 ? `, ${withheldCount} withheld` : ""}`,
+              ],
+            ].map(([label, value], i) => (
+              <div key={label} className={`bg-surface-container-lowest px-3 py-2 min-w-0 `}>
+                <div className="field-label">{label}</div>
+                <div className={`text-[14px] leading-6 font-semibold text-on-surface break-words tnum ${i === 0 ? "font-mono" : ""}`}>{value}</div>
               </div>
-              <span className="hidden sm:inline-flex items-center gap-1 font-code-sm text-code-sm text-primary px-space-sm py-0.5 bg-primary-fixed rounded font-semibold">
-                {approvedClaims.length} APPROVED CLAIMS
-              </span>
-            </div>
+            ))}
+          </section>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-space-lg items-start">
-              {/* Column 1: Day 1 */}
-              <div className="flex flex-col gap-space-md bg-surface-container-low rounded-xl p-space-md shadow-sm border border-surface-container/60">
-                <div className="flex items-center justify-between pb-space-xs">
-                  <div className="flex items-center gap-space-xs">
-                    <span className="w-6 h-6 rounded bg-error-container text-on-error-container flex items-center justify-center font-label-sm text-label-sm font-bold">
-                      1
-                    </span>
-                    <h3 className="font-headline-sm text-headline-sm text-on-surface font-semibold">
-                      Day 1: Immediate Survival
-                    </h3>
-                  </div>
-                  <span className="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-surface-container-highest text-on-surface-variant font-medium">
-                    {day1Items.length} items
-                  </span>
-                </div>
-                <p className="font-body-sm text-body-sm text-on-surface-variant">
-                  Blockers, critical dependencies, and high-concentration areas.
-                </p>
-
-                <div className="flex flex-col gap-space-sm">
-                  {day1Items.length === 0 ? (
-                    <div className="p-space-md text-center bg-surface-container-lowest rounded-lg border border-surface-container text-on-surface-variant text-xs">
-                      No Day 1 items approved for this role.
-                    </div>
-                  ) : (
-                    day1Items.map((item, idx) => (
-                      <div
-                        key={idx}
-                        className="bg-surface-container-lowest p-space-md rounded-lg shadow-xs border border-surface-container/60 flex flex-col gap-1.5"
-                      >
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="px-1.5 py-0.5 rounded bg-error-container text-on-error-container font-semibold uppercase text-[10px]">
-                            {item.type}
-                          </span>
-                          <span className="font-code-sm text-[10px] text-outline uppercase">{item.access_level}</span>
-                        </div>
-                        <h4 className="font-headline-sm text-sm text-on-surface font-semibold">{item.title}</h4>
-                        <p className="font-body-sm text-xs text-on-surface-variant line-clamp-3">{item.description}</p>
+          {/* Ramp-up plan */}
+          <section aria-labelledby="plan-h" className="flex flex-col gap-2">
+            <h2 id="plan-h" className="text-[17px] leading-6 font-bold">Ramp-up plan</h2>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
+              {PHASES.map((ph) => {
+                const items = plan[ph.key] || [];
+                return (
+                  <div key={ph.key} className="panel overflow-hidden print-shadow-none">
+                    <div className="flex items-baseline justify-between gap-2 px-3 py-2 bg-surface-container-low border-b border-outline-variant">
+                      <div className="min-w-0">
+                        <h3 className="text-[15px] leading-6 font-bold">{ph.name}</h3>
+                        <p className="text-[12px] leading-4 text-on-surface-variant">{ph.purpose}</p>
                       </div>
-                    ))
-                  )}
-                </div>
-              </div>
-
-              {/* Column 2: Week 1 */}
-              <div className="flex flex-col gap-space-md bg-surface-container-low rounded-xl p-space-md shadow-sm border border-surface-container/60">
-                <div className="flex items-center justify-between pb-space-xs">
-                  <div className="flex items-center gap-space-xs">
-                    <span className="w-6 h-6 rounded bg-secondary-fixed text-on-secondary-fixed flex items-center justify-center font-label-sm text-label-sm font-bold">
-                      2
-                    </span>
-                    <h3 className="font-headline-sm text-headline-sm text-on-surface font-semibold">
-                      Week 1: Knowledge Transfer
-                    </h3>
-                  </div>
-                  <span className="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-surface-container-highest text-on-surface-variant font-medium">
-                    {week1Items.length} items
-                  </span>
-                </div>
-                <p className="font-body-sm text-body-sm text-on-surface-variant">
-                  Key decisions, architectural context, and conflicting patterns.
-                </p>
-
-                <div className="flex flex-col gap-space-sm">
-                  {week1Items.length === 0 ? (
-                    <div className="p-space-md text-center bg-surface-container-lowest rounded-lg border border-surface-container text-on-surface-variant text-xs">
-                      No Week 1 items approved for this role.
+                      <span className="tnum text-[12px] font-semibold text-on-surface-variant shrink-0">
+                        {items.length} {items.length === 1 ? "item" : "items"}
+                      </span>
                     </div>
-                  ) : (
-                    week1Items.map((item, idx) => (
-                      <div
-                        key={idx}
-                        className="bg-surface-container-lowest p-space-md rounded-lg shadow-xs border border-surface-container/60 flex flex-col gap-1.5"
-                      >
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="px-1.5 py-0.5 rounded bg-secondary-fixed text-on-secondary-fixed font-semibold uppercase text-[10px]">
-                            {item.type}
-                          </span>
-                          <span className="font-code-sm text-[10px] text-outline uppercase">{item.access_level}</span>
-                        </div>
-                        <h4 className="font-headline-sm text-sm text-on-surface font-semibold">{item.title}</h4>
-                        <p className="font-body-sm text-xs text-on-surface-variant line-clamp-3">{item.description}</p>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-
-              {/* Column 3: Month 1 */}
-              <div className="flex flex-col gap-space-md bg-surface-container-low rounded-xl p-space-md shadow-sm border border-surface-container/60">
-                <div className="flex items-center justify-between pb-space-xs">
-                  <div className="flex items-center gap-space-xs">
-                    <span className="w-6 h-6 rounded bg-primary-fixed text-on-primary-fixed flex items-center justify-center font-label-sm text-label-sm font-bold">
-                      3
-                    </span>
-                    <h3 className="font-headline-sm text-headline-sm text-on-surface font-semibold">
-                      Month 1: Ownership
-                    </h3>
+                    {items.length === 0 ? (
+                      <p className="px-3 py-3 text-[13px] text-on-surface-variant">{ph.empty}</p>
+                    ) : (
+                      <>
+                      <ul className="divide-y divide-outline-variant">
+                        {shown(ph.key, items).map((item, idx) => {
+                          // Show the approved claim's full text; the backend title is a truncated copy of it.
+                          const title = item.withheld ? cleanTitle(item.title) : item.description || cleanTitle(item.title);
+                          const showDesc = false;
+                          return (
+                          <li key={item.id ?? idx} className="px-3 py-2.5 flex flex-col gap-1">
+                            <div className="flex items-center justify-between gap-2">
+                              <TypeChip type={item.type} />
+                              <AccessChip level={item.access_level} />
+                            </div>
+                            <p className="text-[14px] leading-5 font-semibold text-on-surface break-words line-clamp-4">{title}</p>
+                            {showDesc && (
+                              <p className="text-[13px] leading-[18px] text-on-surface-variant line-clamp-2 break-words">{item.description}</p>
+                            )}
+                          </li>
+                          );
+                        })}
+                      </ul>
+                      <MoreButton k={ph.key} total={items.length} />
+                      </>
+                    )}
                   </div>
-                  <span className="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-surface-container-highest text-on-surface-variant font-medium">
-                    {month1Items.length} items
-                  </span>
-                </div>
-                <p className="font-body-sm text-body-sm text-on-surface-variant">
-                  System evolution, long-term ownership, and maintenance cadence.
-                </p>
-
-                <div className="flex flex-col gap-space-sm">
-                  {month1Items.length === 0 ? (
-                    <div className="p-space-md text-center bg-surface-container-lowest rounded-lg border border-surface-container text-on-surface-variant text-xs">
-                      No Month 1 items approved for this role.
-                    </div>
-                  ) : (
-                    month1Items.map((item, idx) => (
-                      <div
-                        key={idx}
-                        className="bg-surface-container-lowest p-space-md rounded-lg shadow-xs border border-surface-container/60 flex flex-col gap-1.5"
-                      >
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="px-1.5 py-0.5 rounded bg-primary-fixed text-on-primary-fixed font-semibold uppercase text-[10px]">
-                            {item.type}
-                          </span>
-                          <span className="font-code-sm text-[10px] text-outline uppercase">{item.access_level}</span>
-                        </div>
-                        <h4 className="font-headline-sm text-sm text-on-surface font-semibold">{item.title}</h4>
-                        <p className="font-body-sm text-xs text-on-surface-variant line-clamp-3">{item.description}</p>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
+                );
+              })}
             </div>
           </section>
 
-          {/* Role-Tailored Focus Modules Section (from role_sections) */}
-          {handoverData?.role_sections && Object.keys(handoverData.role_sections).length > 0 && (
-            <section className="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm border border-surface-container flex flex-col gap-space-md">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="font-code-sm text-code-sm text-primary uppercase font-bold">
-                      Role Tailored Focus // {handoverData.role}
-                    </span>
-                  </div>
-                  <h3 className="font-headline-md text-headline-md text-on-surface font-semibold">
-                    {currentRoleObj.label} Priority Scope
-                  </h3>
-                  <p className="font-body-sm text-body-sm text-on-surface-variant">
-                    Displaying claims matching this role's scope ({handoverData.role_emphasis?.join(", ")}).
+          {/* Role focus */}
+          {Object.keys(roleSections).length > 0 && (
+            <section aria-labelledby="focus-h" className="flex flex-col gap-2">
+              <div>
+                <h2 id="focus-h" className="text-[17px] leading-6 font-bold">Focus for {currentRoleObj.label.toLowerCase()}</h2>
+                {handoverData?.role_emphasis?.length > 0 && (
+                  <p className="text-[13px] text-on-surface-variant">
+                    Emphasis: {handoverData.role_emphasis.map(humanize).join(", ").toLowerCase()}.
                   </p>
-                </div>
+                )}
               </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-space-md">
-                {Object.entries(handoverData.role_sections).map(([typeKey, items]) => {
-                  const lockedCount = items.filter((i) => i.withheld).length;
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
+                {Object.entries(roleSections).map(([typeKey, items]) => {
+                  const list = items || [];
+                  const lockedCount = list.filter((i) => i.withheld).length;
                   return (
-                    <div
-                      key={typeKey}
-                      className="p-space-md bg-surface-container-low rounded-lg border border-surface-container/60 flex flex-col gap-2"
-                    >
-                      <div className="flex items-center justify-between pb-1 border-b border-surface-container">
-                        <span className="font-headline-sm text-xs font-bold uppercase text-primary">
-                          {typeKey} ({items.length})
-                        </span>
-                        <span className="font-code-sm text-[10px] text-outline">
-                          {lockedCount > 0 ? `${lockedCount} locked` : "All visible"}
+                    <div key={typeKey} className="panel overflow-hidden print-shadow-none">
+                      <div className="flex items-center justify-between gap-2 px-3 py-1.5 bg-surface-container-low border-b border-outline-variant">
+                        <h3 className="text-[13px] font-bold">{humanize(typeKey)}</h3>
+                        <span className="tnum text-[12px] text-on-surface-variant">
+                          {list.length}
+                          {lockedCount > 0 ? `, ${lockedCount} locked` : ""}
                         </span>
                       </div>
-                      <div className="space-y-1.5 max-h-48 overflow-y-auto">
-                        {items.map((it) => (
-                          <div
-                            key={it.id}
-                            className="text-xs p-1.5 rounded bg-surface-container-lowest border border-surface-container/40"
-                          >
+                      <ul className="divide-y divide-outline-variant">
+                        {shown(`focus-${typeKey}`, list).map((it, idx) => (
+                          <li key={it.id ?? idx} className="px-3 py-2 text-[13px] leading-[18px]">
                             {it.withheld ? (
-                              <span className="text-outline italic flex items-center gap-1">
-                                <span className="material-symbols-outlined text-[12px]">lock</span>
-                                Locked item (Requires {it.access_level} access)
+                              <span className="flex items-center gap-1.5 text-on-surface-variant">
+                                <Lock size={13} aria-hidden="true" className="shrink-0" />
+                                Locked: needs {it.access_level} access
                               </span>
                             ) : (
-                              <span className="line-clamp-2 text-on-surface">{it.text}</span>
+                              <span className="line-clamp-2 break-words text-on-surface">{it.text}</span>
                             )}
-                          </div>
+                          </li>
                         ))}
-                      </div>
+                      </ul>
+                      <MoreButton k={`focus-${typeKey}`} total={list.length} />
                     </div>
                   );
                 })}
@@ -432,130 +403,183 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
             </section>
           )}
 
-          {/* Approved Claims Detailed Table */}
-          <section className="bg-surface-container-lowest rounded-xl shadow-sm border border-surface-container overflow-hidden">
-            <div className="p-space-lg flex items-center justify-between bg-surface-container-low border-b border-surface-container/60">
+          {/* Declared contents */}
+          <section aria-labelledby="contents-h" className="flex flex-col gap-2">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
               <div>
-                <h3 className="font-headline-sm text-headline-sm text-on-surface font-bold">
-                  Approved Claims Ledger ({approvedClaims.length})
-                </h3>
-                <p className="font-body-sm text-body-sm text-on-surface-variant">
-                  All claims approved for the {currentRoleObj.label} role.
-                </p>
+                <h2 id="contents-h" className="text-[17px] leading-6 font-bold">Declared contents</h2>
+                <p className="text-[13px] text-on-surface-variant">Every approved claim for this role.</p>
+              </div>
+              <div className="flex items-center gap-3 no-print">
+                <label className="relative block">
+                  <span className="sr-only">Filter contents</span>
+                  <Search size={15} aria-hidden="true" className="absolute left-2.5 top-1/2 -translate-y-1/2 text-outline" />
+                  <input
+                    id="contents-filter"
+                    type="search"
+                    value={filter}
+                    onChange={(e) => setFilter(e.target.value)}
+                    placeholder="Filter contents"
+                    maxLength={100}
+                    className="h-9 w-full sm:w-64 pl-8 pr-2.5 rounded-[3px] border border-outline-variant bg-surface-container-lowest text-[14px] placeholder:text-outline focus:outline-2 focus:outline-primary focus:border-primary"
+                  />
+                </label>
+                <span className="tnum text-[12px] text-on-surface-variant whitespace-nowrap" aria-live="polite">
+                  Showing {filteredClaims.length} of {approvedClaims.length}
+                </span>
               </div>
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left">
+            <div className="panel overflow-x-auto print-shadow-none">
+              <table className="w-full min-w-[640px] text-left border-collapse">
                 <thead>
-                  <tr className="bg-surface-container text-on-surface-variant font-label-md text-label-md">
-                    <th className="py-3 px-4 font-bold w-20">ID</th>
-                    <th className="py-3 px-4 font-bold w-32">Type</th>
-                    <th className="py-3 px-4 font-bold">Approved Claim Text</th>
-                    <th className="py-3 px-4 font-bold w-28">Access</th>
-                    <th className="py-3 px-4 font-bold w-28 text-right">Status</th>
+                  <tr className="bg-surface-container-low border-b border-outline-variant">
+                    <th scope="col" className="field-label px-3 py-2 w-20">ID</th>
+                    <th scope="col" className="field-label px-3 py-2 w-36">Type</th>
+                    <th scope="col" className="field-label px-3 py-2">Claim</th>
+                    <th scope="col" className="field-label px-3 py-2 w-28">Access</th>
+                    <th scope="col" className="field-label px-3 py-2 w-28">State</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-surface-container text-body-sm font-body-sm text-on-surface">
-                  {approvedClaims.map((claim) => (
-                    <tr key={claim.id} className="hover:bg-surface-container-low transition-colors">
-                      <td className="py-3 px-4 font-code-sm text-xs text-outline font-bold">#{claim.id}</td>
-                      <td className="py-3 px-4">
-                        <span className="px-2 py-0.5 rounded bg-surface-container font-code-sm text-xs uppercase font-semibold">
-                          {claim.type}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4">
-                        {claim.withheld ? (
-                          <span className="text-outline italic flex items-center gap-1.5">
-                            <span className="material-symbols-outlined text-[14px]">lock</span>
-                            Withheld ({claim.reason}) — request access from lead
-                          </span>
-                        ) : (
-                          <span>{claim.text}</span>
-                        )}
-                      </td>
-                      <td className="py-3 px-4 font-code-sm text-xs uppercase">
-                        {claim.access_level === "restricted" ? (
-                          <span className="px-1.5 py-0.5 rounded bg-error-container text-on-error-container font-bold">
-                            RESTRICTED
-                          </span>
-                        ) : (
-                          <span className="text-on-surface-variant">{claim.access_level}</span>
-                        )}
-                      </td>
-                      <td className="py-3 px-4 text-right">
-                        {claim.withheld ? (
-                          <span className="px-2 py-0.5 rounded bg-surface-container-high text-outline font-code-sm text-xs font-semibold uppercase">
-                            WITHHELD
-                          </span>
-                        ) : (
-                          <span className="px-2 py-0.5 rounded bg-tertiary-fixed text-on-tertiary-fixed font-code-sm text-xs font-semibold capitalize">
-                            {claim.status || "approved"}
-                          </span>
-                        )}
+                <tbody className="divide-y divide-outline-variant text-[13px] leading-5 text-on-surface">
+                  {filteredClaims.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="px-3 py-6 text-center text-on-surface-variant">
+                        <SearchX size={16} aria-hidden="true" className="inline mr-2 align-text-bottom" />
+                        No items match
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    filteredClaims.map((claim, rowIdx) => (
+                      <tr key={claim.id} className={`${!expanded.contents && !filter.trim() && rowIdx >= 15 ? "hidden print:table-row " : ""}align-top`}>
+                        <td className="px-3 py-2 font-mono text-[12px] text-on-surface-variant">#{claim.id}</td>
+                        <td className="px-3 py-2"><TypeChip type={claim.type} /></td>
+                        <td className="px-3 py-2 break-words">
+                          {claim.withheld ? (
+                            <span className="flex items-center gap-1.5 text-on-surface-variant">
+                              <Lock size={13} aria-hidden="true" className="shrink-0" />
+                              Locked: needs {claim.access_level || "higher"} access. Ask the lead.
+                            </span>
+                          ) : (
+                            claim.text
+                          )}
+                        </td>
+                        <td className="px-3 py-2"><AccessChip level={claim.access_level} /></td>
+                        <td className="px-3 py-2">
+                          {claim.withheld ? (
+                            <span className="inline-block rounded-[2px] bg-surface-container-high px-1.5 py-px text-[11px] leading-4 font-semibold text-on-surface">Withheld</span>
+                          ) : (
+                            <span className="inline-block rounded-[2px] bg-tertiary-fixed px-1.5 py-px text-[11px] leading-4 font-semibold text-on-tertiary-fixed">
+                              {humanize(claim.status || "approved")}
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
+              {!filter.trim() && <MoreButton k="contents" total={filteredClaims.length} cap={15} />}
             </div>
           </section>
 
-          {/* Dossier Footer Note */}
-          <div className="p-space-md rounded-xl bg-surface-container-low text-on-surface-variant font-label-md text-label-md flex items-center justify-between border border-surface-container">
-            <span>Official handover record compiled for {currentRoleObj.label}. Automated checks reduce errors and a human approves.</span>
-            <span className="font-code-sm text-xs text-outline">{approvedClaims.length} claims on record</span>
-          </div>
+          {/* Receipt: the slip that closes the consignment note */}
+          <section aria-labelledby="receipt-h" className="panel print-shadow-none overflow-hidden">
+            <div className="flex items-center justify-between gap-3 px-4 py-2.5 border-b border-dashed border-outline bg-surface-container-low">
+              <h2 id="receipt-h" className="text-[15px] font-bold">Receipt</h2>
+              <span className="font-mono text-[12px] text-on-surface-variant">No. {consignmentNo(project.id)}</span>
+            </div>
+            {ackSuccess ? (
+              <div id="ack-banner" className="flex flex-col md:flex-row md:items-center gap-5 p-4 overflow-hidden">
+                <div className="stamp-in shrink-0 self-start md:self-center border-2 border-tertiary text-tertiary rounded-[3px] px-4 py-1.5 text-[18px] leading-6 font-extrabold uppercase tracking-[0.14em] m-1" style={{ transform: "rotate(-3deg)" }}>
+                  Received
+                </div>
+                <dl className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-px bg-outline-variant border border-outline-variant rounded-[2px] min-w-0">
+                  {[
+                    ["Received by", <span key="n" id="ack-success-title">{ackSuccess.name}</span>],
+                    ["Role", ackSuccess.roleLabel],
+                    ["Signed at", <span key="t" className="tnum">{formatWhen(ackSuccess.at)}</span>],
+                  ].map(([l, v]) => (
+                    <div key={l} className="bg-surface-container-lowest px-3 py-2 min-w-0">
+                      <dt className="field-label">{l}</dt>
+                      <dd className="text-[14px] leading-6 font-semibold break-words">{v}</dd>
+                    </div>
+                  ))}
+                  {ackSuccess.note && (
+                    <div className="bg-surface-container-lowest px-3 py-2 sm:col-span-3">
+                      <dt className="field-label">Note</dt>
+                      <dd className="text-[14px] leading-6 break-words">{ackSuccess.note}</dd>
+                    </div>
+                  )}
+                </dl>
+              </div>
+            ) : (
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4">
+                <div className="flex-1 min-w-0">
+                  <div className="h-8 border-b border-outline max-w-sm" aria-hidden="true" />
+                  <p className="text-[13px] text-on-surface-variant mt-1">Not signed yet. The person taking over signs here.</p>
+                </div>
+                <Button variant="primary" onClick={openSign} disabled={!canSign} title={signDisabledReason} className="no-print self-start sm:self-center">
+                  <PenLine size={16} aria-hidden="true" />
+                  Sign for receipt
+                </Button>
+              </div>
+            )}
+          </section>
         </>
       )}
 
-      {/* Acknowledge Modal */}
-      {ackModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-          <div className="bg-surface-container-lowest rounded-xl shadow-lg border border-surface-container max-w-md w-full p-6 space-y-4">
-            <h3 className="font-headline-md text-headline-md text-on-surface font-bold">
-              Acknowledge Handover Receipt
-            </h3>
-            <p className="font-body-sm text-body-sm text-on-surface-variant">
-              Confirming receipt creates an audit log record for the project handover.
-            </p>
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-on-surface-variant block">Recipient Name / Title</label>
-              <input
-                type="text"
-                className="w-full p-2.5 rounded-lg border border-surface-container bg-surface-container-low text-on-surface font-body-sm focus:outline-primary"
-                value={recipientName}
-                onChange={(e) => setRecipientName(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-on-surface-variant block">Optional Acknowledgment Note</label>
-              <input
-                type="text"
-                className="w-full p-2.5 rounded-lg border border-surface-container bg-surface-container-low text-on-surface font-body-sm focus:outline-primary"
-                placeholder="e.g. Reviewed Day 1 blockers with departing lead..."
-                value={ackNote}
-                onChange={(e) => setAckNote(e.target.value)}
-              />
-            </div>
-            <div className="flex justify-end gap-2 pt-2">
-              <button
-                onClick={() => setAckModalOpen(false)}
-                className="px-4 py-2 rounded-lg bg-surface-container text-on-surface text-sm font-semibold cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleAcknowledge}
-                disabled={!recipientName.trim() || isSubmittingAck}
-                className="px-4 py-2 rounded-lg bg-primary text-on-primary text-sm font-semibold cursor-pointer disabled:opacity-50"
-              >
-                {isSubmittingAck ? "Signing..." : "Sign Acknowledgment"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <Dialog
+        open={ackModalOpen}
+        onClose={closeSign}
+        title="Sign for receipt"
+        description={`You are confirming that you received the handover as ${currentRoleObj.label.toLowerCase()}. This records a receipt.`}
+        footer={
+          <>
+            <Button variant="outline" onClick={closeSign} disabled={isSubmittingAck}>
+              Cancel
+            </Button>
+            <Button variant="primary" onClick={handleAcknowledge} disabled={!recipientName.trim() || isSubmittingAck}>
+              {isSubmittingAck ? "Signing…" : "Sign for receipt"}
+            </Button>
+          </>
+        }
+      >
+        <TextInput
+          id="ack-recipient"
+          label="Your name"
+          autoFocus
+          required
+          maxLength={80}
+          value={recipientName}
+          placeholder="Full name"
+          onChange={(e) => setRecipientName(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              handleAcknowledge();
+            }
+          }}
+        />
+        <TextInput
+          id="ack-note"
+          label="Note (optional)"
+          maxLength={200}
+          value={ackNote}
+          placeholder="Anything the lead should know"
+          onChange={(e) => setAckNote(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              handleAcknowledge();
+            }
+          }}
+        />
+        {ackError && (
+          <p role="alert" className="text-[13px] leading-5 text-on-error-container bg-error-container rounded-[2px] px-3 py-2 break-words">
+            {ackError}
+          </p>
+        )}
+      </Dialog>
     </div>
   );
 }

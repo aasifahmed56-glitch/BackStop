@@ -196,6 +196,9 @@ from app.verify import router as verify_router       # noqa: E402
 from app.review import router as review_router       # noqa: E402
 from app.views import router as views_router         # noqa: E402
 from app.backtest import router as backtest_router   # noqa: E402
+from app.githubimport import router as import_router  # noqa: E402
+from app.trust import router as trust_router         # noqa: E402
+from app.tripwires import router as tripwires_router  # noqa: E402
 
 app.include_router(ingest_router, prefix="/api")
 app.include_router(derived_router, prefix="/api")
@@ -203,6 +206,9 @@ app.include_router(verify_router, prefix="/api")
 app.include_router(review_router, prefix="/api")
 app.include_router(views_router, prefix="/api")
 app.include_router(backtest_router, prefix="/api")
+app.include_router(import_router, prefix="/api")
+app.include_router(trust_router, prefix="/api")
+app.include_router(tripwires_router, prefix="/api")
 
 
 # ---------------------------------------------------------------------------
@@ -211,7 +217,7 @@ app.include_router(backtest_router, prefix="/api")
 
 _DIST = Path(__file__).parent.parent.parent / "frontend" / "dist"
 
-if _DIST.exists():
+if (_DIST / "assets").exists():
     app.mount("/assets", StaticFiles(directory=str(_DIST / "assets")), name="assets")
 
     @app.get("/{full_path:path}", include_in_schema=False)

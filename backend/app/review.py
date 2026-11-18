@@ -34,6 +34,7 @@ from app.models import (
     Source,
     role_can_see,
 )
+from app.redact import redact
 
 router = APIRouter(tags=["review"])
 
@@ -44,24 +45,28 @@ _REVIEWER_ROLES = {Role.lead, Role.admin}
 # Request Schemas
 # ---------------------------------------------------------------------------
 
+# A request that does not name a role gets the LOWEST access, never a reviewer's.
+LOWEST_ROLE = Role.incoming_dev
+
+
 class ApproveRequest(BaseModel):
-    role: Role = Role.lead
+    role: Role = LOWEST_ROLE
     note: Optional[str] = None
 
 
 class RejectRequest(BaseModel):
-    role: Role = Role.lead
+    role: Role = LOWEST_ROLE
     reason: str
 
 
 class EditRequest(BaseModel):
-    role: Role = Role.lead
+    role: Role = LOWEST_ROLE
     corrected_text: str
     note: Optional[str] = None
 
 
 class BulkApproveRequest(BaseModel):
-    role: Role = Role.lead
+    role: Role = LOWEST_ROLE
     note: Optional[str] = None
 
 
@@ -122,14 +127,19 @@ def render_claim_for_role(claim: Claim, role: Role) -> dict[str, Any]:
         "withheld": False,
         "kind": claim.kind.value,
         "type": claim.type.value,
-        "text": claim.text,
+        "text": redact(claim.text),
         "status": claim.status.value,
         "confidence": claim.confidence,
         "access_level": claim.access_level.value,
         "review_state": claim.review_state.value,
         "current_version": claim.current_version,
-        "evidence": claim.evidence(),
+        "evidence": mask_evidence(claim.evidence()),
     }
+
+
+def mask_evidence(evidence: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Secrets and contact details are masked in every quote shown to any role."""
+    return [{**ev, "quote": redact(ev["quote"])} if isinstance(ev.get("quote"), str) else ev for ev in evidence]
 
 
 # ---------------------------------------------------------------------------
@@ -143,7 +153,7 @@ def list_claims(
     status: Optional[ClaimStatus] = Query(None),
     type: Optional[ClaimType] = Query(None),
     review_state: Optional[ReviewState] = Query(None),
-    role: Role = Query(Role.lead),
+    role: Role = Query(LOWEST_ROLE),
     session: Session = Depends(get_session),
 ):
     stmt = select(Claim).where(Claim.project_id == project_id)
@@ -209,6 +219,10 @@ def approve_claim(
         _log(session, claim_id, "access_denied", req.role.value, "Approve denied: access level too high.")
         session.commit()
         raise HTTPException(403, "Access denied: claim level exceeds role.")
+
+    # A conflict needs a human decision, not a click: require a resolution note.
+    if claim.status == ClaimStatus.conflicting and not (req.note or "").strip():
+        raise HTTPException(422, "This claim is Conflicting. Add a note saying which source is current before approving.")
 
     # Version snapshot
     _save_version(session, claim, req.role.value, req.note)
@@ -344,6 +358,7 @@ def edit_claim(
 @router.get("/claims/{claim_id}/versions", summary="Get version history of a claim")
 def get_claim_versions(
     claim_id: int,
+    role: Role = Query(LOWEST_ROLE, description="Simulated role; missing means lowest access"),
     session: Session = Depends(get_session),
 ):
     claim = session.get(Claim, claim_id)
@@ -355,6 +370,9 @@ def get_claim_versions(
         .where(ClaimVersion.claim_id == claim_id)
         .order_by(ClaimVersion.version.desc())
     ).all()
+
+    # Old versions carry old text: the strictest level the claim ever had applies.
+    _deny_unless_visible(session, claim, role, [v.access_level for v in versions], "versions")
 
     audit_logs = session.exec(
         select(AuditLog)
@@ -368,7 +386,7 @@ def get_claim_versions(
         "versions": [
             {
                 "version": v.version,
-                "text": v.text,
+                "text": redact(v.text),
                 "status": v.status.value,
                 "review_state": v.review_state.value,
                 "changed_by": v.changed_by,
@@ -381,7 +399,7 @@ def get_claim_versions(
             {
                 "action": a.action,
                 "actor_role": a.actor_role,
-                "detail": a.detail,
+                "detail": redact(a.detail) if a.detail else a.detail,
                 "created_at": a.created_at.isoformat(),
             }
             for a in audit_logs
@@ -392,12 +410,14 @@ def get_claim_versions(
 @router.get("/claims/{claim_id}/context", summary="Fetch chunk context for quote highlighting")
 def get_claim_context(
     claim_id: int,
+    role: Role = Query(LOWEST_ROLE, description="Simulated role; missing means lowest access"),
     session: Session = Depends(get_session),
 ):
     claim = session.get(Claim, claim_id)
     if not claim:
         raise HTTPException(404, "Claim not found.")
 
+    _deny_unless_visible(session, claim, role, [], "context")
     evidence = claim.evidence()
     contexts = []
 
@@ -410,14 +430,18 @@ def get_claim_context(
         if not chk:
             continue
         src = session.get(Source, chk.source_id)
+        # Never show a chunk from a source above the caller's ceiling, whatever
+        # level the claim itself carries.
+        if src and not role_can_see(role, src.access_level):
+            continue
 
         contexts.append({
             "chunk_id": chk.id,
             "source_name": src.name if src else "unknown",
             "source_kind": src.kind.value if src else "unknown",
             "access_level": src.access_level.value if src else "public",
-            "chunk_text": chk.text,
-            "quote": quote,
+            "chunk_text": redact(chk.text),
+            "quote": redact(quote),
             "author": chk.author,
             "timestamp": chk.timestamp.isoformat() if chk.timestamp else None,
         })
@@ -449,6 +473,15 @@ def _save_version(session: Session, claim: Claim, changed_by: str, note: Optiona
         change_note=note,
     )
     session.add(v)
+
+
+def _deny_unless_visible(session: Session, claim: Claim, role: Role, extra_levels: list[AccessLevel], what: str) -> None:
+    levels = [claim.access_level, *extra_levels]
+    if all(role_can_see(role, lv) for lv in levels):
+        return
+    _log(session, claim.id, "access_denied", role.value, f"Read of claim {what} denied: access level too high.")
+    session.commit()
+    raise HTTPException(403, "Access denied: claim level exceeds role.")
 
 
 def _log(session: Session, claim_id: Optional[int], action: str, actor: str, detail: Optional[str]) -> None:

@@ -110,7 +110,7 @@ class TestExtractionAndVerificationPipeline:
                         "items": [
                             {
                                 "type": "decision",
-                                "text": "JWT chosen over sessions",
+                                "text": "Sessions failed under load in the demo",  # every detail is in the quote, so it stays Verified
                                 "chunk_ids": [chk.id],
                                 "quotes": ["Sessions failed under load in the demo"],
                                 "conflict": False,

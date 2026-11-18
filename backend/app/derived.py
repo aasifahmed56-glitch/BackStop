@@ -17,7 +17,7 @@ import json
 import re
 from collections import Counter, defaultdict
 from datetime import date, datetime, timedelta
-from typing import Optional
+from typing import Callable, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
@@ -215,6 +215,34 @@ def derive_claims(project_id: int, session: Session = Depends(get_session)):
             ev, ClaimStatus.missing, 1.0, task_access,
         ))
 
+    # 7. Schedule conflicts across sources (plain code, no LLM)
+    text_sources = session.exec(
+        select(Source).where(
+            Source.project_id == project_id,
+            Source.kind.in_([SourceKind.note, SourceKind.chat, SourceKind.issue]),
+        )
+    ).all()
+    text_chunks: list[tuple[Source, Chunk]] = []
+    for src in text_sources:
+        for ch in session.exec(select(Chunk).where(Chunk.source_id == src.id)).all():
+            text_chunks.append((src, ch))
+    for item in compute_schedule_conflicts(text_chunks):
+        plan_src, plan_chunk, plan_line = item["plan"]
+        later_src, later_chunk, later_line = item["later"]
+        ev = json.dumps([
+            {"source_id": plan_src.id, "source_name": plan_src.name, "chunk_id": plan_chunk.id, "quote": plan_line,
+             "line_start": plan_chunk.line_start, "line_end": plan_chunk.line_end},
+            {"source_id": later_src.id, "source_name": later_src.name, "chunk_id": later_chunk.id, "quote": later_line,
+             "line_start": later_chunk.line_start, "line_end": later_chunk.line_end},
+        ])
+        claims.append(_claim(
+            project_id, ClaimType.decision,
+            f"CONFLICT — {item['topic']}: {plan_src.name} sets it for {item['date']}, "
+            f"but {later_src.name} says it was {item['change']}. Confirm the current plan.",
+            ev, ClaimStatus.conflicting, 0.5,
+            strictest_access([plan_src.access_level, later_src.access_level]),
+        ))
+
     for c in claims:
         session.add(c)
     session.commit()
@@ -327,20 +355,22 @@ def _module_of(filepath: str) -> str:
     return p.split("/")[0] if "/" in p else "root"
 
 
-def compute_ownership(commits: list[dict], leaver: str, cutoff: date) -> list[dict]:
+def compute_ownership(commits: list[dict], leaver: str, cutoff: date,
+                      module_fn: Callable[[str], str] = None) -> list[dict]:
     """
     For each module: total commits, top author, leaver commit count / share.
 
     Returns list of dicts (one per module), sorted by leaver_share descending.
     """
     pre = _pre_cutoff(commits, cutoff)
+    module_fn = module_fn or _module_of
 
     module_author: dict[str, Counter] = defaultdict(Counter)
     module_chunk_ids: dict[str, list[int]] = defaultdict(list)
 
     for c in pre:
         for f in c.get("files", []):
-            mod = _module_of(f)
+            mod = module_fn(f)
             module_author[mod][c["author"]] += 1
             cid = c.get("chunk_id")
             if cid is not None:
@@ -393,6 +423,7 @@ def compute_stale_modules(
     commits: list[dict],
     cutoff: date,
     stale_days: int = _DEFAULT_STALE_DAYS,
+    module_fn: Callable[[str], str] = None,
 ) -> list[dict]:
     """
     Modules with no commit in the *stale_days* window immediately before *cutoff*.
@@ -404,10 +435,11 @@ def compute_stale_modules(
     last_commit: dict[str, date] = {}
     last_chunk: dict[str, Optional[int]] = {}
 
+    module_fn = module_fn or _module_of
     for c in pre:
         c_date = c["date"]
         for f in c.get("files", []):
-            mod = _module_of(f)
+            mod = module_fn(f)
             if mod not in last_commit or last_commit[mod] < c_date:
                 last_commit[mod] = c_date
                 last_chunk[mod] = c.get("chunk_id")
@@ -550,6 +582,54 @@ def _parse_task_row(text: str) -> dict:
 # ---------------------------------------------------------------------------
 # Claim builder helpers
 # ---------------------------------------------------------------------------
+
+_PLAN_RE = re.compile(
+    r"(?P<topic>[A-Z][A-Za-z]+(?: [a-z][A-Za-z]+)?)[^.\n]*?\b(?:is|on|for|by)\s+(?:on\s+)?"
+    r"(?P<date>\d{1,2} (?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]* \d{4})"
+)
+_CHANGE_RE = re.compile(r"\b(postponed|delayed|pushed back|cancelled|canceled|rescheduled|moved)\b", re.I)
+
+
+def _clean_line(line: str) -> str:
+    return line.strip().lstrip("-*# ").strip().strip("*").strip()
+
+
+def compute_schedule_conflicts(text_chunks: list[tuple[Source, Chunk]]) -> list[dict]:
+    """
+    Find a dated plan in one source that a different source later contradicts.
+
+    A plan line names a topic and a date ("Payments migration ... is on 20 Feb 2026").
+    A change line mentions the same two-word topic with a change verb
+    ("Payments migration postponed"). Both lines are returned verbatim so the
+    claim carries two exact quotes. Plain code, no LLM.
+    """
+    plans = []
+    for src, ch in text_chunks:
+        for raw in ch.text.splitlines():
+            m = _PLAN_RE.search(raw)
+            if m and not _CHANGE_RE.search(raw):
+                plans.append((src, ch, _clean_line(raw), m.group("topic").lower(), m.group("date")))
+    out, seen = [], set()
+    for psrc, pch, pline, topic, date_s in plans:
+        if " " not in topic:
+            continue  # one-word topics are too vague to compare
+        for src, ch, in text_chunks:
+            if src.id == psrc.id:
+                continue
+            for raw in ch.text.splitlines():
+                cm = _CHANGE_RE.search(raw)
+                if cm and topic in raw.lower():
+                    key = (topic, date_s)
+                    if key in seen:
+                        break
+                    seen.add(key)
+                    out.append({
+                        "topic": topic.capitalize(), "date": date_s, "change": cm.group(1).lower(),
+                        "plan": (psrc, pch, pline), "later": (src, ch, _clean_line(raw)),
+                    })
+                    break
+    return out
+
 
 def _ev(source_id: int, chunk_ids: list[Optional[int]], quote: str) -> str:
     return json.dumps([

@@ -1,7 +1,79 @@
 import React, { useState, useEffect } from "react";
 import { api } from "../api";
+import RealBacktestView from "./RealBacktestView";
+import GithubImportPanel from "./GithubImportPanel";
 
-export default function BacktestPage() {
+const DATASET_KEY = "backstop.backtestDataset";
+
+export default function BacktestPage({ onOpenTrust }) {
+  const [datasets, setDatasets] = useState([{ id: "sample", label: "Synthetic sample", kind: "synthetic" }]);
+  const [dataset, setDataset] = useState(() => {
+    try {
+      return localStorage.getItem(DATASET_KEY) || "sample";
+    } catch {
+      return "sample";
+    }
+  });
+
+  useEffect(() => {
+    api.getBacktestDatasets().then((d) => Array.isArray(d) && d.length && setDatasets(d)).catch(() => {});
+  }, []);
+
+  const choose = (id) => {
+    setDataset(id);
+    try {
+      localStorage.setItem(DATASET_KEY, id);
+    } catch {
+      /* storage unavailable */
+    }
+  };
+
+  return (
+    <div className="flex flex-col w-full gap-space-lg">
+      <fieldset className="flex flex-wrap items-center gap-space-sm">
+        <legend className="sr-only">Choose a dataset</legend>
+        <span className="font-label-md text-label-md text-on-surface-variant mr-1">Dataset</span>
+        {datasets.map((d) => (
+          <label
+            key={d.id}
+            className={`cursor-pointer px-3 py-1.5 rounded-lg border font-label-md text-label-md has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-primary ${
+              dataset === d.id ? "bg-primary text-on-primary border-primary" : "bg-surface-container-lowest text-on-surface border-outline-variant"
+            }`}
+          >
+            <input type="radio" name="dataset" value={d.id} checked={dataset === d.id} onChange={() => choose(d.id)} className="sr-only" />
+            {d.label}
+          </label>
+        ))}
+        <label
+          className={`cursor-pointer px-3 py-1.5 rounded-lg border font-label-md text-label-md has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-primary ${
+            dataset === "import" ? "bg-primary text-on-primary border-primary" : "bg-surface-container-lowest text-on-surface border-outline-variant"
+          }`}
+        >
+          <input type="radio" name="dataset" value="import" checked={dataset === "import"} onChange={() => choose("import")} className="sr-only" />
+          Analyse a GitHub repository
+        </label>
+      </fieldset>
+      {onOpenTrust && (
+        <p className="font-body-sm text-body-sm text-on-surface-variant">
+          Did it work? The backtest checks the risk ranking. For leak attacks and how often wrong claims are caught, see the{" "}
+          <button onClick={onOpenTrust} className="underline text-primary font-semibold focus-visible:ring-2 focus-visible:ring-primary rounded">
+            Trust report
+          </button>
+          .
+        </p>
+      )}
+      {dataset === "import" ? (
+        <GithubImportPanel />
+      ) : dataset === "sample" || !datasets.some((d) => d.id === dataset) ? (
+        <SampleBacktest />
+      ) : (
+        <RealBacktestView name={dataset} />
+      )}
+    </div>
+  );
+}
+
+function SampleBacktest() {
   const [backtestData, setBacktestData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -34,30 +106,26 @@ export default function BacktestPage() {
       <section className="flex flex-col gap-space-md mb-space-sm">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
           <div>
-            <div className="flex items-center gap-space-sm mb-1">
-              <span className="font-code-sm text-code-sm text-primary uppercase tracking-wider font-semibold">
-                Benchmark Evaluation
-              </span>
-              <span className="w-1 h-1 rounded-full bg-outline-variant"></span>
-              <span className="font-label-sm text-label-sm text-on-surface-variant font-medium">
-                Cutoff Date Verification
-              </span>
-            </div>
             <h1 className="font-headline-lg text-headline-lg text-on-surface font-bold">
               Handover Risk Backtest
             </h1>
             <p className="font-body-md text-body-md text-on-surface-variant mt-0.5 max-w-3xl">
-              Benchmark evaluating Backstop's Knowledge-at-Risk scoring against post-departure ground truth outcomes. Automated checks reduce errors and a human approves.
+              Benchmark evaluating Backstop's Knowledge-at-Risk scoring against post-departure ground truth outcomes.
             </p>
           </div>
           <div className="flex items-center gap-space-sm shrink-0">
+            {error && (
+              <p role="alert" className="font-body-sm text-body-sm text-on-error-container bg-error-container rounded-lg px-3 py-2">
+                Backtest could not load: {error}
+              </p>
+            )}
             <button
               onClick={loadBacktest}
               disabled={isLoading}
               className="px-space-md py-2.5 bg-primary hover:bg-primary-container text-on-primary rounded-lg font-headline-sm text-headline-sm transition-all shadow-sm flex items-center gap-2 cursor-pointer disabled:opacity-50"
               type="button"
             >
-              <span className={`material-symbols-outlined text-[18px] ${isLoading ? "animate-spin" : ""}`}>
+              <span aria-hidden="true" className={`material-symbols-outlined text-[18px] ${isLoading ? "animate-spin" : ""}`}>
                 {isLoading ? "refresh" : "play_circle"}
               </span>
               <span>{isLoading ? "Evaluating..." : "Re-run Backtest Benchmark"}</span>
@@ -68,7 +136,7 @@ export default function BacktestPage() {
         {/* Limitations and Protocol Banner */}
         <div className="w-full bg-surface-container-low rounded-xl px-space-md py-space-sm flex flex-col sm:flex-row items-center justify-between gap-space-sm shadow-sm border border-surface-container">
           <div className="flex items-center gap-space-sm">
-            <span className="material-symbols-outlined text-outline text-[18px]">info</span>
+            <span aria-hidden="true" className="material-symbols-outlined text-outline text-[18px]">info</span>
             <div className="text-on-surface-variant font-label-md text-label-md">
               <strong className="text-on-surface">Limitations Note:</strong> Tiny synthetic dataset, 4 of 7 modules are positives, demonstration only. The algorithm evaluated repository artifacts up to the cutoff date.
             </div>
@@ -88,12 +156,12 @@ export default function BacktestPage() {
             <span className="font-label-md text-label-md uppercase tracking-wider font-semibold">
               Cutoff Date
             </span>
-            <span className="material-symbols-outlined text-[20px] text-outline">history_toggle_off</span>
+            <span aria-hidden="true" className="material-symbols-outlined text-[20px] text-outline">history_toggle_off</span>
           </div>
           <div className="my-space-md flex flex-col">
             <div className="flex items-baseline gap-space-xs">
               <span className="font-display-lg text-display-lg text-on-surface tracking-tight font-bold">
-                {backtestData?.cutoff_date || "2026-03-15"}
+                {backtestData?.cutoff_date ?? "—"}
               </span>
             </div>
             <span className="font-label-sm text-label-sm text-outline mt-1">Audit Cutoff Date</span>
@@ -112,7 +180,7 @@ export default function BacktestPage() {
             <span className="font-label-md text-label-md uppercase tracking-wider font-semibold">
               Ground Truth Targets
             </span>
-            <span className="material-symbols-outlined text-[20px] text-outline">radar</span>
+            <span aria-hidden="true" className="material-symbols-outlined text-[20px] text-outline">radar</span>
           </div>
           <div className="my-space-md flex flex-col">
             <div className="flex items-baseline gap-space-xs">
@@ -135,7 +203,7 @@ export default function BacktestPage() {
             </div>
           </div>
           <div className="pt-space-sm bg-surface-container-low -mx-space-lg -mb-space-lg p-space-md rounded-b-xl flex items-center gap-1.5 border-t border-surface-container/60">
-            <span className="material-symbols-outlined text-tertiary text-[16px]">check_circle</span>
+            <span aria-hidden="true" className="material-symbols-outlined text-tertiary text-[16px]">check_circle</span>
             <span className="font-body-sm text-body-sm text-on-surface-variant">
               Post-departure troubled modules in ground truth
             </span>
@@ -148,12 +216,12 @@ export default function BacktestPage() {
             <span className="font-label-md text-label-md uppercase tracking-wider font-semibold">
               Overall Benchmark F1
             </span>
-            <span className="material-symbols-outlined text-[20px] text-primary">target</span>
+            <span aria-hidden="true" className="material-symbols-outlined text-[20px] text-primary">target</span>
           </div>
           <div className="my-space-md flex flex-col">
             <div className="flex items-baseline gap-space-xs">
               <span className="font-display-lg text-display-lg text-on-surface tracking-tight font-bold">
-                {backtestData?.overall_f1 ? backtestData.overall_f1.toFixed(3) : "0.763"}
+                {typeof backtestData?.overall_f1 === "number" ? backtestData.overall_f1.toFixed(3) : "—"}
               </span>
               <span className="font-headline-sm text-headline-sm text-tertiary ml-1 font-semibold">
                 Score
@@ -162,9 +230,9 @@ export default function BacktestPage() {
             <span className="font-label-sm text-label-sm text-outline mt-1">Synthetic benchmark outcome</span>
           </div>
           <div className="pt-space-sm bg-surface-container-low -mx-space-lg -mb-space-lg p-space-md rounded-b-xl flex items-center gap-1.5 border-t border-surface-container/60">
-            <span className="material-symbols-outlined text-tertiary text-[16px]">verified</span>
+            <span aria-hidden="true" className="material-symbols-outlined text-tertiary text-[16px]">verified</span>
             <span className="font-body-sm text-body-sm text-on-surface-variant">
-              Calculated from model rankings
+              Backstop's ranking only; compare with the baseline below
             </span>
           </div>
         </div>
@@ -244,7 +312,7 @@ export default function BacktestPage() {
                     </span>
                     <div className="flex-1 bg-surface-container-highest rounded-full h-3.5 overflow-hidden">
                       <div
-                        className="bg-primary h-full rounded-full transition-all duration-700 ease-out flex items-center justify-end pr-2 text-[10px] text-on-primary font-bold"
+                        className="bg-primary h-full rounded-full transition-all duration-700 ease-out flex items-center justify-end pr-2 text-[11px] text-on-primary font-bold"
                         style={{ width: `${bPct}%` }}
                       >
                         {b.precision.toFixed(2)}
@@ -255,7 +323,7 @@ export default function BacktestPage() {
                     <span className="w-16 font-label-sm text-label-sm text-outline text-right">Baseline</span>
                     <div className="flex-1 bg-surface-container-highest rounded-full h-3.5 overflow-hidden">
                       <div
-                        className="bg-outline h-full rounded-full transition-all duration-700 ease-out flex items-center justify-end pr-2 text-[10px] text-surface-container-lowest font-bold"
+                        className="bg-outline h-full rounded-full transition-all duration-700 ease-out flex items-center justify-end pr-2 text-[11px] text-surface-container-lowest font-bold"
                         style={{ width: `${basePct}%` }}
                       >
                         {base.precision.toFixed(2)}
@@ -271,7 +339,7 @@ export default function BacktestPage() {
         {/* Note on Ties */}
         <div className="p-space-md rounded-xl bg-surface-container-low flex flex-col md:flex-row items-start md:items-center gap-space-md border border-surface-container">
           <div className="w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center text-primary flex-shrink-0">
-            <span className="material-symbols-outlined text-[22px]">balance</span>
+            <span aria-hidden="true" className="material-symbols-outlined text-[22px]">balance</span>
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-space-sm">
@@ -301,7 +369,7 @@ export default function BacktestPage() {
             </p>
           </div>
           <div className="flex items-center gap-space-sm text-outline font-code-sm text-code-sm">
-            <span className="material-symbols-outlined text-[16px]">tune</span>
+            <span aria-hidden="true" className="material-symbols-outlined text-[16px]">tune</span>
             <span>DATASET: SYNTHETIC (4/7 POSITIVES)</span>
           </div>
         </div>
@@ -387,7 +455,7 @@ export default function BacktestPage() {
         <div className="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between border border-surface-container">
           <div className="space-y-space-sm">
             <h3 className="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2 font-semibold">
-              <span className="material-symbols-outlined text-secondary text-[20px]">calculate</span>
+              <span aria-hidden="true" className="material-symbols-outlined text-secondary text-[20px]">calculate</span>
               Ranking Criteria: Knowledge-at-Risk Scoring
             </h3>
             <p className="font-body-sm text-body-sm text-on-surface-variant">
@@ -395,15 +463,15 @@ export default function BacktestPage() {
             </p>
             <ul className="space-y-2 font-body-sm text-body-sm text-on-surface-variant pt-1">
               <li className="flex items-start gap-1.5">
-                <span className="material-symbols-outlined text-tertiary text-[16px] mt-0.5">check</span>
+                <span aria-hidden="true" className="material-symbols-outlined text-tertiary text-[16px] mt-0.5">check</span>
                 <span>
                   <strong className="text-on-surface">Contributor Concentration:</strong> Prioritizes modules where a high percentage of commits were authored by the departing contributor.
                 </span>
               </li>
               <li className="flex items-start gap-1.5">
-                <span className="material-symbols-outlined text-tertiary text-[16px] mt-0.5">check</span>
+                <span aria-hidden="true" className="material-symbols-outlined text-tertiary text-[16px] mt-0.5">check</span>
                 <span>
-                  <strong className="text-on-surface">Human Verification:</strong> Automated checks reduce errors and a human approves all handover claims.
+                  <strong className="text-on-surface">Human Verification:</strong> A person approves every claim before it reaches the handover.
                 </span>
               </li>
             </ul>
@@ -418,7 +486,7 @@ export default function BacktestPage() {
         <div className="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between border border-surface-container">
           <div className="space-y-space-sm">
             <h3 className="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2 font-semibold">
-              <span className="material-symbols-outlined text-outline text-[20px]">swap_vert</span>
+              <span aria-hidden="true" className="material-symbols-outlined text-outline text-[20px]">swap_vert</span>
               Module Prioritization: deploy vs auth
             </h3>
             <p className="font-body-sm text-body-sm text-on-surface-variant">

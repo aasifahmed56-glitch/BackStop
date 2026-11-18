@@ -1,826 +1,808 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import {
+  Check, X, PencilLine, Search, Copy, Link2, Lock, Code2, ArrowLeftRight, ChevronDown, CheckCheck, RotateCw, History,
+} from "lucide-react";
 import { api, formatErrorMessage } from "../api";
+import { STATUS, REVIEW, humanize, StatusChip, Field, Button, Dialog, TextArea, TextInput, TallyStrip, Skeleton } from "./ui";
 
-export default function ReviewQueuePage({ role, stats, onRefreshStats }) {
+const isSeeded = (claim) => (claim?.evidence || []).some((ev) => ev.origin === "seeded");
+const kindLabel = (claim) => (isSeeded(claim) ? "Seeded fixture" : claim.kind === "derived" ? "Calculated by code" : "Extracted by AI");
+const kindHelp = (claim) => {
+  if (isSeeded(claim)) return "Hand-written demo claim for the synthetic sample. Its quote is checked, but no AI produced it.";
+  if (claim.kind === "derived") return "Calculated by plain code from git history, tasks or notes. No AI involved.";
+  return "Extracted by an AI model, then checked: the quote must exist in the source and support the claim.";
+};
+
+const REVIEW_FILTERS = [
+  { id: "all", label: "All" },
+  { id: "pending", label: "Not checked" },
+  { id: "decided", label: "Decided" },
+];
+
+const ACCESS_CHIP = {
+  restricted: "bg-error-container text-on-error-container",
+  confidential: "bg-goldenrod-container text-on-goldenrod",
+  team: "bg-surface-container text-on-surface",
+  public: "bg-tertiary-fixed text-on-tertiary-fixed",
+};
+
+function AccessChip({ level }) {
+  return (
+    <span className={`inline-flex items-center gap-1 px-1.5 py-px rounded-[2px] text-[11px] font-semibold capitalize ${ACCESS_CHIP[level] || ACCESS_CHIP.team}`}>
+      {(level === "restricted" || level === "confidential") && <Lock size={10} aria-hidden="true" />}
+      {level || "team"}
+    </span>
+  );
+}
+
+function ReviewMark({ state }) {
+  const r = REVIEW[state] || REVIEW.pending;
+  const Icon = state === "approved" ? Check : state === "rejected" ? X : state === "corrected" ? PencilLine : null;
+  return (
+    <span className={`inline-flex items-center gap-1 text-[12px] font-semibold whitespace-nowrap ${r.text}`}>
+      {Icon ? <Icon size={13} strokeWidth={2.5} aria-hidden="true" /> : <span aria-hidden="true" className="w-2 h-2 rounded-full border-[1.5px] border-current" />}
+      {r.label}
+    </span>
+  );
+}
+
+/* Source excerpt with a line-number gutter; the quote is highlighted canary where it sits. */
+function SourceExcerpt({ text, quote, lineStart }) {
+  const lines = (text || "").split("\n");
+  const idx = quote ? text.indexOf(quote) : -1;
+  const starts = lines.reduce((acc, l, i) => (i === 0 ? [0] : [...acc, acc[i - 1] + lines[i - 1].length + 1]), []);
+  return (
+    <div className="font-mono text-[12.5px] leading-[20px] bg-surface-container-low border border-outline-variant rounded-[2px] max-h-56 overflow-auto">
+      <table className="w-full border-collapse">
+        <tbody>
+          {lines.map((line, i) => {
+            const start = starts[i];
+            const end = start + line.length;
+            let content = line || " ";
+            if (idx !== -1 && idx < end && idx + quote.length > start) {
+              const a = Math.max(idx, start) - start;
+              const b = Math.min(idx + quote.length, end) - start;
+              content = (
+                <>
+                  {line.slice(0, a)}
+                  <mark className="bg-canary text-on-canary rounded-[1px] px-px">{line.slice(a, b)}</mark>
+                  {line.slice(b)}
+                </>
+              );
+            }
+            return (
+              <tr key={i}>
+                <td className="select-none text-right align-top pl-2 pr-3 text-outline tnum border-r border-outline-variant w-10">
+                  {(lineStart || 1) + i}
+                </td>
+                <td className="pl-3 pr-3 whitespace-pre-wrap break-words text-on-surface">{content}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+export default function ReviewQueuePage({ onRefreshStats, initialClaimId, onSelectClaimId }) {
   const [claims, setClaims] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Filters
   const [statusFilter, setStatusFilter] = useState("all");
   const [kindFilter, setKindFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
+  const [reviewFilter, setReviewFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Selected claim for detail panel
-  const [selectedClaim, setSelectedClaim] = useState(null);
+  const [selectedId, setSelectedId] = useState(initialClaimId ?? null);
   const [claimContext, setClaimContext] = useState(null);
   const [claimVersions, setClaimVersions] = useState([]);
   const [isDetailLoading, setIsDetailLoading] = useState(false);
 
-  // Modals / Action States
-  const [rejectModalOpen, setRejectModalOpen] = useState(false);
+  const [dialog, setDialog] = useState(null); // "reject" | "edit" | "conflict" | "bulk"
   const [rejectReason, setRejectReason] = useState("");
-  const [editModalOpen, setEditModalOpen] = useState(false);
   const [editText, setEditText] = useState("");
   const [editNote, setEditNote] = useState("");
-  const [isSubmittingAction, setIsSubmittingAction] = useState(false);
-  const [actionSuccessMessage, setActionSuccessMessage] = useState(null);
-  const [copiedQuote, setCopiedQuote] = useState(false);
+  const [conflictNote, setConflictNote] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [notice, setNotice] = useState(null);
+  const [copied, setCopied] = useState(null);
 
-  const [isBulkApproving, setIsBulkApproving] = useState(false);
+  const searchRef = useRef(null);
+  const detailReq = useRef(0);
+  const listRef = useRef(null);
 
-  // Load claims
-  const loadClaims = async () => {
-    setIsLoading(true);
+  const flash = (n, ms = 3500) => {
+    setNotice(n);
+    if (ms) setTimeout(() => setNotice((cur) => (cur === n ? null : cur)), ms);
+  };
+
+  const loadClaims = useCallback(async () => {
     setError(null);
     try {
-      const data = await api.getClaims({
-        projectId: 1,
-        role: "lead",
-        status: statusFilter,
-        type: typeFilter,
-      });
-      setClaims(data || []);
-      if (data && data.length > 0 && !selectedClaim) {
-        selectClaim(data[0]);
-      } else if (selectedClaim) {
-        const updated = data.find((c) => c.id === selectedClaim.id);
-        if (updated) setSelectedClaim(updated);
-      }
+      const data = await api.getClaims({ projectId: 1, role: "lead" });
+      setClaims(Array.isArray(data) ? data : []);
+      return Array.isArray(data) ? data : [];
     } catch (err) {
-      setError(err.message || "Failed to load claims");
+      setError(formatErrorMessage(err));
+      return null;
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadClaims();
-  }, [statusFilter, typeFilter]);
+  }, [loadClaims]);
 
-  // Load context and versions when a claim is selected
-  const selectClaim = async (claim) => {
-    setSelectedClaim(claim);
+  const selectedClaim = useMemo(() => claims.find((c) => c.id === selectedId) || null, [claims, selectedId]);
+
+  const loadDetail = useCallback(async (claim) => {
+    const req = ++detailReq.current;
     setClaimContext(null);
     setClaimVersions([]);
-    if (claim.withheld) return;
-
-    setIsDetailLoading(true);
-    try {
-      const [ctx, vers] = await Promise.all([
-        api.getClaimContext(claim.id).catch(() => null),
-        api.getClaimVersions(claim.id).catch(() => null),
-      ]);
-      setClaimContext(ctx);
-      setClaimVersions(vers?.versions || []);
-    } catch (err) {
-      console.error("Failed to load claim detail context", err);
-    } finally {
+    if (!claim || claim.withheld) {
       setIsDetailLoading(false);
+      return;
     }
+    setIsDetailLoading(true);
+    const [ctx, vers] = await Promise.all([
+      api.getClaimContext(claim.id).catch(() => null),
+      api.getClaimVersions(claim.id).catch(() => null),
+    ]);
+    if (req !== detailReq.current) return; // a newer selection won
+    setClaimContext(ctx);
+    setClaimVersions(vers?.versions || []);
+    setIsDetailLoading(false);
+  }, []);
+
+  const typeOptions = useMemo(() => [...new Set(claims.map((c) => c.type).filter(Boolean))].sort(), [claims]);
+
+  const filteredClaims = useMemo(() => {
+    const q = searchTerm.trim().toLowerCase().replace(/^#/, "");
+    return claims.filter((c) => {
+      if (statusFilter !== "all" && c.status !== statusFilter) return false;
+      if (kindFilter !== "all" && c.kind !== kindFilter) return false;
+      if (typeFilter !== "all" && c.type !== typeFilter) return false;
+      if (reviewFilter === "pending" && c.review_state !== "pending") return false;
+      if (reviewFilter === "decided" && c.review_state === "pending") return false;
+      if (q) {
+        const hay = `${c.id} ${c.text || ""} ${c.type || ""} ${(c.evidence || []).map((e) => e.quote).join(" ")}`.toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+  }, [claims, statusFilter, kindFilter, typeFilter, reviewFilter, searchTerm]);
+
+  const filtersActive = statusFilter !== "all" || kindFilter !== "all" || typeFilter !== "all" || reviewFilter !== "all" || searchTerm;
+  const clearFilters = () => {
+    setStatusFilter("all");
+    setKindFilter("all");
+    setTypeFilter("all");
+    setReviewFilter("all");
+    setSearchTerm("");
   };
 
-  // Actions: Approve
-  const handleApprove = async () => {
-    if (!selectedClaim) return;
-    setIsSubmittingAction(true);
-    try {
-      await api.approveClaim(selectedClaim.id, { role: "lead", note: "Approved via Review Queue UI" });
-      setActionSuccessMessage(`Claim #${selectedClaim.id} approved!`);
-      setTimeout(() => setActionSuccessMessage(null), 3500);
-      await loadClaims();
-      if (onRefreshStats) onRefreshStats();
-      const vers = await api.getClaimVersions(selectedClaim.id).catch(() => null);
-      if (vers?.versions) setClaimVersions(vers.versions);
-    } catch (err) {
-      alert("Approve failed: " + formatErrorMessage(err));
-    } finally {
-      setIsSubmittingAction(false);
-    }
-  };
-
-  // Actions: Reject
-  const handleRejectConfirm = async () => {
-    if (!selectedClaim || !rejectReason.trim()) return;
-    setIsSubmittingAction(true);
-    try {
-      await api.rejectClaim(selectedClaim.id, { role: "lead", reason: rejectReason.trim() });
-      setRejectModalOpen(false);
-      setRejectReason("");
-      setActionSuccessMessage(`Claim #${selectedClaim.id} rejected.`);
-      setTimeout(() => setActionSuccessMessage(null), 3500);
-      await loadClaims();
-      if (onRefreshStats) onRefreshStats();
-    } catch (err) {
-      alert("Reject failed: " + formatErrorMessage(err));
-    } finally {
-      setIsSubmittingAction(false);
-    }
-  };
-
-  // Actions: Edit
-  const handleEditConfirm = async () => {
-    if (!selectedClaim || !editText.trim()) return;
-    setIsSubmittingAction(true);
-    try {
-      await api.editClaim(selectedClaim.id, {
-        role: "lead",
-        correctedText: editText.trim(),
-        note: editNote.trim() || undefined,
+  const select = useCallback(
+    (claim, { reveal = false } = {}) => {
+      if (!claim) return;
+      setSelectedId(claim.id);
+      onSelectClaimId?.(claim.id);
+      loadDetail(claim);
+      requestAnimationFrame(() => {
+        document.getElementById(`claim-row-${claim.id}`)?.scrollIntoView({ block: "nearest" });
+        if (reveal && window.matchMedia("(max-width: 1023px)").matches) {
+          document.getElementById("inspect-claim-header")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
       });
-      setEditModalOpen(false);
-      setActionSuccessMessage(`Claim #${selectedClaim.id} corrected (Version incremented).`);
-      setTimeout(() => setActionSuccessMessage(null), 3500);
-      await loadClaims();
-      if (onRefreshStats) onRefreshStats();
-      const vers = await api.getClaimVersions(selectedClaim.id).catch(() => null);
-      if (vers?.versions) setClaimVersions(vers.versions);
-    } catch (err) {
-      alert("Edit failed: " + formatErrorMessage(err));
-    } finally {
-      setIsSubmittingAction(false);
+    },
+    [loadDetail, onSelectClaimId]
+  );
+
+  // First load: open the claim in the address, else the first one.
+  const didInit = useRef(false);
+  useEffect(() => {
+    if (didInit.current || !claims.length) return;
+    didInit.current = true;
+    const fromHash = initialClaimId ? claims.find((c) => c.id === initialClaimId) : null;
+    if (initialClaimId && !fromHash) flash({ tone: "warn", text: `Claim #${initialClaimId} does not exist. Showing the first claim instead.` }, 5000);
+    select(fromHash || claims[0]);
+  }, [claims, initialClaimId, select]);
+
+  const step = useCallback(
+    (dir) => {
+      if (!filteredClaims.length) return;
+      const i = filteredClaims.findIndex((c) => c.id === selectedId);
+      const next = i === -1 ? filteredClaims[0] : filteredClaims[Math.min(filteredClaims.length - 1, Math.max(0, i + dir))];
+      select(next);
+    },
+    [filteredClaims, selectedId, select]
+  );
+
+  const nextUnchecked = (list, fromId) => {
+    const i = list.findIndex((c) => c.id === fromId);
+    const after = list.slice(i + 1).concat(list.slice(0, Math.max(0, i)));
+    return after.find((c) => c.review_state === "pending" && c.id !== fromId) || null;
+  };
+
+  const afterDecision = async (claimId, message, { advance = false } = {}) => {
+    // Pick the next line from the order the reviewer was looking at, before the list re-sorts.
+    const candidate = advance ? nextUnchecked(filteredClaims, claimId) : null;
+    const fresh = await loadClaims();
+    onRefreshStats?.();
+    flash({ tone: "ok", text: message });
+    if (!fresh) return;
+    const next = candidate ? fresh.find((c) => c.id === candidate.id && c.review_state === "pending") : null;
+    if (next) select(next);
+    else {
+      const vers = await api.getClaimVersions(claimId).catch(() => null);
+      setClaimVersions(vers?.versions || []);
     }
   };
 
-  // Actions: Bulk Approve Verified (demo shortcut)
-  const handleBulkApproveVerified = async () => {
-    if (!window.confirm("Approve all Verified claims? Conflicting and Missing claims will be skipped.")) return;
-    setIsBulkApproving(true);
+  const runApprove = async (note) => {
+    if (!selectedClaim || busy) return;
+    const id = selectedClaim.id;
+    setBusy(true);
     try {
-      await api.bulkApproveVerified({ projectId: 1, role: "lead" });
-      setActionSuccessMessage("All verified claims approved for handover!");
-      setTimeout(() => setActionSuccessMessage(null), 4000);
-      await loadClaims();
-      if (onRefreshStats) onRefreshStats();
+      await api.approveClaim(id, { role: "lead", note });
+      setDialog(null);
+      await afterDecision(id, `Claim #${id} approved.`, { advance: true });
     } catch (err) {
-      alert("Bulk approve failed: " + formatErrorMessage(err));
+      flash({ tone: "error", text: "Approve failed: " + formatErrorMessage(err) }, 0);
     } finally {
-      setIsBulkApproving(false);
+      setBusy(false);
     }
   };
 
-  // Copy Quote Handler
-  const handleCopyQuote = (text) => {
-    if (!text) return;
-    navigator.clipboard.writeText(text);
-    setCopiedQuote(true);
-    setTimeout(() => setCopiedQuote(false), 2000);
+  const handleApprove = () => {
+    if (!selectedClaim || busy || selectedClaim.withheld) return;
+    if (selectedClaim.review_state === "approved") return;
+    if (selectedClaim.status === "conflicting") {
+      setConflictNote("");
+      setDialog("conflict");
+      return;
+    }
+    runApprove("Approved in the review queue");
   };
 
-  // Derived counts for filters
-  const derivedCount = claims.filter((c) => c.kind === "derived").length;
-  const interpretedCount = claims.filter((c) => c.kind === "interpreted").length;
+  const openReject = () => {
+    if (!selectedClaim || busy || selectedClaim.withheld) return;
+    setRejectReason("");
+    setDialog("reject");
+  };
+  const openEdit = () => {
+    if (!selectedClaim || busy || selectedClaim.withheld) return;
+    setEditText(selectedClaim.text || "");
+    setEditNote("");
+    setDialog("edit");
+  };
 
-  // Filtered claims list
-  const filteredClaims = claims.filter((claim) => {
-    if (kindFilter !== "all" && claim.kind !== kindFilter) return false;
-    if (searchTerm) {
-      const q = searchTerm.toLowerCase();
-      const text = (claim.text || "").toLowerCase();
-      const id = String(claim.id);
-      if (!text.includes(q) && !id.includes(q)) return false;
+  const handleRejectConfirm = async () => {
+    const reason = rejectReason.trim();
+    if (!selectedClaim || !reason || busy) return;
+    const id = selectedClaim.id;
+    setBusy(true);
+    try {
+      await api.rejectClaim(id, { role: "lead", reason });
+      setDialog(null);
+      await afterDecision(id, `Claim #${id} rejected.`, { advance: true });
+    } catch (err) {
+      flash({ tone: "error", text: "Reject failed: " + formatErrorMessage(err) }, 0);
+    } finally {
+      setBusy(false);
     }
-    return true;
+  };
+
+  const editUnchanged = selectedClaim && editText.trim() === (selectedClaim.text || "").trim();
+  const handleEditConfirm = async () => {
+    if (!selectedClaim || !editText.trim() || editUnchanged || busy) return;
+    const id = selectedClaim.id;
+    setBusy(true);
+    try {
+      await api.editClaim(id, { role: "lead", correctedText: editText.trim(), note: editNote.trim() || undefined });
+      setDialog(null);
+      await afterDecision(id, `Claim #${id} corrected. A new version was recorded.`);
+    } catch (err) {
+      flash({ tone: "error", text: "Correction failed: " + formatErrorMessage(err) }, 0);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const pendingVerified = claims.filter((c) => c.status === "verified" && c.review_state === "pending").length;
+  const handleBulk = async () => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      const res = await api.bulkApproveVerified({ projectId: 1, role: "lead" });
+      setDialog(null);
+      const n = res?.approved ?? res?.count ?? pendingVerified;
+      await loadClaims();
+      onRefreshStats?.();
+      flash({ tone: "ok", text: `${n} quote-matched claim${n === 1 ? "" : "s"} approved. Conflicting, inferred and missing claims still need a person.` }, 5000);
+    } catch (err) {
+      flash({ tone: "error", text: "Bulk approve failed: " + formatErrorMessage(err) }, 0);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const copy = async (what, text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(what);
+      setTimeout(() => setCopied(null), 1800);
+    } catch {
+      flash({ tone: "warn", text: "Copy is blocked in this browser. Select the text and copy it by hand." });
+    }
+  };
+
+  // Keyboard: J/K move, A/E/R act, / searches. Off while typing or while a dialog is open.
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const t = e.target;
+      if (t && (t.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(t.tagName))) {
+        if (e.key === "Escape" && t === searchRef.current) t.blur();
+        return;
+      }
+      if (document.querySelector("dialog[open]")) return;
+      const k = e.key.toLowerCase();
+      if (k === "j" || e.key === "ArrowDown") { e.preventDefault(); step(1); }
+      else if (k === "k" || e.key === "ArrowUp") { e.preventDefault(); step(-1); }
+      else if (k === "a") { e.preventDefault(); handleApprove(); }
+      else if (k === "r") { e.preventDefault(); openReject(); }
+      else if (k === "e") { e.preventDefault(); openEdit(); }
+      else if (e.key === "/") { e.preventDefault(); searchRef.current?.focus(); }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
   });
 
-  const totalCount = stats?.total ?? claims.length;
-  const verifiedCount = stats?.by_status?.verified ?? claims.filter((c) => c.status === "verified").length;
-  const inferredCount = stats?.by_status?.inferred ?? claims.filter((c) => c.status === "inferred").length;
-  const conflictingCount = stats?.by_status?.conflicting ?? claims.filter((c) => c.status === "conflicting").length;
-  const missingCount = stats?.by_status?.missing ?? claims.filter((c) => c.status === "missing").length;
+  const count = (key, val) => claims.filter((c) => c[key] === val).length;
+  const contexts = claimContext?.contexts || [];
 
-  const currentContext = claimContext?.contexts?.[0];
-  const currentQuote = currentContext?.quote || selectedClaim?.evidence?.[0]?.quote || "";
-  const currentChunkText = currentContext?.chunk_text || "";
-
-  // Highlight quote inside source chunk text
-  const renderHighlightedChunk = (text, quote) => {
-    if (!text) return null;
-    if (!quote) return <span>{text}</span>;
-    const idx = text.indexOf(quote);
-    if (idx === -1) return <span>{text}</span>;
-    const before = text.slice(0, idx);
-    const matched = text.slice(idx, idx + quote.length);
-    const after = text.slice(idx + quote.length);
+  if (isLoading) {
     return (
-      <span>
-        {before}
-        <mark className="bg-primary-fixed text-on-primary-fixed font-semibold px-0.5 rounded">{matched}</mark>
-        {after}
-      </span>
+      <div className="flex flex-col gap-6" aria-busy="true" aria-label="Loading claims">
+        <Skeleton className="h-9 w-72" />
+        <Skeleton className="h-10 w-full" />
+        <div className="grid lg:grid-cols-12 gap-6">
+          <div className="lg:col-span-5 flex flex-col gap-2">{Array.from({ length: 7 }, (_, i) => <Skeleton key={i} className="h-20" />)}</div>
+          <Skeleton className="lg:col-span-7 h-[480px]" />
+        </div>
+      </div>
     );
-  };
+  }
+
+  if (error && !claims.length) {
+    return (
+      <div role="alert" className="panel max-w-xl mx-auto mt-10 p-6 flex flex-col gap-3">
+        <h1 className="text-[20px] font-bold">The claims could not be loaded</h1>
+        <p className="text-[14px] text-on-surface-variant">{error}. The server may still be waking up.</p>
+        <div><Button variant="primary" onClick={() => { setIsLoading(true); loadClaims(); }}><RotateCw size={15} aria-hidden="true" />Try again</Button></div>
+      </div>
+    );
+  }
+
+  if (!claims.length) {
+    return (
+      <div className="panel max-w-xl mx-auto mt-10 p-6 flex flex-col gap-3">
+        <h1 className="text-[20px] font-bold">No claims on the manifest yet</h1>
+        <p className="text-[14px] text-on-surface-variant">
+          The sample project has not been analysed. Use <strong>Reset sample</strong> in the top bar to load it; it takes a few seconds.
+        </p>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex flex-col w-full gap-space-lg">
-      {/* Header & Primary Queue Action Toolbar */}
-      <div className="flex flex-col gap-space-md mb-space-sm">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
-          <div>
-            <div className="flex items-center gap-space-sm mb-1">
-              <span className="font-code-sm text-code-sm text-primary uppercase tracking-wider font-semibold">
-                Audit Pipeline // Review Triage
-              </span>
-              <span className="w-1 h-1 rounded-full bg-outline-variant"></span>
-              <span className="font-label-sm text-label-sm text-on-surface-variant font-medium">
-                Dual-Track Verification
-              </span>
-            </div>
-            <h1 className="font-headline-lg text-headline-lg text-on-surface font-bold">Claim Review Queue</h1>
-            <p className="font-body-md text-body-md text-on-surface-variant mt-0.5 max-w-3xl">
-              Audit and approve candidate claims before compiling the handover dossier. Automated checks reduce errors and a human approves.
-            </p>
-          </div>
-
-          {/* Mass Action Button */}
-          <div className="flex flex-col sm:items-end gap-1.5 shrink-0">
-            <button
-              id="approve-all-btn"
-              onClick={handleBulkApproveVerified}
-              disabled={isBulkApproving}
-              className="px-space-md py-2 bg-primary hover:bg-primary-container text-on-primary rounded-lg font-headline-sm text-headline-sm transition-all shadow-sm flex items-center justify-center gap-space-sm cursor-pointer disabled:opacity-50"
-            >
-              <span className={`material-symbols-outlined text-[18px] ${isBulkApproving ? "animate-spin" : ""}`}>
-                {isBulkApproving ? "refresh" : "done_all"}
-              </span>
-              <span>{isBulkApproving ? "Approving Verified..." : `Approve All Verified (${verifiedCount})`}</span>
-            </button>
-            <span className="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1">
-              <span className="material-symbols-outlined text-[14px] text-error">gavel</span>
-              <span>Conflicting and Missing claims require manual review</span>
-            </span>
-          </div>
+    <div className="flex flex-col gap-5">
+      {/* Header */}
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+        <div className="max-w-2xl">
+          <h1 className="text-[26px] sm:text-[28px] leading-tight font-extrabold tracking-[-0.015em]">Check the claims</h1>
+          <p className="text-[15px] leading-6 text-on-surface-variant mt-1.5">
+            Each line is something Backstop believes Riya knew. Read its proof, then approve, correct or reject it. Only approved lines reach the handover.
+          </p>
         </div>
-
-        {/* Action success message */}
-        {actionSuccessMessage && (
-          <div className="p-space-sm rounded-lg bg-surface-container text-on-surface font-label-md text-label-md flex items-center gap-2 shadow-xs border border-tertiary">
-            <span className="material-symbols-outlined text-tertiary text-[18px]">check_circle</span>
-            <span>{actionSuccessMessage}</span>
-          </div>
-        )}
-
-        {/* Filter Tooling Ribbon */}
-        <div className="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-space-md border border-surface-container">
-          <div className="flex flex-wrap items-center gap-y-3 gap-x-6">
-            {/* Status Filters */}
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mr-1 font-semibold">
-                Status:
-              </span>
-              <button
-                onClick={() => setStatusFilter("all")}
-                className={`filter-status-chip px-2.5 py-1 rounded-lg font-label-md text-label-md transition-colors cursor-pointer ${
-                  statusFilter === "all"
-                    ? "bg-surface-container text-on-surface font-bold"
-                    : "bg-surface-container-low text-on-surface-variant hover:bg-surface-container"
-                }`}
-              >
-                All ({totalCount})
-              </button>
-              <button
-                onClick={() => setStatusFilter("verified")}
-                className={`filter-status-chip px-2.5 py-1 rounded-lg font-label-md text-label-md transition-colors flex items-center gap-1 cursor-pointer ${
-                  statusFilter === "verified"
-                    ? "bg-tertiary-fixed text-on-tertiary-fixed font-bold"
-                    : "bg-surface-container-low text-tertiary hover:bg-surface-container"
-                }`}
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-tertiary"></span>Verified ({verifiedCount})
-              </button>
-              <button
-                onClick={() => setStatusFilter("inferred")}
-                className={`filter-status-chip px-2.5 py-1 rounded-lg font-label-md text-label-md transition-colors flex items-center gap-1 cursor-pointer ${
-                  statusFilter === "inferred"
-                    ? "bg-surface-container-high text-on-surface font-bold"
-                    : "bg-surface-container-low text-on-surface hover:bg-surface-container"
-                }`}
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-outline"></span>Inferred ({inferredCount})
-              </button>
-              <button
-                onClick={() => setStatusFilter("conflicting")}
-                className={`filter-status-chip px-2.5 py-1 rounded-lg font-label-md text-label-md transition-colors flex items-center gap-1 cursor-pointer ${
-                  statusFilter === "conflicting"
-                    ? "bg-error-container text-on-error-container font-bold"
-                    : "bg-surface-container-low text-error hover:bg-surface-container"
-                }`}
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-error"></span>Conflicting ({conflictingCount})
-              </button>
-              <button
-                onClick={() => setStatusFilter("missing")}
-                className={`filter-status-chip px-2.5 py-1 rounded-lg font-label-md text-label-md transition-colors flex items-center gap-1 cursor-pointer ${
-                  statusFilter === "missing"
-                    ? "bg-surface-container-high text-outline font-bold"
-                    : "bg-surface-container-low text-on-surface-variant hover:bg-surface-container"
-                }`}
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-outline-variant"></span>Missing ({missingCount})
-              </button>
-            </div>
-
-            <div className="h-4 w-px bg-surface-container hidden lg:block"></div>
-
-            {/* Kind Filters */}
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mr-1 font-semibold">
-                Derivation:
-              </span>
-              <button
-                onClick={() => setKindFilter("all")}
-                className={`filter-kind-chip px-2.5 py-1 rounded-lg font-label-md text-label-md cursor-pointer ${
-                  kindFilter === "all" ? "bg-surface-container text-on-surface font-bold" : "bg-surface-container-low text-on-surface-variant"
-                }`}
-              >
-                All
-              </button>
-              <button
-                onClick={() => setKindFilter("derived")}
-                className={`filter-kind-chip px-2.5 py-1 rounded-lg font-label-md text-label-md cursor-pointer ${
-                  kindFilter === "derived" ? "bg-secondary-fixed text-on-secondary-fixed font-bold" : "bg-surface-container-low text-on-surface"
-                }`}
-              >
-                Derived ({derivedCount})
-              </button>
-              <button
-                onClick={() => setKindFilter("interpreted")}
-                className={`filter-kind-chip px-2.5 py-1 rounded-lg font-label-md text-label-md cursor-pointer ${
-                  kindFilter === "interpreted" ? "bg-secondary-fixed text-on-secondary-fixed font-bold" : "bg-surface-container-low text-on-surface"
-                }`}
-              >
-                Interpreted ({interpretedCount})
-              </button>
-            </div>
-
-            <div className="h-4 w-px bg-surface-container hidden xl:block"></div>
-
-            {/* Type Filters */}
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mr-1 font-semibold">
-                Type:
-              </span>
-              {["all", "ownership", "decision", "blocker", "risk", "dependency"].map((t) => (
-                <button
-                  key={t}
-                  onClick={() => setTypeFilter(t)}
-                  className={`px-2 py-0.5 rounded font-label-sm text-label-sm cursor-pointer capitalize ${
-                    typeFilter === t
-                      ? "bg-surface-container text-primary font-bold"
-                      : "bg-surface-container-low text-on-surface-variant hover:bg-surface-container"
-                  }`}
-                >
-                  {t === "all" ? "All" : t}
-                </button>
-              ))}
-            </div>
-          </div>
+        <div className="flex flex-col items-start lg:items-end gap-1.5 shrink-0">
+          <Button id="approve-all-btn" variant="outline" onClick={() => setDialog("bulk")} disabled={busy || pendingVerified === 0}>
+            <CheckCheck size={16} aria-hidden="true" />
+            {pendingVerified === 0 ? "All quote-matched claims approved" : `Approve all quote-matched (${pendingVerified})`}
+          </Button>
+          <span className="text-[12px] text-on-surface-variant">Conflicting, inferred and missing claims always need a person.</span>
         </div>
       </div>
 
-      {/* Main Split Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
-        {/* Left Column: Claims Ledger List (7 cols) */}
-        <div className="lg:col-span-7 flex flex-col gap-space-md">
-          {/* Sorting & Ledger Header */}
-          <div className="flex items-center justify-between px-space-xs">
-            <div className="flex items-center gap-space-sm">
-              <span className="font-headline-sm text-headline-sm text-on-surface font-semibold">
-                Candidate Records
-              </span>
-              <span className="px-2 py-0.5 bg-surface-container font-code-sm text-code-sm rounded text-primary">
-                Sorted by Risk Priority
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="font-label-sm text-label-sm text-on-surface-variant">
-                Showing {filteredClaims.length} of {claims.length}
-              </span>
-            </div>
-          </div>
+      {/* Signature: the manifest tally */}
+      <div className="panel px-4 py-3">
+        <TallyStrip claims={claims} selectedId={selectedId} onSelect={(c) => select(c, { reveal: true })} />
+      </div>
 
-          {/* Ledger Cards Container */}
-          <div className="flex flex-col gap-space-sm lg:max-h-[calc(100vh-176px)] lg:overflow-y-auto pr-2" id="claims-ledger-container">
-            {isLoading ? (
-              <div className="p-space-xl text-center bg-surface-container-lowest rounded-xl border border-surface-container">
-                <span className="material-symbols-outlined text-[28px] text-primary animate-spin">refresh</span>
-                <p className="font-label-md text-label-md text-on-surface-variant mt-2">Loading candidate claims...</p>
-              </div>
-            ) : filteredClaims.length === 0 ? (
-              <div className="p-space-xl text-center bg-surface-container-lowest rounded-xl border border-surface-container">
-                <p className="font-label-md text-label-md text-on-surface-variant">No claims match the selected filters.</p>
-              </div>
-            ) : (
-              filteredClaims.map((claim) => {
-                const isSelected = selectedClaim?.id === claim.id;
+      {notice && (
+        <div
+          role={notice.tone === "error" ? "alert" : "status"}
+          className={`rise-in flex items-start gap-2 px-3 py-2 rounded-[3px] border text-[14px] ${
+            notice.tone === "error"
+              ? "bg-error-container text-on-error-container border-error/40"
+              : notice.tone === "warn"
+              ? "bg-goldenrod-container text-on-goldenrod border-goldenrod/40"
+              : "bg-tertiary-fixed text-on-tertiary-fixed border-tertiary/30"
+          }`}
+        >
+          <span className="flex-1">{notice.text}</span>
+          <button type="button" onClick={() => setNotice(null)} aria-label="Dismiss" className="p-0.5 cursor-pointer opacity-75 hover:opacity-100">
+            <X size={16} aria-hidden="true" />
+          </button>
+        </div>
+      )}
 
-                return (
-                  <div
-                    key={claim.id}
-                    onClick={() => selectClaim(claim)}
-                    className={`claim-row group p-space-md rounded-xl transition-all cursor-pointer relative ${
-                      isSelected
-                        ? "bg-surface-container-lowest shadow-sm ring-2 ring-primary bg-surface-container-low"
-                        : "bg-surface-container-lowest shadow-sm hover:shadow-md border border-surface-container"
-                    } ${claim.withheld ? "opacity-60" : ""}`}
-                  >
-                    <div className="flex items-start justify-between gap-space-sm mb-2">
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        {/* Status Chip */}
-                        {claim.status === "verified" && (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-label-sm text-label-sm bg-tertiary-fixed text-on-tertiary-fixed font-semibold">
-                            <span className="w-1.5 h-1.5 rounded-full bg-tertiary"></span>Verified
-                          </span>
-                        )}
-                        {claim.status === "inferred" && (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-label-sm text-label-sm bg-surface-container-high text-on-surface-variant font-semibold">
-                            <span className="w-1.5 h-1.5 rounded-full bg-outline"></span>Inferred
-                          </span>
-                        )}
-                        {claim.status === "conflicting" && (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-label-sm text-label-sm bg-error-container text-on-error-container font-semibold">
-                            <span className="material-symbols-outlined text-[12px]">error</span>Conflicting
-                          </span>
-                        )}
-                        {claim.status === "missing" && (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-label-sm text-label-sm bg-surface-container-high text-outline font-semibold">
-                            <span className="w-1.5 h-1.5 rounded-full bg-outline-variant"></span>Missing Evidence
-                          </span>
-                        )}
+      {/* Filters */}
+      <div className="flex flex-col xl:flex-row xl:items-center gap-3">
+        <label className="relative flex-1 min-w-0 xl:max-w-sm">
+          <span className="sr-only">Search claims</span>
+          <Search size={16} aria-hidden="true" className="absolute left-2.5 top-1/2 -translate-y-1/2 text-outline" />
+          <input
+            ref={searchRef}
+            type="search"
+            value={searchTerm}
+            maxLength={120}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search text, quote or #id"
+            className="w-full h-9 pl-8 pr-9 rounded-[3px] border border-outline-variant bg-surface-container-lowest text-[14px] placeholder:text-outline focus:outline-2 focus:outline-primary focus:border-primary"
+          />
+          <span className="kbd absolute right-2 top-1/2 -translate-y-1/2 text-outline pointer-events-none hidden sm:inline-flex">/</span>
+        </label>
 
-                        {/* Kind Chip */}
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-md font-label-sm text-label-sm bg-secondary-fixed text-on-secondary-fixed font-semibold capitalize">
-                          {claim.kind}
-                        </span>
-
-                        {/* Type Chip */}
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-md font-label-sm text-label-sm bg-surface-container text-on-surface-variant capitalize">
-                          {claim.type}
-                        </span>
-                      </div>
-
-                      {/* Review State */}
-                      <span className="font-code-sm text-code-sm text-outline capitalize">
-                        {claim.review_state}
-                      </span>
-                    </div>
-
-                    {/* Claim Title with Line Clamp and Ellipsis */}
-                    <div
-                      className="font-headline-sm text-headline-sm text-on-surface mb-2 font-semibold line-clamp-2 break-words"
-                      style={{
-                        display: "-webkit-box",
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: "vertical",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                      }}
-                      title={`Claim #${claim.id}: ${claim.text}`}
-                    >
-                      Claim #{claim.id}: {claim.withheld
-                        ? "Withheld due to role restrictions (" + (claim.access_level || "Restricted") + ")"
-                        : claim.text}
-                    </div>
-
-                    {/* Metadata Footer */}
-                    <div className="flex items-center justify-between text-on-surface-variant pt-2 border-t border-surface-container/60">
-                      <div className="flex items-center gap-space-md font-label-sm text-label-sm">
-                        <span className="flex items-center gap-1">
-                          <span className="material-symbols-outlined text-[14px]">lock</span>
-                          {claim.access_level}
-                        </span>
-                        <span className="text-outline-variant">•</span>
-                        <span className="font-code-sm text-code-sm">
-                          v{claim.current_version}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        {isSelected ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-container font-label-sm text-label-sm text-primary font-semibold">
-                            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>Active Inspection
-                          </span>
-                        ) : claim.review_state === "approved" ? (
-                          <span className="inline-flex items-center gap-1 font-label-sm text-label-sm text-tertiary font-semibold">
-                            <span className="material-symbols-outlined text-[14px]">check_circle</span>Approved
-                          </span>
-                        ) : claim.review_state === "rejected" ? (
-                          <span className="inline-flex items-center gap-1 font-label-sm text-label-sm text-error font-semibold">
-                            Rejected
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 font-label-sm text-label-sm text-on-surface-variant">
-                            Pending Review
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
+        <div role="group" aria-label="Filter by check status" className="flex flex-wrap gap-1">
+          {[["all", "All", claims.length], ...["verified", "inferred", "conflicting", "missing"].map((k) => [k, STATUS[k].short, count("status", k)])].map(([id, label, n]) => {
+            const on = statusFilter === id;
+            return (
+              <button
+                key={id}
+                type="button"
+                aria-pressed={on}
+                title={STATUS[id]?.help}
+                onClick={() => setStatusFilter(id)}
+                className={`h-9 inline-flex items-center gap-1.5 px-2.5 rounded-[3px] border text-[13px] font-semibold cursor-pointer transition-colors ${
+                  on ? "bg-secondary text-on-secondary border-secondary" : "bg-surface-container-lowest border-outline-variant text-on-surface hover:border-outline"
+                }`}
+              >
+                {id !== "all" && <span aria-hidden="true" className={`w-1.5 h-1.5 rounded-full ${STATUS[id].dot}`} />}
+                {label}
+                <span className={`tnum text-[12px] ${on ? "text-on-ink-muted" : "text-on-surface-variant"}`}>{n}</span>
+              </button>
+            );
+          })}
         </div>
 
-        {/* Right Column: Detail & Verification Drawer (5 cols) */}
-        <div className="lg:col-span-5 lg:sticky lg:top-[112px] lg:max-h-[calc(100vh-124px)] flex flex-col">
-          {selectedClaim ? (
-            <div className="bg-surface-container-lowest rounded-xl shadow-sm border border-surface-container flex flex-col max-h-[calc(100vh-124px)] overflow-hidden">
-              {/* Scrollable Inspection Content */}
-              <div className="p-space-lg overflow-y-auto flex-1 flex flex-col gap-space-lg">
-                {/* Header & Target Claim */}
-                <div className="flex items-start justify-between gap-space-md">
-                  <div className="flex flex-col">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-code-sm text-code-sm text-primary uppercase font-bold">Inspection Node</span>
-                      <span className="px-1.5 py-0.5 rounded bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm font-semibold capitalize">
-                        {selectedClaim.status}
-                      </span>
-                    </div>
-                    <h2 className="font-headline-md text-headline-md text-on-surface font-semibold break-words" id="inspect-claim-header">
-                      Claim #{selectedClaim.id}: {selectedClaim.text}
-                    </h2>
-                  </div>
-                  <div className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-on-surface-variant shrink-0">
-                    <span className="material-symbols-outlined text-[18px]">
-                      {selectedClaim.status === "verified" ? "verified" : "help"}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Scope & Access Level */}
-                <div className="p-space-sm bg-surface-container-low rounded-lg flex items-center justify-between font-label-sm text-label-sm border border-surface-container/60">
-                  <div className="flex items-center gap-space-sm">
-                    <span className="text-on-surface-variant">Claim Type:</span>
-                    <span className="font-code-sm text-code-sm text-primary font-semibold capitalize">
-                      {selectedClaim.type}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-space-sm">
-                    <span className="text-on-surface-variant">Access Tier:</span>
-                    <span className="font-label-md text-label-md text-on-surface font-semibold capitalize">
-                      {selectedClaim.access_level}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Full Statement */}
-                <div className="flex flex-col gap-1.5">
-                  <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold">
-                    Full Claim Text
-                  </span>
-                  <div className="p-space-md bg-surface-container-low rounded-xl border border-surface-container/60 font-body-md text-body-md text-on-surface leading-relaxed break-words">
-                    {selectedClaim.text}
-                  </div>
-                </div>
-
-                {/* Verbatim Quote & Source Chunk OR Derived Message */}
-                {selectedClaim.kind === "derived" ? (
-                  <div className="p-space-md bg-surface-container-low rounded-xl border border-surface-container/60 space-y-2">
-                    <div className="flex items-center gap-2 font-headline-sm text-headline-sm text-on-surface font-semibold">
-                      <span className="material-symbols-outlined text-secondary text-[20px]">code</span>
-                      <span>Derived from Git History</span>
-                    </div>
-                    <p className="font-body-sm text-body-sm text-on-surface-variant">
-                      Calculated by code from git history; no quote check
-                    </p>
-                    <p className="font-label-sm text-label-sm text-outline">
-                      Ownership and commit concentration metrics are derived by Python scripts inspecting commit author ratios and timestamps.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="flex flex-col gap-space-sm">
-                    <div className="flex items-center justify-between font-label-sm text-label-sm">
-                      <span className="text-on-surface-variant flex items-center gap-1 font-semibold">
-                        <span className="material-symbols-outlined text-[16px] text-primary">format_quote</span>
-                        Exact Source Substring Quote
-                      </span>
-                      <span className="font-code-sm text-code-sm text-outline flex items-center gap-1">
-                        <span className="material-symbols-outlined text-[12px]">link</span>
-                        {currentContext?.source_name || "Source document"}
-                      </span>
-                    </div>
-                    <div className="p-space-md bg-surface-container-low rounded-xl relative group border border-surface-container/60">
-                      <div className="absolute top-2 right-2">
-                        <button
-                          onClick={() => handleCopyQuote(currentQuote)}
-                          className="p-1 rounded hover:bg-surface-container text-on-surface-variant text-[14px] cursor-pointer"
-                          title="Copy exact raw quote"
-                        >
-                          <span className="material-symbols-outlined text-[16px]">
-                            {copiedQuote ? "check" : "content_copy"}
-                          </span>
-                        </button>
-                      </div>
-                      <p className="font-code-sm text-code-sm text-on-surface leading-relaxed pr-6 bg-surface-variant/40 p-2 rounded">
-                        “{currentQuote || "No quote recorded"}”
-                      </p>
-                    </div>
-
-                    {/* Highlighted Chunk */}
-                    {currentChunkText && (
-                      <div className="flex flex-col gap-1">
-                        <span className="font-label-sm text-label-sm text-on-surface-variant font-semibold">
-                          Source Chunk Context ({currentContext?.source_name})
-                        </span>
-                        <div className="p-space-sm bg-surface-container-low rounded-lg font-code-sm text-code-sm text-on-surface-variant leading-relaxed max-h-40 overflow-y-auto border border-surface-container/60">
-                          {renderHighlightedChunk(currentChunkText, currentQuote)}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Actual Stored Check Results */}
-                <div className="flex flex-col gap-space-sm">
-                  <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold">
-                    Stored Verification Check Results
-                  </span>
-                  <div className="p-space-sm bg-surface-container rounded-lg flex items-center justify-between border border-surface-container/60">
-                    <div className="flex items-center gap-space-sm">
-                      <div className="w-6 h-6 rounded-full bg-tertiary-fixed text-on-tertiary-fixed flex items-center justify-center shrink-0">
-                        <span className="material-symbols-outlined text-[14px]">
-                          {selectedClaim.status === "verified" ? "done" : "info"}
-                        </span>
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="font-headline-sm text-headline-sm text-on-surface text-[14px] font-semibold capitalize">
-                          Check Status: {selectedClaim.status}
-                        </span>
-                        <span className="font-body-sm text-body-sm text-on-surface-variant text-[12px]">
-                          {selectedClaim.kind === "derived"
-                            ? "Calculated by code from git history; no quote check"
-                            : selectedClaim.status === "verified"
-                            ? "Substring quote check passed verbatim in source chunk."
-                            : selectedClaim.status === "conflicting"
-                            ? "Discrepancy identified across source artifacts."
-                            : selectedClaim.status === "missing"
-                            ? "Evidence or field missing in source artifact."
-                            : "Inferred statement without exact substring anchor."}
-                        </span>
-                      </div>
-                    </div>
-                    <span className="px-2 py-0.5 rounded bg-surface-container-high text-on-surface font-code-sm text-code-sm font-bold uppercase">
-                      {selectedClaim.status}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Version History & Audit Trail */}
-                {claimVersions.length > 0 && (
-                  <div className="flex flex-col gap-space-xs pt-2 border-t border-surface-container/60">
-                    <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold">
-                      Version Audit Trail ({claimVersions.length})
-                    </span>
-                    <div className="space-y-1.5 max-h-36 overflow-y-auto">
-                      {claimVersions.map((v) => (
-                        <div
-                          key={v.version}
-                          className="p-2 rounded bg-surface-container-low text-xs border border-surface-container/60 flex items-start justify-between"
-                        >
-                          <div>
-                            <span className="font-bold text-on-surface">v{v.version}</span>
-                            <span className="text-on-surface-variant ml-2">{v.change_note || "Initial version"}</span>
-                          </div>
-                          <span className="text-outline font-code-sm text-[10px]">{v.changed_by}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Sticky Action Footer Inside Detail Panel */}
-              <div className="p-space-md bg-surface-container-lowest border-t border-surface-container sticky bottom-0 z-10 shrink-0 shadow-[0_-2px_8px_rgba(0,0,0,0.04)]">
-                <div className="flex items-center justify-between gap-space-sm">
-                  <button
-                    id="btn-approve"
-                    onClick={handleApprove}
-                    disabled={isSubmittingAction || selectedClaim.review_state === "approved"}
-                    className="flex-1 py-2.5 rounded-lg bg-primary hover:bg-primary-container text-on-primary font-headline-sm text-headline-sm transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-                  >
-                    <span className="material-symbols-outlined text-[18px]">check_circle</span>
-                    <span>{selectedClaim.review_state === "approved" ? "Approved" : "Approve Claim"}</span>
-                  </button>
-                  <button
-                    id="btn-reject"
-                    onClick={() => {
-                      setRejectReason("");
-                      setRejectModalOpen(true);
-                    }}
-                    disabled={isSubmittingAction}
-                    className="px-space-md py-2.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-error font-headline-sm text-headline-sm transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
-                  >
-                    <span className="material-symbols-outlined text-[18px]">cancel</span>
-                    <span>Reject</span>
-                  </button>
-                  <button
-                    id="btn-edit"
-                    onClick={() => {
-                      setEditText(selectedClaim.text || "");
-                      setEditNote("");
-                      setEditModalOpen(true);
-                    }}
-                    disabled={isSubmittingAction}
-                    className="px-space-md py-2.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-headline-sm text-headline-sm transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
-                  >
-                    <span className="material-symbols-outlined text-[18px]">edit</span>
-                    <span>Edit</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="p-space-xl text-center bg-surface-container-lowest rounded-xl border border-surface-container">
-              <span className="material-symbols-outlined text-[32px] text-outline">touch_app</span>
-              <p className="font-headline-sm text-headline-sm text-on-surface mt-2 font-semibold">
-                Select a Claim to Inspect
-              </p>
-              <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">
-                Click any candidate claim from the ledger on the left to verify its source chunk and approve it.
-              </p>
-            </div>
+        <div className="flex flex-wrap gap-2 items-center">
+          {[
+            ["Review", reviewFilter, setReviewFilter, REVIEW_FILTERS.map((r) => [r.id, r.label])],
+            ["Source", kindFilter, setKindFilter, [["all", "Any source"], ["derived", "Calculated by code"], ["interpreted", "Extracted by AI"]]],
+            ["Type", typeFilter, setTypeFilter, [["all", "Any type"], ...typeOptions.map((t) => [t, humanize(t)])]],
+          ].map(([label, value, set, opts]) => (
+            <label key={label} className="relative">
+              <span className="sr-only">{label}</span>
+              <select
+                value={value}
+                onChange={(e) => set(e.target.value)}
+                className={`appearance-none h-9 pl-2.5 pr-8 rounded-[3px] border text-[13px] font-semibold cursor-pointer focus:outline-2 focus:outline-primary ${
+                  value !== "all" ? "border-secondary bg-secondary-fixed text-on-secondary-fixed" : "border-outline-variant bg-surface-container-lowest"
+                }`}
+              >
+                {opts.map(([v, l]) => <option key={v} value={v}>{label === "Review" && v === "all" ? "Any review state" : l}</option>)}
+              </select>
+              <ChevronDown size={14} aria-hidden="true" className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant" />
+            </label>
+          ))}
+          {filtersActive && (
+            <Button variant="ghost" size="sm" onClick={clearFilters}>Clear filters</Button>
           )}
         </div>
       </div>
 
-      {/* Reject Modal */}
-      {rejectModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-          <div className="bg-surface-container-lowest rounded-xl shadow-lg border border-surface-container max-w-md w-full p-6 space-y-4">
-            <h3 className="font-headline-md text-headline-md text-on-surface font-bold">Reject Claim</h3>
-            <p className="font-body-sm text-body-sm text-on-surface-variant">
-              Rejections require an explicit rationale logged in the audit log.
-            </p>
-            <textarea
-              className="w-full h-24 p-2.5 rounded-lg border border-surface-container bg-surface-container-low text-on-surface font-body-sm focus:outline-primary"
-              placeholder="Provide a mandatory reason for rejecting this claim..."
-              value={rejectReason}
-              onChange={(e) => setRejectReason(e.target.value)}
-            />
-            <div className="flex justify-end gap-2">
-              <button
-                onClick={() => setRejectModalOpen(false)}
-                className="px-4 py-2 rounded-lg bg-surface-container text-on-surface text-sm font-semibold cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleRejectConfirm}
-                disabled={!rejectReason.trim() || isSubmittingAction}
-                className="px-4 py-2 rounded-lg bg-error text-on-error text-sm font-semibold cursor-pointer disabled:opacity-50"
-              >
-                Confirm Rejection
-              </button>
-            </div>
+      {/* Manifest + inspection */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+        {/* Manifest list */}
+        <section aria-label="Claims" className="lg:col-span-5 panel overflow-hidden lg:sticky lg:top-[72px]">
+          <div className="flex items-center justify-between px-3 py-2 border-b border-outline-variant bg-surface-container-low">
+            <h2 className="field-label">Manifest · highest risk first</h2>
+            <span className="text-[12px] text-on-surface-variant tnum" aria-live="polite">
+              {filteredClaims.length === claims.length ? `${claims.length} lines` : `${filteredClaims.length} of ${claims.length}`}
+            </span>
           </div>
-        </div>
-      )}
+          <ol ref={listRef} className="max-h-[60vh] lg:max-h-[calc(100vh-260px)] overflow-y-auto divide-y divide-outline-variant/70" id="claims-ledger-container">
+            {filteredClaims.length === 0 ? (
+              <li className="px-4 py-10 text-center flex flex-col items-center gap-3">
+                <p className="text-[14px] text-on-surface-variant">No claims match these filters.</p>
+                <Button size="sm" onClick={clearFilters}>Clear filters</Button>
+              </li>
+            ) : (
+              filteredClaims.map((claim) => {
+                const sel = claim.id === selectedId;
+                return (
+                  <li key={claim.id}>
+                    <button
+                      id={`claim-row-${claim.id}`}
+                      type="button"
+                      aria-current={sel ? "true" : undefined}
+                      onClick={() => select(claim, { reveal: true })}
+                      className={`claim-row w-full text-left grid grid-cols-[2.75rem_1fr] gap-x-2 px-3 py-2.5 cursor-pointer transition-colors duration-150 focus-visible:outline-offset-[-2px] ${
+                        sel ? "bg-canary-container" : "hover:bg-surface-container-low"
+                      } ${claim.review_state !== "pending" && !sel ? "text-on-surface-variant" : ""}`}
+                    >
+                      <span className={`font-mono text-[12px] tnum pt-0.5 ${sel ? "text-on-canary font-bold" : "text-outline"}`}>#{claim.id}</span>
+                      <span className="min-w-0 flex flex-col gap-1.5">
+                        <span className="flex items-center justify-between gap-2">
+                          <StatusChip status={claim.withheld ? "withheld" : claim.status} size="sm" />
+                          <ReviewMark state={claim.review_state} />
+                        </span>
+                        <span className={`text-[14px] leading-5 line-clamp-2 break-words ${claim.review_state === "pending" || sel ? "text-on-surface" : ""}`}>
+                          {claim.withheld ? `Withheld: needs ${claim.access_level} access` : claim.text}
+                        </span>
+                        <span className="text-[12px] text-on-surface-variant flex items-center gap-1.5 flex-wrap">
+                          <span>{humanize(claim.type)}</span>
+                          <span aria-hidden="true">·</span>
+                          <span>{claim.kind === "derived" ? "Code" : "AI"}</span>
+                          {claim.access_level !== "team" && claim.access_level !== "public" && (
+                            <>
+                              <span aria-hidden="true">·</span>
+                              <AccessChip level={claim.access_level} />
+                            </>
+                          )}
+                          {claim.current_version > 1 && <span className="font-mono">v{claim.current_version}</span>}
+                        </span>
+                      </span>
+                    </button>
+                  </li>
+                );
+              })
+            )}
+          </ol>
+        </section>
 
-      {/* Edit Modal */}
-      {editModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-          <div className="bg-surface-container-lowest rounded-xl shadow-lg border border-surface-container max-w-lg w-full p-6 space-y-4">
-            <h3 className="font-headline-md text-headline-md text-on-surface font-bold">Correct Claim Statement</h3>
-            <p className="font-body-sm text-body-sm text-on-surface-variant">
-              Editing increments the claim version and marks review state as corrected.
-            </p>
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-on-surface-variant block">Corrected Claim Text</label>
-              <textarea
-                className="w-full h-28 p-2.5 rounded-lg border border-surface-container bg-surface-container-low text-on-surface font-body-sm focus:outline-primary"
-                value={editText}
-                onChange={(e) => setEditText(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-on-surface-variant block">Change Rationale / Note</label>
-              <input
-                type="text"
-                className="w-full p-2.5 rounded-lg border border-surface-container bg-surface-container-low text-on-surface font-body-sm focus:outline-primary"
-                placeholder="Optional correction note..."
-                value={editNote}
-                onChange={(e) => setEditNote(e.target.value)}
-              />
-            </div>
-            <div className="flex justify-end gap-2">
-              <button
-                onClick={() => setEditModalOpen(false)}
-                className="px-4 py-2 rounded-lg bg-surface-container text-on-surface text-sm font-semibold cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleEditConfirm}
-                disabled={!editText.trim() || isSubmittingAction}
-                className="px-4 py-2 rounded-lg bg-primary text-on-primary text-sm font-semibold cursor-pointer disabled:opacity-50"
-              >
-                Save Correction
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+        {/* Inspection form */}
+        <section aria-label="Inspect claim" className="lg:col-span-7 panel flex flex-col min-w-0">
+          {!selectedClaim ? (
+            <div className="p-8 text-center text-[14px] text-on-surface-variant">Pick a line on the left to inspect its proof.</div>
+          ) : (
+            <>
+              <div className="px-5 pt-4 pb-4 border-b border-outline-variant flex flex-col gap-3">
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-mono text-[13px] font-bold text-on-surface-variant tnum">Line #{selectedClaim.id}</span>
+                    <StatusChip status={selectedClaim.withheld ? "withheld" : selectedClaim.status} />
+                    <ReviewMark state={selectedClaim.review_state} />
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Button variant="ghost" size="sm" onClick={() => copy("link", window.location.href)} title="Copy a link to this claim">
+                      {copied === "link" ? <Check size={14} aria-hidden="true" /> : <Link2 size={14} aria-hidden="true" />}
+                      {copied === "link" ? "Copied" : "Link"}
+                    </Button>
+                  </div>
+                </div>
+                <h2 id="inspect-claim-header" tabIndex={-1} className="text-[19px] sm:text-[20px] leading-7 font-bold break-words scroll-mt-24">
+                  {selectedClaim.withheld ? `Withheld: needs ${selectedClaim.access_level} access` : selectedClaim.text}
+                </h2>
+                <dl className="grid grid-cols-2 sm:grid-cols-4 border border-outline-variant rounded-[2px] divide-x divide-outline-variant [&>div:nth-child(3)]:border-l-0 sm:[&>div:nth-child(3)]:border-l [&>div:nth-child(n+3)]:border-t sm:[&>div:nth-child(n+3)]:border-t-0">
+                  {[
+                    ["Type", humanize(selectedClaim.type)],
+                    ["Found by", <span key="k" title={kindHelp(selectedClaim)}>{kindLabel(selectedClaim)}</span>],
+                    ["Access", <AccessChip key="a" level={selectedClaim.access_level} />],
+                    ["Version", <span key="v" className="font-mono tnum">v{selectedClaim.current_version}</span>],
+                  ].map(([l, v]) => (
+                    <div key={l} className="px-2.5 py-1.5 min-w-0">
+                      <dt className="field-label">{l}</dt>
+                      <dd className="text-[13px] font-semibold mt-0.5 truncate">{v}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+
+              <div className="px-5 py-4 flex flex-col gap-4">
+                {/* Evidence */}
+                {selectedClaim.withheld ? (
+                  <Field label="Evidence">
+                    <p className="text-[14px] text-on-surface-variant flex items-center gap-2"><Lock size={14} aria-hidden="true" />The source needs higher access than this view has.</p>
+                  </Field>
+                ) : isDetailLoading ? (
+                  <Field label="Evidence"><Skeleton className="h-28" /></Field>
+                ) : selectedClaim.status === "conflicting" && contexts.length > 1 ? (
+                  <Field label="Evidence · two sources disagree" aside={<ArrowLeftRight size={14} className="text-error" aria-hidden="true" />}>
+                    <p className="text-[13px] text-on-surface-variant mb-3">Both quotes are exact text from the sources. Decide which one is current before approving.</p>
+                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
+                      {contexts.map((ctx, i) => (
+                        <figure key={ctx.chunk_id ?? i} className="flex flex-col gap-1.5 min-w-0">
+                          <figcaption className="text-[12px] text-on-surface-variant flex items-center justify-between gap-2">
+                            <span className="font-semibold text-on-surface">{i === 0 ? "Earlier" : "Later"}</span>
+                            <span className="font-mono truncate">{ctx.source_name}{ctx.timestamp ? ` · ${String(ctx.timestamp).slice(0, 10)}` : ""}</span>
+                          </figcaption>
+                          <SourceExcerpt text={ctx.chunk_text} quote={ctx.quote} lineStart={selectedClaim.evidence?.[i]?.line_start} />
+                        </figure>
+                      ))}
+                    </div>
+                  </Field>
+                ) : contexts.length > 0 ? (
+                  contexts.map((ctx, i) => (
+                    <Field
+                      key={ctx.chunk_id ?? i}
+                      label={selectedClaim.kind === "derived" ? "Evidence · the record code read" : "Evidence · exact quote in its source"}
+                      aside={
+                        <button
+                          type="button"
+                          onClick={() => copy(`q${i}`, ctx.quote || "")}
+                          className="inline-flex items-center gap-1 text-[12px] font-semibold text-on-surface-variant hover:text-on-surface cursor-pointer rounded-[2px] px-1"
+                        >
+                          {copied === `q${i}` ? <Check size={13} aria-hidden="true" /> : <Copy size={13} aria-hidden="true" />}
+                          {copied === `q${i}` ? "Copied" : "Copy quote"}
+                        </button>
+                      }
+                    >
+                      <p className="text-[12px] text-on-surface-variant mb-2 flex flex-wrap gap-x-3">
+                        <span className="font-mono text-on-surface">{ctx.source_name}</span>
+                        {ctx.author && <span>by {ctx.author}</span>}
+                        {ctx.timestamp && <span>{String(ctx.timestamp).slice(0, 10)}</span>}
+                        <AccessChip level={ctx.access_level} />
+                      </p>
+                      <SourceExcerpt text={ctx.chunk_text || ctx.quote || ""} quote={ctx.quote} lineStart={selectedClaim.evidence?.[i]?.line_start} />
+                    </Field>
+                  ))
+                ) : selectedClaim.kind === "derived" ? (
+                  <Field label="Evidence · calculated by code" aside={<Code2 size={14} className="text-on-surface-variant" aria-hidden="true" />}>
+                    <p className="text-[14px] leading-6">
+                      {selectedClaim.type === "blocker"
+                        ? "Plain code read the task export and found the owner field empty."
+                        : "Plain code counted commit authors per module in the git history. No AI and no quote check are involved."}
+                    </p>
+                    {(selectedClaim.evidence || []).map((ev, i) => ev.quote && (
+                      <p key={i} className="mt-2 font-mono text-[12.5px] bg-surface-container-low border border-outline-variant rounded-[2px] px-3 py-2 break-words">{ev.quote}</p>
+                    ))}
+                  </Field>
+                ) : (
+                  <Field label="Evidence">
+                    <p className="text-[14px] text-on-surface-variant">No source excerpt is stored for this claim. Treat it as unproven.</p>
+                  </Field>
+                )}
+
+                {/* Checks */}
+                <Field label="Checks">
+                  <ul className="flex flex-col gap-2 text-[14px]">
+                    <li className="flex items-start gap-2">
+                      <StatusChip status={selectedClaim.withheld ? "withheld" : selectedClaim.status} size="sm" />
+                      <span className="text-on-surface-variant">{STATUS[selectedClaim.withheld ? "withheld" : selectedClaim.status]?.help}</span>
+                    </li>
+                    <li className="flex items-start gap-2 text-on-surface-variant">
+                      <span className="field-label pt-0.5 w-20 shrink-0">Found by</span>
+                      <span>{kindHelp(selectedClaim)}</span>
+                    </li>
+                    {selectedClaim.kind === "interpreted" && typeof selectedClaim.confidence === "number" && (
+                      <li className="flex items-start gap-2 text-on-surface-variant">
+                        <span className="field-label pt-0.5 w-20 shrink-0">Support</span>
+                        <span className="tnum">{Math.round(selectedClaim.confidence * 100)}% from the support check</span>
+                      </li>
+                    )}
+                  </ul>
+                </Field>
+
+                {/* History */}
+                {claimVersions.length > 0 && (
+                  <Field label={`History · ${claimVersions.length} version${claimVersions.length === 1 ? "" : "s"}`} aside={<History size={14} className="text-on-surface-variant" aria-hidden="true" />}>
+                    <ol className="flex flex-col divide-y divide-outline-variant/70 text-[13px]">
+                      {claimVersions.map((v) => (
+                        <li key={v.version} className="py-1.5 flex items-start justify-between gap-3">
+                          <span><span className="font-mono font-bold mr-2">v{v.version}</span>{v.change_note || "First version"}</span>
+                          <span className="font-mono text-[12px] text-outline shrink-0">{v.changed_by}</span>
+                        </li>
+                      ))}
+                    </ol>
+                  </Field>
+                )}
+              </div>
+
+              {/* Decision bar */}
+              <div className="sticky bottom-0 mt-auto px-3 sm:px-5 py-3 border-t border-outline-variant bg-surface-container-lowest flex items-center gap-2">
+                <Button
+                  id="btn-approve"
+                  variant="primary"
+                  onClick={handleApprove}
+                  disabled={busy || selectedClaim.withheld || selectedClaim.review_state === "approved"}
+                  className="flex-1 sm:flex-none px-2.5 sm:px-3.5"
+                >
+                  <Check size={16} strokeWidth={2.5} aria-hidden="true" />
+                  {selectedClaim.review_state === "approved" ? "Approved" : busy ? "Saving…" : "Approve"}
+                  <span className="kbd hidden sm:inline-flex ml-1">A</span>
+                </Button>
+                <Button id="btn-edit" onClick={openEdit} disabled={busy || selectedClaim.withheld}>
+                  <PencilLine size={15} aria-hidden="true" />Correct<span className="kbd hidden sm:inline-flex ml-1">E</span>
+                </Button>
+                <Button id="btn-reject" variant="danger" onClick={openReject} disabled={busy || selectedClaim.withheld || selectedClaim.review_state === "rejected"}>
+                  <X size={15} aria-hidden="true" />{selectedClaim.review_state === "rejected" ? "Rejected" : "Reject"}<span className="kbd hidden sm:inline-flex ml-1">R</span>
+                </Button>
+                <span className="ml-auto hidden md:flex items-center gap-1.5 text-[12px] text-on-surface-variant">
+                  <span className="kbd">J</span><span className="kbd">K</span> next / previous
+                </span>
+              </div>
+            </>
+          )}
+        </section>
+      </div>
+
+      {/* Dialogs */}
+      <Dialog
+        open={dialog === "reject"}
+        onClose={() => setDialog(null)}
+        title={`Reject claim #${selectedClaim?.id ?? ""}`}
+        description="The reason is saved in the claim's history and the claim stays out of the handover."
+        footer={
+          <>
+            <Button onClick={() => setDialog(null)}>Cancel</Button>
+            <Button variant="danger" onClick={handleRejectConfirm} disabled={!rejectReason.trim() || busy}>{busy ? "Rejecting…" : "Reject claim"}</Button>
+          </>
+        }
+      >
+        <TextArea
+          id="reject-reason"
+          label="Why is it wrong?"
+          autoFocus
+          maxLength={500}
+          value={rejectReason}
+          onChange={(e) => setRejectReason(e.target.value)}
+          placeholder="e.g. Kabir took over payments in January; this is out of date."
+          hint={`Required. ${rejectReason.length}/500`}
+        />
+      </Dialog>
+
+      <Dialog
+        open={dialog === "edit"}
+        onClose={() => setDialog(null)}
+        width="max-w-lg"
+        title={`Correct claim #${selectedClaim?.id ?? ""}`}
+        description="Saving records a new version. The original text stays in the history."
+        footer={
+          <>
+            <Button onClick={() => setDialog(null)}>Cancel</Button>
+            <Button variant="primary" onClick={handleEditConfirm} disabled={!editText.trim() || editUnchanged || busy}>{busy ? "Saving…" : "Save correction"}</Button>
+          </>
+        }
+      >
+        <TextArea id="edit-text" label="Corrected claim" autoFocus maxLength={1000} value={editText} onChange={(e) => setEditText(e.target.value)} hint={editUnchanged ? "Change the text to save a correction." : `${editText.length}/1000`} />
+        <TextInput id="edit-note" label="What changed (optional)" maxLength={200} value={editNote} onChange={(e) => setEditNote(e.target.value)} placeholder="e.g. Owner confirmed in Slack" />
+      </Dialog>
+
+      <Dialog
+        open={dialog === "conflict"}
+        onClose={() => setDialog(null)}
+        title="Which source is current?"
+        description="This claim is conflicting. Say which source wins and why; the answer is saved with the approval."
+        footer={
+          <>
+            <Button onClick={() => setDialog(null)}>Cancel</Button>
+            <Button variant="primary" onClick={() => runApprove(`Conflict resolved: ${conflictNote.trim()}`)} disabled={!conflictNote.trim() || busy}>{busy ? "Approving…" : "Approve with this answer"}</Button>
+          </>
+        }
+      >
+        <TextArea id="conflict-note" label="Resolution" autoFocus maxLength={500} value={conflictNote} onChange={(e) => setConflictNote(e.target.value)} placeholder="e.g. Meeting 07 is later: the migration is postponed." hint="Required." />
+      </Dialog>
+
+      <Dialog
+        open={dialog === "bulk"}
+        onClose={() => setDialog(null)}
+        title={`Approve ${pendingVerified} quote-matched claim${pendingVerified === 1 ? "" : "s"}?`}
+        description="Only claims whose quote was found word for word are approved. Conflicting, inferred and missing claims are skipped and stay in the queue for a person."
+        footer={
+          <>
+            <Button onClick={() => setDialog(null)}>Cancel</Button>
+            <Button variant="primary" onClick={handleBulk} disabled={busy}>{busy ? "Approving…" : "Approve them"}</Button>
+          </>
+        }
+      >
+        <p className="text-[14px] text-on-surface-variant">You can still correct or reject any of them afterwards.</p>
+      </Dialog>
     </div>
   );
 }

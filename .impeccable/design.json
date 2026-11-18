@@ -1,0 +1,189 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-17T12:00:00Z",
+  "title": "Design System: Backstop",
+  "extensions": {
+    "colorMeta": {
+      "ink": {
+        "role": "secondary",
+        "displayName": "Ink Blue-Green",
+        "canonical": "oklch(28.5% 0.04 214.1)",
+        "tonalRamp": ["#050d0f", "#16282d", "#2c474d", "#47676f", "#688991", "#8dabb2", "#b8ced3", "#e5f1f4"]
+      },
+      "background": {
+        "role": "neutral",
+        "displayName": "Cool Paper",
+        "canonical": "oklch(95.6% 0.003 197.1)",
+        "tonalRamp": ["#0b0b0b", "#242525", "#404242", "#5f6262", "#808383", "#a3a5a5", "#c8c9c9", "#eeefef"]
+      },
+      "primary": {
+        "role": "primary",
+        "displayName": "Form Teal",
+        "canonical": "oklch(41.4% 0.068 210.6)",
+        "tonalRamp": ["#010e11", "#032b31", "#114a53", "#2b6b77", "#4f8d99", "#79afba", "#aad1d9", "#ddf3f7"]
+      },
+      "canary": {
+        "role": "tertiary",
+        "displayName": "Canary",
+        "canonical": "oklch(86.2% 0.158 94.0)",
+        "tonalRamp": ["#100b00", "#2e2400", "#504100", "#745f00", "#9a800c", "#c1a329", "#dec87c", "#faefc5"]
+      },
+      "tertiary": {
+        "role": "tertiary",
+        "displayName": "Form Green",
+        "canonical": "oklch(46.5% 0.107 151.9)",
+        "tonalRamp": ["#010f04", "#022e13", "#0d4f28", "#297242", "#4d9462", "#78b689", "#a9d6b4", "#ddf6e2"]
+      },
+      "goldenrod": {
+        "role": "tertiary",
+        "displayName": "Goldenrod",
+        "canonical": "oklch(54.9% 0.113 70.8)",
+        "tonalRamp": ["#140800", "#362001", "#5c3902", "#865504", "#ac762c", "#cc9b5f", "#e7c296", "#feebd6"]
+      },
+      "error": {
+        "role": "tertiary",
+        "displayName": "Carbon Pink",
+        "canonical": "oklch(50.1% 0.175 11.2)",
+        "tonalRamp": ["#1e0005", "#4b0118", "#7e012d", "#ac2348", "#d44b68", "#f3798d", "#ffb1ba", "#fee8ea"]
+      },
+      "on-surface": {
+        "role": "neutral",
+        "displayName": "Ink Text",
+        "canonical": "oklch(22.7% 0.022 210.8)",
+        "tonalRamp": ["#080c0d", "#1d2729", "#364548", "#536568", "#74868a", "#98a9ac", "#bfccce", "#e9f0f1"]
+      },
+      "outline": {
+        "role": "neutral",
+        "displayName": "Pencil Grey",
+        "canonical": "oklch(55.9% 0.022 208.7)",
+        "tonalRamp": ["#080c0d", "#1d2729", "#374547", "#546568", "#748689", "#98a9ab", "#bfccce", "#e9f0f1"]
+      },
+      "surface-container-lowest": {
+        "role": "neutral",
+        "displayName": "Form White",
+        "canonical": "oklch(100.0% 0.0 89.9)",
+        "tonalRamp": ["#0b0b0b", "#252525", "#424242", "#616161", "#828282", "#a5a5a5", "#c9c9c9", "#eeeeee"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Overview headline only. 44px desktop, 34px mobile." },
+      "headline": { "displayName": "Headline", "purpose": "Overview section heads." },
+      "title": { "displayName": "Title", "purpose": "Dialog titles and panel headings." },
+      "body": { "displayName": "Body", "purpose": "Default UI and prose text." },
+      "label": { "displayName": "Boxed Label", "purpose": "Caps label in the top-left corner of a boxed field." },
+      "mono": { "displayName": "Verbatim Mono", "purpose": "Quotes, line numbers, claim IDs and consignment numbers." }
+    },
+    "shadows": [
+      { "name": "dialog-lift", "value": "0 18px 48px -12px rgb(14 47 54 / 0.45)", "purpose": "Modal dialogs only." },
+      { "name": "notice-lift", "value": "0 12px 32px -12px rgb(14 47 54 / 0.5)", "purpose": "The fixed action toast only." }
+    ],
+    "motion": [
+      { "name": "stamp-in", "value": "420ms cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Receipt stamp settle after a person signs." },
+      { "name": "rise-in", "value": "220ms cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Notices and toasts rising into view." },
+      { "name": "colour-transition", "value": "150ms cubic-bezier(0.4, 0, 0.2, 1)", "purpose": "Button, row and tick hover and state colour changes." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one primary action per view, such as Approve or Sign for receipt.",
+      "html": "<button class=\"ds-btn-primary\">Approve</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 36px; padding: 0 14px; border: 1px solid #0b5560; border-radius: 3px; background: #0b5560; color: #ffffff; font: 600 14px/1 'Public Sans', ui-sans-serif, system-ui, sans-serif; cursor: pointer; transition: background-color 150ms cubic-bezier(0.4, 0, 0.2, 1), border-color 150ms cubic-bezier(0.4, 0, 0.2, 1); } .ds-btn-primary:hover { background: #0e6b78; border-color: #0e6b78; } .ds-btn-primary:focus-visible { outline: 2px solid #0b5560; outline-offset: 2px; }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Default secondary action, such as Print or Cancel.",
+      "html": "<button class=\"ds-btn-outline\">Print or save PDF</button>",
+      "css": ".ds-btn-outline { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 36px; padding: 0 14px; border: 1px solid #c3cecf; border-radius: 3px; background: #ffffff; color: #0f1f22; font: 600 14px/1 'Public Sans', ui-sans-serif, system-ui, sans-serif; cursor: pointer; transition: border-color 150ms cubic-bezier(0.4, 0, 0.2, 1), background-color 150ms cubic-bezier(0.4, 0, 0.2, 1); } .ds-btn-outline:hover { border-color: #66787b; background: #f5f7f7; } .ds-btn-outline:focus-visible { outline: 2px solid #0b5560; outline-offset: 2px; }"
+    },
+    {
+      "name": "Status Chip (Matched)",
+      "kind": "chip",
+      "refersTo": "chip-matched",
+      "description": "Automated check result. Always carries its word; the dot repeats the colour.",
+      "html": "<span class=\"ds-chip-matched\"><span class=\"ds-chip-dot\" aria-hidden=\"true\"></span>Quote matched</span>",
+      "css": ".ds-chip-matched { display: inline-flex; align-items: center; gap: 6px; padding: 2px 8px; border-radius: 2px; background: #d4ecda; color: #0c3a1d; font: 600 12px/18px 'Public Sans', ui-sans-serif, system-ui, sans-serif; white-space: nowrap; } .ds-chip-dot { width: 6px; height: 6px; border-radius: 999px; background: #1d6a3a; }"
+    },
+    {
+      "name": "Boxed Field",
+      "kind": "card",
+      "refersTo": "boxed-field",
+      "description": "Evidence, Checks and History panels: caps label tucked into the top-left corner.",
+      "html": "<section class=\"ds-field\"><h3 class=\"ds-field-label\">Evidence</h3><p class=\"ds-field-body\">Exact quote in its source.</p></section>",
+      "css": ".ds-field { border: 1px solid #c3cecf; border-radius: 3px; background: #ffffff; } .ds-field-label { margin: 0; padding: 8px 12px 0; font: 600 10.5px/14px 'Public Sans', ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.07em; text-transform: uppercase; color: #465659; } .ds-field-body { margin: 0; padding: 6px 12px 12px; font: 400 14px/22px 'Public Sans', ui-sans-serif, system-ui, sans-serif; color: #0f1f22; }"
+    },
+    {
+      "name": "Manifest Tally",
+      "kind": "custom",
+      "description": "Signature move: one tick per claim, coloured by what a person decided. Selected tick takes canary.",
+      "html": "<div class=\"ds-tally\"><span class=\"ds-tick ds-tick-approved\"></span><span class=\"ds-tick ds-tick-approved\"></span><span class=\"ds-tick ds-tick-rejected\"></span><span class=\"ds-tick ds-tick-selected\"></span><span class=\"ds-tick ds-tick-pending\"></span></div>",
+      "css": ".ds-tally { display: flex; gap: 1px; height: 24px; align-items: stretch; } .ds-tick { flex: 1 1 0; min-width: 0; border-radius: 1px; background: #d3dcdc; transition: transform 150ms cubic-bezier(0.4, 0, 0.2, 1); } .ds-tick:hover { transform: scaleY(1.1); } .ds-tick-approved { background: #1d6a3a; } .ds-tick-rejected { background: #b0244a; } .ds-tick-selected { background: #f4cf3f; outline: 2px solid #f4cf3f; outline-offset: 1px; }"
+    },
+    {
+      "name": "Role Card (Selected)",
+      "kind": "nav",
+      "refersTo": "role-card-selected",
+      "description": "Selected role on the handover. Access label in canary on ink.",
+      "html": "<button class=\"ds-role ds-role-on\" aria-checked=\"true\" role=\"radio\"><span class=\"ds-role-head\">New developer<span class=\"ds-role-access\">Team level</span></span><span class=\"ds-role-desc\">Owners, decisions, risks, dependencies and contacts.</span></button>",
+      "css": ".ds-role { display: block; width: 100%; text-align: left; padding: 8px 12px; border: 1px solid #0e2f36; border-radius: 3px; background: #0e2f36; color: #eef4f3; cursor: pointer; font-family: 'Public Sans', ui-sans-serif, system-ui, sans-serif; } .ds-role-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font: 600 14px/20px 'Public Sans', ui-sans-serif, system-ui, sans-serif; } .ds-role-access { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #f4cf3f; } .ds-role-desc { display: block; margin-top: 2px; font-size: 12px; line-height: 18px; color: #a9c2c2; } .ds-role:focus-visible { outline: 2px solid #0b5560; outline-offset: 2px; }"
+    },
+    {
+      "name": "Navigation Step (Active)",
+      "kind": "nav",
+      "refersTo": "step-number-active",
+      "description": "Active step in the ink header: canary number and a 3px canary underline.",
+      "html": "<a class=\"ds-step ds-step-on\" href=\"#/review\" aria-current=\"page\"><span class=\"ds-step-n\">2</span>Check the claims</a>",
+      "css": ".ds-step { position: relative; display: inline-flex; align-items: center; gap: 8px; padding: 0 14px; height: 100%; font: 600 13.5px/1 'Public Sans', ui-sans-serif, system-ui, sans-serif; color: #a9c2c2; text-decoration: none; } .ds-step-on { color: #eef4f3; } .ds-step-n { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 2px; border: 1px solid #2a5560; font-size: 11px; font-weight: 700; } .ds-step-on .ds-step-n { background: #f4cf3f; border-color: #f4cf3f; color: #4a3800; } .ds-step-on::after { content: ''; position: absolute; left: 12px; right: 12px; bottom: 0; height: 3px; background: #f4cf3f; } .ds-step:focus-visible { outline: 2px solid #f4cf3f; outline-offset: -2px; }"
+    },
+    {
+      "name": "Receipt Stamp",
+      "kind": "custom",
+      "description": "Closes the handover after a person signs for receipt. Only place the stamp appears.",
+      "html": "<div class=\"ds-stamp\">Received</div>",
+      "css": ".ds-stamp { display: inline-block; border: 2px solid #1d6a3a; border-radius: 3px; padding: 6px 16px; color: #1d6a3a; font: 800 18px/24px 'Public Sans', ui-sans-serif, system-ui, sans-serif; text-transform: uppercase; letter-spacing: 0.14em; transform: rotate(-3deg); animation: ds-stamp-in 420ms cubic-bezier(0.16, 1, 0.3, 1) both; } @keyframes ds-stamp-in { from { opacity: 0; transform: scale(1.35) rotate(-6deg); filter: blur(2px); } to { opacity: 1; transform: scale(1) rotate(-3deg); filter: blur(0); } } @media (prefers-reduced-motion: reduce) { .ds-stamp { animation: none; } }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Consignment Note",
+    "overview": "Backstop reads like a consignment note on a bill of lading: a form that travels with a load and must be signed for. The departing engineer's knowledge leaves with a declared manifest, and every line is inspected against its proof before it is released. The world is a shipping form made for review. An ink frame (deep blue-green header and footer) holds a cool paper ground. Content sits in white boxed panels with 1px hairlines and 2 to 4px corners, and every field carries its small caps label tucked into its top-left corner.\n\nDensity is working density. A lead scans a long manifest with a proof excerpt beside it; a newcomer reads a short role-limited plan and signs. Almost nothing is decorative. The one flourish is the rotated receipt stamp, which appears only after a person signs for receipt. Depth comes from hairlines and tone, not shadow; shadows exist only under overlays such as dialogs and the action toast. Missing evidence is shown as a question, never filled in.\n\nConfirmed rejections: the blue card-grid SaaS dashboard, and its dark-terminal opposite.",
+    "keyCharacteristics": [
+      "Ink frame (blue-green header and footer) around a cool paper ground.",
+      "Boxed fields with the label in the box's top-left corner.",
+      "Status carried in four colours, each paired with its own word.",
+      "Verbatim quotes, line numbers, IDs and form numbers in a monospace face.",
+      "A tally strip, one tick per claim, is the signature; the stamped receipt closes it."
+    ],
+    "rules": [
+      { "name": "The Canary Marks Attention Rule", "body": "Canary is the one thing under inspection: the selected line, the highlighted quote, the active step. It is never a status colour.", "section": "colors" },
+      { "name": "The Caps Are Boxed Rule", "body": "Uppercase tracked caps belong to the boxed-field label and to the receipt stamp. Section titles and navigation are sentence case.", "section": "typography" },
+      { "name": "The Flat Until Overlaid Rule", "body": "Surfaces are flat at rest. A shadow appears only when something floats above the page, and it is tinted with ink.", "section": "elevation" },
+      { "name": "The Proof Beside the Claim Rule", "body": "Every claim shows its quote or its calculation in the same view as its text. A claim with no stored proof reads \"Treat it as unproven\" and is not dressed up as verified.", "section": "components" },
+      { "name": "The Stamp Is Earned Rule", "body": "The rotated stamp appears only on the signed receipt, after a person has signed for it. It is never used as decoration elsewhere.", "section": "components" }
+    ],
+    "dos": [
+      "Do put the quote or calculation beside every claim, in mono, with a Canary mark on the matched text.",
+      "Do show missing evidence as a question in the Missing chip, never as filled-in text.",
+      "Do carry status in a chip with its word, not colour alone.",
+      "Do keep depth as a 1px Hairline, a tonal step, and the corner radius.",
+      "Do use one Form Teal primary action per view."
+    ],
+    "donts": [
+      "Don't use Canary as a status colour; it marks what is under inspection.",
+      "Don't add a shadow to a resting panel, card or table; shadows belong only to the dialog and the toast.",
+      "Don't round any container beyond 4px; status dots are the only round marks.",
+      "Don't use Carbon Pink for anything except conflicting, rejected and restricted claims.",
+      "Don't set verbatim text, line numbers or IDs in the sans face.",
+      "Don't rotate the receipt stamp anywhere but on the signed receipt."
+    ]
+  }
+}

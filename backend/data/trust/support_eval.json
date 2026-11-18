@@ -1,0 +1,337 @@
+{
+  "description": "Labelled (claim, quote) pairs for the support-check evaluation. Quotes are copied from real chunks of the synthetic sample project (public and team sources only). Labels were written before any evaluation was run and must not be changed after seeing results.",
+  "labels": {
+    "yes": "the quote fully supports the claim",
+    "partly": "the quote supports part of the claim",
+    "no": "the quote does not support the claim"
+  },
+  "bad_categories": [
+    "unrelated",
+    "opposite",
+    "overstated",
+    "invented_detail",
+    "partly"
+  ],
+  "pairs": [
+    {
+      "id": "cor-01",
+      "category": "correct",
+      "expected": "yes",
+      "source": "notes/meeting-02.md",
+      "quote": "Use PostgreSQL for production, SQLite for dev/test.",
+      "claim": "The team decided to use PostgreSQL in production and SQLite for development and testing."
+    },
+    {
+      "id": "cor-02",
+      "category": "correct",
+      "expected": "yes",
+      "source": "notes/meeting-06.md",
+      "quote": "Payments migration to the new gateway is on 20 Feb 2026.",
+      "claim": "The payments migration to the new gateway was scheduled for 20 Feb 2026."
+    },
+    {
+      "id": "cor-03",
+      "category": "correct",
+      "expected": "yes",
+      "source": "notes/meeting-10.md",
+      "quote": "Sessions were rejected due to load failures in the Oct demo.",
+      "claim": "Sessions were rejected because they failed under load in the October demo."
+    },
+    {
+      "id": "cor-04",
+      "category": "correct",
+      "expected": "yes",
+      "source": "notes/meeting-05.md",
+      "quote": "Deploy process is only fully known to Riya.",
+      "claim": "Only Riya fully knows the deploy process."
+    },
+    {
+      "id": "cor-05",
+      "category": "correct",
+      "expected": "yes",
+      "source": "notes/meeting-05.md",
+      "quote": "Push notification keys: no one has FCM console access.",
+      "claim": "Nobody on the team has FCM console access for the push notification keys."
+    },
+    {
+      "id": "cor-06",
+      "category": "correct",
+      "expected": "yes",
+      "source": "notes/meeting-04.md",
+      "quote": "Kabir to implement refund endpoint by 20 Dec.",
+      "claim": "Kabir is to implement the refund endpoint by 20 Dec."
+    },
+    {
+      "id": "cor-07",
+      "category": "correct",
+      "expected": "yes",
+      "source": "notes/meeting-08.md",
+      "quote": "Sara to continue as main auth reviewer post-Riya.",
+      "claim": "Sara will continue as the main auth reviewer after Riya leaves."
+    },
+    {
+      "id": "cor-08",
+      "category": "correct",
+      "expected": "yes",
+      "source": "notes/meeting-09.md",
+      "quote": "Deploy: Dev will own after 15 Mar.",
+      "claim": "Dev will own deploy after 15 Mar."
+    },
+    {
+      "id": "cor-09",
+      "category": "correct",
+      "expected": "yes",
+      "source": "notes/meeting-10.md",
+      "quote": "Vault config is NOT documented.",
+      "claim": "The vault configuration is not documented."
+    },
+    {
+      "id": "cor-10",
+      "category": "correct",
+      "expected": "yes",
+      "source": "notes/meeting-06.md",
+      "quote": "Rollback: revert to v2 SDK branch if issues arise.",
+      "claim": "If the migration has issues, the rollback plan is to revert to the v2 SDK branch."
+    },
+    {
+      "id": "cor-11",
+      "category": "correct",
+      "expected": "yes",
+      "source": "issues.json",
+      "quote": "Going with JWT — sessions had issues in demo.",
+      "claim": "The team chose JWT because sessions had issues in the demo."
+    },
+    {
+      "id": "cor-12",
+      "category": "correct",
+      "expected": "yes",
+      "source": "notes/meeting-03.md",
+      "quote": "Sara has reviewed all of Riya's auth PRs.",
+      "claim": "Sara reviewed all of Riya's auth pull requests."
+    },
+    {
+      "id": "cor-13",
+      "category": "correct",
+      "expected": "yes",
+      "source": "notes/meeting-07.md",
+      "quote": "Payments migration postponed (see issue #31).",
+      "claim": "The payments migration was postponed, as tracked in issue #31."
+    },
+    {
+      "id": "cor-14",
+      "category": "correct",
+      "expected": "yes",
+      "source": "notes/meeting-01.md",
+      "quote": "Timeline: 1 Oct 2025 to 30 Jun 2026.",
+      "claim": "The project timeline runs from 1 Oct 2025 to 30 Jun 2026."
+    },
+    {
+      "id": "cor-15",
+      "category": "correct",
+      "expected": "yes",
+      "source": "notes/meeting-10.md",
+      "quote": "FCM push key is unresolved — nobody has console access.",
+      "claim": "The FCM push key is still unresolved because nobody has console access."
+    },
+    {
+      "id": "unr-16",
+      "category": "unrelated",
+      "expected": "no",
+      "source": "notes/meeting-02.md",
+      "quote": "Follow trunk-based development (short-lived branches).",
+      "claim": "Payments use idempotency keys for retries."
+    },
+    {
+      "id": "unr-17",
+      "category": "unrelated",
+      "expected": "no",
+      "source": "notes/meeting-05.md",
+      "quote": "Web UI: organiser dashboard in progress.",
+      "claim": "The deploy runbook is 70% done."
+    },
+    {
+      "id": "unr-18",
+      "category": "unrelated",
+      "expected": "no",
+      "source": "notes/meeting-10.md",
+      "quote": "Run all tests before any production deploy.",
+      "claim": "Meena owns the notifications module."
+    },
+    {
+      "id": "unr-19",
+      "category": "unrelated",
+      "expected": "no",
+      "source": "notes/meeting-03.md",
+      "quote": "Payments: Stripe integration done. Webhooks tested.",
+      "claim": "The web UI is now responsive on mobile."
+    },
+    {
+      "id": "unr-20",
+      "category": "unrelated",
+      "expected": "no",
+      "source": "chat.json",
+      "quote": "[Sara]: I'll take the event creation form.",
+      "claim": "The FCM push key has no owner."
+    },
+    {
+      "id": "opp-21",
+      "category": "opposite",
+      "expected": "no",
+      "source": "notes/meeting-10.md",
+      "quote": "Polling implementation is stable.",
+      "claim": "The polling implementation is unstable and keeps failing."
+    },
+    {
+      "id": "opp-22",
+      "category": "opposite",
+      "expected": "no",
+      "source": "notes/meeting-05.md",
+      "quote": "Auth: complete (JWT, multi-role, password reset).",
+      "claim": "Auth is not finished; password reset is still missing."
+    },
+    {
+      "id": "opp-23",
+      "category": "opposite",
+      "expected": "no",
+      "source": "notes/meeting-04.md",
+      "quote": "Remove test keys from config before go-live.",
+      "claim": "Test keys should stay in the config for go-live."
+    },
+    {
+      "id": "opp-24",
+      "category": "opposite",
+      "expected": "no",
+      "source": "notes/meeting-06.md",
+      "quote": "Kabir leads testing. Riya to review the PR before merging.",
+      "claim": "Riya may merge the migration PR without reviewing it."
+    },
+    {
+      "id": "opp-25",
+      "category": "opposite",
+      "expected": "no",
+      "source": "notes/meeting-10.md",
+      "quote": "JWT is the auth mechanism.",
+      "claim": "Sessions, not JWT, are the auth mechanism."
+    },
+    {
+      "id": "ove-26",
+      "category": "overstated",
+      "expected": "no",
+      "source": "notes/meeting-09.md",
+      "quote": "Deploy runbook: 70% done.",
+      "claim": "The deploy runbook is complete."
+    },
+    {
+      "id": "ove-27",
+      "category": "overstated",
+      "expected": "no",
+      "source": "notes/meeting-10.md",
+      "quote": "Runbook is partial — some steps are undocumented.",
+      "claim": "None of the deploy steps are documented."
+    },
+    {
+      "id": "ove-28",
+      "category": "overstated",
+      "expected": "no",
+      "source": "notes/meeting-05.md",
+      "quote": "Events API: 80% complete.",
+      "claim": "The Events API is fully finished and in production."
+    },
+    {
+      "id": "ove-29",
+      "category": "overstated",
+      "expected": "no",
+      "source": "notes/meeting-09.md",
+      "quote": "Payments: Kabir has context.",
+      "claim": "Kabir knows everything about payments and needs no handover."
+    },
+    {
+      "id": "ove-30",
+      "category": "overstated",
+      "expected": "no",
+      "source": "notes/meeting-08.md",
+      "quote": "Notifications stale since late Jan — needs attention.",
+      "claim": "Notifications are completely broken and must be rewritten."
+    },
+    {
+      "id": "inv-31",
+      "category": "invented_detail",
+      "expected": "no",
+      "source": "notes/meeting-04.md",
+      "quote": "Kabir to implement refund endpoint by 20 Dec.",
+      "claim": "Kabir is to implement the refund endpoint by 5 Jan."
+    },
+    {
+      "id": "inv-32",
+      "category": "invented_detail",
+      "expected": "no",
+      "source": "notes/meeting-08.md",
+      "quote": "Meena: takes over auth/ (with Sara's support).",
+      "claim": "Meena takes over auth with support from Arjun."
+    },
+    {
+      "id": "inv-33",
+      "category": "invented_detail",
+      "expected": "no",
+      "source": "notes/meeting-05.md",
+      "quote": "Events API: 80% complete.",
+      "claim": "The Events API is 95% complete."
+    },
+    {
+      "id": "inv-34",
+      "category": "invented_detail",
+      "expected": "no",
+      "source": "notes/meeting-06.md",
+      "quote": "Kabir leads testing.",
+      "claim": "Kabir leads testing with a team of 3 testers."
+    },
+    {
+      "id": "inv-35",
+      "category": "invented_detail",
+      "expected": "no",
+      "source": "notes/meeting-10.md",
+      "quote": "Dev: please read the nginx and docker-compose configs carefully.",
+      "claim": "Dev must read the nginx and Kubernetes configs carefully."
+    },
+    {
+      "id": "par-36",
+      "category": "partly",
+      "expected": "partly",
+      "source": "notes/meeting-06.md",
+      "quote": "Kabir leads testing. Riya to review the PR before merging.",
+      "claim": "Kabir leads testing and will also deploy the migration to production."
+    },
+    {
+      "id": "par-37",
+      "category": "partly",
+      "expected": "partly",
+      "source": "notes/meeting-03.md",
+      "quote": "Auth: token refresh and multi-role support complete.",
+      "claim": "Auth token refresh is complete, and so is two-factor login."
+    },
+    {
+      "id": "par-38",
+      "category": "partly",
+      "expected": "partly",
+      "source": "notes/meeting-10.md",
+      "quote": "Stripe v2 SDK in use. Migration to v3 is planned but postponed.",
+      "claim": "Stripe v2 SDK is in use and the v3 migration is postponed because of budget limits."
+    },
+    {
+      "id": "par-39",
+      "category": "partly",
+      "expected": "partly",
+      "source": "notes/meeting-05.md",
+      "quote": "Deploy: staging live. Production deploy planned for 1 Apr.",
+      "claim": "Staging is live, and the production deploy planned for 1 Apr needs a load test first."
+    },
+    {
+      "id": "par-40",
+      "category": "partly",
+      "expected": "partly",
+      "source": "notes/meeting-09.md",
+      "quote": "Auth: Meena is ramping up. Sara as backup reviewer.",
+      "claim": "Meena is ramping up on auth, and Sara has stepped away from reviews."
+    }
+  ]
+}
