@@ -50,9 +50,9 @@ function EvidenceItem({ ev }) {
 function ResultCard({ tw }) {
   const high = tw.severity === "high";
   return (
-    <article className={`panel p-4 flex flex-col gap-2 border-l-4 ${high ? "border-l-error" : "border-l-goldenrod"}`}>
+    <article className="panel p-4 flex flex-col gap-2">
       <div className="flex flex-wrap items-center gap-2">
-        <span className={`px-2 py-0.5 rounded-[2px] text-[12px] leading-[18px] font-semibold ${high ? "bg-error-container text-on-error-container" : "bg-goldenrod-container text-on-goldenrod"}`}>
+        <span className={`px-2.5 py-0.5 rounded-full text-[12px] leading-[18px] font-semibold ${high ? "bg-error-container text-on-error-container" : "bg-goldenrod-container text-on-goldenrod"}`}>
           {high ? "High severity" : "Medium severity"}
         </span>
         <span className="field-label">{KIND_LABEL[tw.kind] || tw.kind}</span>
@@ -233,7 +233,7 @@ export default function CheckChangePage({ role, setRole, setActiveTab }) {
                   : "border-outline-variant bg-surface-container-lowest text-on-surface hover:border-outline hover:bg-surface-container-low"
               }`}
             >
-              {r.label} <span className={`text-[11px] uppercase tracking-[0.05em] ${role === r.id ? "text-canary" : "text-on-surface-variant"}`}>{r.access}</span>
+              {r.label} <span className={`text-[12px] ${role === r.id ? "text-canary" : "text-on-surface-variant"}`}>{r.access}</span>
             </button>
           ))}
         </fieldset>

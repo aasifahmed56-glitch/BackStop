@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { flushSync } from "react-dom";
 import { X } from "lucide-react";
 import Navbar, { NAV_ITEMS } from "./components/Navbar";
 import HomePage from "./components/HomePage";
@@ -7,6 +8,8 @@ import HandoverPage from "./components/HandoverPage";
 import BacktestPage from "./components/BacktestPage";
 import TrustReportPage from "./components/TrustReportPage";
 import CheckChangePage from "./components/CheckChangePage";
+import DebriefPage from "./components/DebriefPage";
+import CommandPalette from "./components/CommandPalette";
 import { Button, Dialog } from "./components/ui";
 import { api, formatErrorMessage } from "./api";
 
@@ -46,6 +49,7 @@ export default function App() {
   const [actionStatus, setActionStatus] = useState(null);
   const [confirmReset, setConfirmReset] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
+  const [showPalette, setShowPalette] = useState(false);
   // Bumped after a reset so open pages remount and refetch instead of showing stale claims.
   const [dataVersion, setDataVersion] = useState(0);
 
@@ -59,7 +63,21 @@ export default function App() {
   };
 
   useEffect(() => {
-    const onHash = () => setRoute(parseHash());
+    // Page changes cross-fade with a short View Transition where the browser has one.
+    const onHash = () => {
+      const next = parseHash();
+      let reduce = false;
+      try {
+        reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      } catch {
+        /* no matchMedia */
+      }
+      setRoute((cur) => {
+        if (cur.tab === next.tab || reduce || !document.startViewTransition) return next;
+        document.startViewTransition(() => flushSync(() => setRoute(next)));
+        return cur;
+      });
+    };
     window.addEventListener("hashchange", onHash);
     return () => window.removeEventListener("hashchange", onHash);
   }, []);
@@ -104,6 +122,11 @@ export default function App() {
   useEffect(() => {
     const onKey = (e) => {
       const t = e.target;
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setShowPalette((v) => !v);
+        return;
+      }
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       if (t && (t.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(t.tagName))) return;
       if (document.querySelector("dialog[open]")) return;
@@ -197,7 +220,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-background text-on-surface flex flex-col antialiased">
-      <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:px-3 focus:py-2 focus:bg-canary focus:text-on-canary focus:font-semibold">
+      <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:px-3 focus:py-2 focus:rounded-[6px] focus:bg-stamp focus:text-white focus:font-semibold">
         Skip to content
       </a>
       <Navbar
@@ -208,10 +231,11 @@ export default function App() {
         project={project}
         progress={progress}
         onShowShortcuts={() => setShowShortcuts(true)}
+        onOpenPalette={() => setShowPalette(true)}
       />
 
-      <main id="main" className="w-full flex-1">
-        <div className="max-w-[1360px] mx-auto px-4 sm:px-6 py-6 sm:py-8">
+      <main id="main" className="w-full flex-1 lg:pl-[248px] [view-transition-name:page]">
+        <div className="max-w-[1280px] mx-auto px-4 sm:px-8 lg:px-12 py-7 sm:py-10">
           {loadError && (
             <div role="alert" className="mb-6 panel border-error/40 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
               <p className="text-[14px]">
@@ -248,6 +272,10 @@ export default function App() {
             />
           )}
 
+          {activeTab === "debrief" && (
+            <DebriefPage key={`debrief-${dataVersion}`} setActiveTab={navigate} onChanged={loadInitialData} />
+          )}
+
           {activeTab === "handover" && (
             <HandoverPage key={`handover-${dataVersion}`} role={role} setRole={setRole} setActiveTab={navigate} />
           )}
@@ -263,7 +291,7 @@ export default function App() {
         <div
           role={actionStatus.tone === "error" ? "alert" : "status"}
           aria-live="polite"
-          className={`rise-in no-print fixed bottom-4 right-4 left-4 sm:left-auto z-50 sm:max-w-md flex items-start gap-3 pl-4 pr-2 py-3 rounded-[4px] border shadow-[0_12px_32px_-12px_rgb(14_47_54/0.5)] text-[14px] leading-5 ${
+          className={`rise-in no-print fixed bottom-4 right-4 left-4 sm:left-auto z-50 sm:max-w-md flex items-start gap-3 pl-4 pr-2 py-3 rounded-[8px] border shadow-[0_16px_36px_-14px_rgb(23_41_31/0.5)] text-[14px] leading-5 ${
             actionStatus.tone === "error"
               ? "bg-error-container text-on-error-container border-error/40"
               : actionStatus.tone === "warn"
@@ -302,6 +330,7 @@ export default function App() {
             ["E", "Correct the open claim"],
             ["R", "Reject the open claim"],
             ["/", "Search claims"],
+            ["⌘K", "Jump to a page or claim"],
             ["?", "Show this sheet"],
           ].map(([k, v]) => (
             <React.Fragment key={k}>
@@ -312,14 +341,7 @@ export default function App() {
         </dl>
       </Dialog>
 
-      <footer className="no-print mt-auto bg-ink text-on-ink-muted">
-        <div className="max-w-[1360px] mx-auto px-4 sm:px-6 py-5 flex flex-col sm:flex-row gap-2 sm:items-center justify-between text-[13px]">
-          <p>
-            <span className="font-bold text-on-ink">Backstop</span> · Automated checks find the evidence. A person approves every claim.
-          </p>
-          <p>Synthetic sample data. Roles are simulated; there is no sign-in.</p>
-        </div>
-      </footer>
+      <CommandPalette open={showPalette} onClose={() => setShowPalette(false)} onNavigate={navigate} dataVersion={dataVersion} />
     </div>
   );
 }

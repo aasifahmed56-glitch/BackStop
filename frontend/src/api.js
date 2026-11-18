@@ -126,6 +126,15 @@ export const api = {
       body: JSON.stringify({ role, corrected_text: correctedText, note }),
     }),
 
+  // Debrief questions and readiness (plain rules, no AI)
+  getDebrief: ({ projectId = 1, role = "lead" } = {}) =>
+    request(`/projects/${projectId}/debrief?role=${encodeURIComponent(role)}`, { cache: "no-store" }),
+  answerDebrief: ({ projectId = 1, role = "lead", questionClaimId, answer }) =>
+    request(`/projects/${projectId}/debrief/answer`, {
+      method: "POST",
+      body: JSON.stringify({ role, question_claim_id: questionClaimId, answer }),
+    }),
+
   // Handover & Acknowledge
   getHandover: ({ projectId = 1, role = "incoming_dev" } = {}) => {
     const params = new URLSearchParams({ role, _ts: Date.now().toString() });

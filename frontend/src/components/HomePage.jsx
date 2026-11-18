@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { api } from "../api";
 import { ArrowRight, FileText } from "lucide-react";
-import { Button, Field, Skeleton, StatusChip, STATUS, REVIEW } from "./ui.jsx";
+import { Button, Skeleton, StatusChip, STATUS, REVIEW, humanize } from "./ui.jsx";
+import Readiness from "./Readiness";
+import SpecimenStack from "./SpecimenStack";
 import GithubImportPanel from "./GithubImportPanel";
 
 const ACCESS_CHIP = {
@@ -28,6 +30,13 @@ const STEPS = [
   },
   {
     n: 3,
+    title: "Ask",
+    body: "Whatever the records could not settle becomes a question for the person leaving. Their answers are checked like any claim.",
+    link: "See the questions",
+    tab: "debrief",
+  },
+  {
+    n: 4,
     title: "Receive",
     body: "The newcomer gets a plan limited to their role, and signs for receipt.",
     link: "See the handover",
@@ -48,36 +57,63 @@ export default function HomePage({
   isLoading,
   actionStatus,
 }) {
-  // A real manifest line for the specimen: the first AI-extracted claim whose quote matched.
-  const [example, setExample] = useState(null);
+  // Real claims for the specimen stack: a spread of kinds and statuses.
+  const [specimens, setSpecimens] = useState([]);
+  const [allClaims, setAllClaims] = useState([]);
   useEffect(() => {
     let live = true;
     api
       .getClaims({ projectId: 1, role: "lead" })
       .then((list) => {
         if (!live || !Array.isArray(list)) return;
-        const hit = list.find((c) => !c.withheld && c.kind === "interpreted" && c.status === "verified" && c.evidence?.[0]?.quote)
-          || list.find((c) => !c.withheld && c.evidence?.[0]?.quote);
-        setExample(hit || null);
-        if (hit) {
-          api.getClaimContext(hit.id).then((ctx) => {
-            const src = ctx?.contexts?.[0]?.source_name;
-            if (live && src) setExample((e) => (e && e.id === hit.id ? { ...e, sourceName: src } : e));
-          }).catch(() => {});
-        }
+        setAllClaims(list);
+        const seen = list.filter((c) => !c.withheld);
+        const pick = [];
+        const add = (c) => c && !pick.some((p) => p.id === c.id) && pick.push(c);
+        add(seen.find((c) => c.kind === "interpreted" && c.status === "verified" && c.type === "blocker" && c.evidence?.[0]?.quote));
+        add(seen.find((c) => c.kind === "derived" && c.type === "risk"));
+        add(seen.find((c) => c.kind === "interpreted" && c.status === "verified" && c.type === "decision" && c.evidence?.[0]?.quote));
+        add(seen.find((c) => c.status === "conflicting"));
+        add(seen.find((c) => c.kind === "interpreted" && c.status === "verified" && c.type === "owner" && c.evidence?.[0]?.quote));
+        setSpecimens(pick);
+        pick.forEach((c) =>
+          api
+            .getClaimContext(c.id)
+            .then((ctx) => {
+              const src = ctx?.contexts?.[0]?.source_name;
+              if (live && src) setSpecimens((xs) => xs.map((x) => (x.id === c.id ? { ...x, sourceName: src } : x)));
+            })
+            .catch(() => {})
+        );
       })
       .catch(() => {});
     return () => {
       live = false;
     };
-  }, []);
+  }, [stats]);
+
+  const [readiness, setReadiness] = useState(null);
+  const [openQuestions, setOpenQuestions] = useState(null);
+  useEffect(() => {
+    let live = true;
+    api
+      .getDebrief({ role: "lead" })
+      .then((d) => {
+        if (!live) return;
+        setReadiness(d?.readiness || null);
+        setOpenQuestions(Array.isArray(d?.questions) ? d.questions.filter((q) => !q.answered).length : null);
+      })
+      .catch(() => {});
+    return () => {
+      live = false;
+    };
+  }, [stats]);
 
   const hasStats = !!stats;
   const total = num(stats?.total);
   const review = stats?.by_review || {};
   const byStatus = stats?.by_status || {};
   const sources = Array.isArray(project?.sources) ? project.sources : [];
-  const sourceCount = project?.source_count ?? (project ? sources.length : null);
 
   const order = ["approved", "corrected", "rejected", "pending"];
   const counts = order.map((k) => num(review[k]));
@@ -101,116 +137,106 @@ export default function HomePage({
   };
 
   return (
-    <div className="flex flex-col w-full gap-14 lg:gap-16 pb-8">
-      {/* Opening */}
-      <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center pt-2 lg:pt-6">
-        <div className="lg:col-span-7 flex flex-col gap-5 min-w-0">
-          <h1 className="text-[34px] leading-[1.1] sm:text-[44px] font-bold tracking-tight text-on-surface text-balance">
-            When someone leaves, their knowledge ships with a receipt.
+    <div className="flex flex-col w-full gap-16 lg:gap-20 pb-8">
+      {/* Opening: the claim, mounted like a specimen with its label */}
+      <section className="grid grid-cols-1 xl:grid-cols-12 gap-10 xl:gap-14 items-center pt-2 lg:pt-6">
+        <div className="xl:col-span-6 flex flex-col gap-6 min-w-0">
+          <h1 className="text-[36px] leading-[1.05] sm:text-[52px] font-bold tracking-[-0.03em] text-on-surface text-balance">
+            When someone leaves, keep what they knew, with the proof attached.
           </h1>
-          <p className="text-[16px] leading-7 text-on-surface-variant max-w-[56ch]">
-            Backstop turns {project?.leaver_name || "a departing engineer"}'s project activity into a list of
-            claims. Each claim shows the exact quote or the code behind it, a lead approves it, and the
-            newcomer receives only what their role allows.
+          <p className="text-[17px] leading-7 text-on-surface-variant max-w-[54ch]">
+            Backstop reads {project?.leaver_name || "a departing engineer"}'s commits, issues, notes, tasks and chat, and turns them into claims.
+            Each claim carries the exact quote or the code behind it. A lead stamps it, the gaps become questions to ask before the last day,
+            and the newcomer receives only what their role allows.
           </p>
-          <div className="flex flex-wrap items-center gap-3 pt-1">
+          <div className="flex flex-wrap items-center gap-3">
             <Button id="btn-try-demo" variant="primary" size="lg" onClick={handleStart} disabled={isLoading}>
               {isLoading ? "Loading…" : "Check the claims"}
               {!isLoading && <ArrowRight size={18} aria-hidden="true" />}
             </Button>
-            <Button variant="outline" size="lg" onClick={() => setActiveTab("handover")}>
-              See the handover
+            <Button variant="outline" size="lg" onClick={() => setActiveTab("debrief")}>
+              See the debrief questions
             </Button>
           </div>
-          <p className="text-[12px] text-on-surface-variant" role="status">
-            {actionStatus || "Runs on synthetic sample data. Automated checks assist; a person decides."}
+          <p className="text-[13px] text-on-surface-variant" role="status">
+            {actionStatus?.text || actionStatus || "Runs on synthetic sample data. Automated checks assist; a person decides."}
           </p>
         </div>
 
-        {/* Specimen consignment note */}
-        <div className="lg:col-span-5 min-w-0">
-          <div className="panel p-3 sm:p-4 flex flex-col gap-3">
-            <div className="flex items-baseline justify-between gap-3">
-              <h2 className="text-[15px] font-bold text-on-surface truncate">Handover consignment note</h2>
-              <span className="field-label shrink-0">Specimen</span>
+        {/* Specimen stack: the focal moment */}
+        <div className="xl:col-span-6 min-w-0 pt-6 xl:pt-0 pr-10 sm:pr-14">
+          {specimens.length ? (
+            <SpecimenStack claims={specimens} onOpen={(id) => setActiveTab("review", id)} />
+          ) : (
+            <div className="h-[400px] rounded-[12px] border border-outline-variant bg-surface-container-lowest p-8 flex flex-col gap-4">
+              <Skeleton className="h-6 w-32" />
+              <Skeleton className="h-20 w-full" />
+              <Skeleton className="h-12 w-3/4" />
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <Field label="Consignor">
-                {project ? (
-                  <p className="text-[14px] font-semibold text-on-surface truncate">{project.leaver_name || "—"}</p>
-                ) : (
-                  <Skeleton className="h-5 w-20" />
-                )}
-              </Field>
-              <Field label="Consignee">
-                <p className="text-[14px] font-semibold text-on-surface truncate">New developer</p>
-              </Field>
-            </div>
-            <Field label="Contents">
-              {hasStats && project ? (
-                <p className="text-[14px] font-semibold text-on-surface tnum">
-                  {total} claims from {sourceCount ?? "—"} sources
-                </p>
-              ) : (
-                <Skeleton className="h-5 w-48" />
-              )}
-            </Field>
-            <Field label="Manifest tally">
-              {hasStats && shown > 0 ? (
-                <div className="flex flex-col gap-2">
-                  <div className="flex gap-px h-7" role="img" aria-label={`${decided} of ${shown} lines checked`}>
-                    {ticks.map((cls, i) => (
-                      <span key={i} className={`flex-1 min-w-0 rounded-[1px] ${cls}`} />
-                    ))}
-                  </div>
-                  <p className="text-[13px] text-on-surface-variant">
-                    <span className="font-bold text-on-surface tnum">{decided}</span> of{" "}
-                    <span className="tnum">{shown}</span> lines checked
-                  </p>
-                </div>
-              ) : hasStats ? (
-                <p className="text-[13px] text-on-surface-variant">No lines on the manifest yet.</p>
-              ) : (
-                <Skeleton className="h-10 w-full" />
-              )}
-            </Field>
-            <Field
-              label="Example line"
-              aside={
-                example ? (
-                  <a
-                    href={`#/review/${example.id}`}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setActiveTab("review", example.id);
-                    }}
-                    className="font-mono text-[12px] font-semibold text-primary hover:underline"
-                  >
-                    Line #{example.id}
-                  </a>
-                ) : null
-              }
-            >
-              {example ? (
-                <div className="flex flex-col items-start gap-2">
-                  <StatusChip status={example.status} size="sm" />
-                  <p className="text-[14px] leading-5 font-semibold text-on-surface line-clamp-2">{example.text}</p>
-                  <p className="text-[12px] text-on-surface-variant -mb-1">
-                    Exact quote in{" "}
-                    <span className="font-mono text-on-surface">
-                      {example.sourceName || "its source"}
-                      {example.evidence[0].line_start ? `, line ${example.evidence[0].line_start}` : ""}
-                    </span>
-                  </p>
-                  <p className="font-mono text-[12px] leading-5 text-on-surface bg-surface-container-low self-stretch px-2 py-1.5 rounded-[2px] break-words">
-                    <mark className="bg-canary text-on-canary rounded-[1px] px-px">{example.evidence[0].quote}</mark>
-                  </p>
-                </div>
-              ) : (
-                <Skeleton className="h-16 w-full" />
-              )}
-            </Field>
+          )}
+        </div>
+      </section>
+
+      {/* The whole collection at a glance */}
+      <section aria-labelledby="index-h" className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+        <div className="lg:col-span-7 flex flex-col gap-3">
+          <div className="flex items-baseline justify-between gap-3 flex-wrap">
+            <h2 id="index-h" className="text-[15px] font-semibold text-on-surface">Sheet index</h2>
+            {hasStats && (
+              <p className="text-[13px] text-on-surface-variant">
+                <span className="font-mono tnum text-on-surface font-bold">{decided}</span> of <span className="font-mono tnum">{shown}</span> claims stamped by a person
+              </p>
+            )}
           </div>
+          {hasStats && shown > 0 ? (
+            <div className="grid gap-[3px]" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(14px, 1fr))" }} aria-label={`${decided} of ${shown} claims checked by a person. Each mark opens its claim.`}>
+              {(allClaims.length ? allClaims : ticks.map((cls, i) => ({ id: `t${i}`, cls }))).map((c, i) => {
+                const cls = c.cls || REVIEW[c.review_state]?.tick || REVIEW.pending.tick;
+                const flag = !c.cls && c.review_state === "pending" && ["conflicting", "missing", "inferred"].includes(c.status);
+                const label = c.cls ? "" : c.withheld ? `Claim #${c.id}: withheld` : `Claim #${c.id}: ${REVIEW[c.review_state]?.label}. ${c.text}`;
+                return c.cls ? (
+                  <span key={c.id} className={`tick-in aspect-[3/4] rounded-[2px] ${cls}`} style={{ animationDelay: `${Math.min(i * 7, 700)}ms` }} />
+                ) : (
+                  <button
+                    key={c.id}
+                    type="button"
+                    title={label}
+                    aria-label={label}
+                    onClick={() => setActiveTab("review", c.id)}
+                    className={`tick tick-in relative aspect-[3/4] rounded-[2px] cursor-pointer ${cls}`}
+                    style={{ animationDelay: `${Math.min(i * 7, 700)}ms` }}
+                  >
+                    {flag && <span aria-hidden="true" className={`absolute inset-x-0 top-0 h-1/3 rounded-t-[2px] ${STATUS[c.status].dot}`} />}
+                  </button>
+                );
+              })}
+            </div>
+          ) : hasStats ? (
+            <p className="text-[13px] text-on-surface-variant">No claims yet. Reload the sample to start.</p>
+          ) : (
+            <Skeleton className="h-16 w-full" />
+          )}
+          <ul className="flex flex-wrap gap-x-4 gap-y-1 text-[12.5px] text-on-surface-variant" aria-label="Legend">
+            {order.map((k, i) => (
+              <li key={k} className="flex items-center gap-1.5">
+                <span aria-hidden="true" className={`w-2.5 h-3 rounded-[2px] ${REVIEW[k].tick}`} />
+                {REVIEW[k].label} <span className="font-mono tnum text-on-surface">{counts[i]}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="lg:col-span-5">
+          {readiness ? <Readiness readiness={readiness} compact /> : <Skeleton className="h-16 w-full" />}
+          {readiness && (
+            <button
+              type="button"
+              onClick={() => setActiveTab("debrief")}
+              className="mt-4 inline-flex items-center gap-1 text-[13px] font-semibold text-primary hover:underline cursor-pointer"
+            >
+              {openQuestions != null ? `${openQuestions} questions to ask ${project?.leaver_name || "them"} before they go` : "Open the debrief questions"}
+              <ArrowRight size={14} aria-hidden="true" />
+            </button>
+          )}
         </div>
       </section>
 
@@ -219,26 +245,19 @@ export default function HomePage({
 
       {/* Journey */}
       <section aria-labelledby="journey-h">
-        <h2 id="journey-h" className="text-[22px] leading-7 font-bold text-on-surface mb-4">
-          How the consignment works
+        <h2 id="journey-h" className="text-[24px] leading-8 font-bold tracking-[-0.015em] text-on-surface mb-5">
+          How a handover works
         </h2>
-        <ol className="grid grid-cols-1 md:grid-cols-3 border-y border-outline-variant md:divide-x divide-y md:divide-y-0 divide-outline-variant">
-          {STEPS.map((s, i) => (
-            <li key={s.n} className="relative flex flex-col gap-2 py-5 md:px-5 md:first:pl-0 md:last:pr-0">
-              <div className="flex items-center gap-3">
-                <span className="tnum text-[13px] font-bold text-on-primary bg-ink px-1.5 py-0.5 rounded-[2px]">
-                  {s.n}
-                </span>
-                <h3 className="text-[17px] font-bold text-on-surface">{s.title}</h3>
-                {i < STEPS.length - 1 && (
-                  <ArrowRight size={16} aria-hidden="true" className="hidden md:block ml-auto text-outline" />
-                )}
-              </div>
-              <p className="text-[14px] leading-6 text-on-surface-variant max-w-[40ch]">{s.body}</p>
+        <ol className="flex flex-col max-w-[880px]">
+          {STEPS.map((s) => (
+            <li key={s.n} className="grid grid-cols-[2rem_7rem_1fr] sm:grid-cols-[2rem_9rem_1fr_auto] gap-x-4 gap-y-1 items-baseline py-3 border-t border-outline-variant last:border-b">
+              <span className="font-mono tnum text-[13px] text-outline">{s.n}</span>
+              <h3 className="text-[16px] font-semibold text-on-surface">{s.title}</h3>
+              <p className="text-[14px] leading-6 text-on-surface-variant">{s.body}</p>
               <button
                 type="button"
                 onClick={() => setActiveTab(s.tab)}
-                className="self-start inline-flex items-center gap-1 text-[13px] font-semibold text-primary hover:underline cursor-pointer"
+                className="col-start-3 sm:col-start-auto justify-self-start inline-flex items-center gap-1 text-[13px] font-semibold text-primary hover:underline cursor-pointer whitespace-nowrap"
               >
                 {s.link}
                 <ArrowRight size={14} aria-hidden="true" />
@@ -250,7 +269,7 @@ export default function HomePage({
 
       {/* Legend */}
       <section aria-labelledby="trust-h">
-        <h2 id="trust-h" className="text-[22px] leading-7 font-bold text-on-surface mb-4">
+        <h2 id="trust-h" className="text-[24px] leading-8 font-bold tracking-[-0.015em] text-on-surface mb-4">
           What makes a claim trustworthy
         </h2>
         <p className="text-[14px] leading-6 text-on-surface-variant max-w-[64ch] mb-4">
@@ -286,8 +305,8 @@ export default function HomePage({
 
       {/* Sources */}
       <section aria-labelledby="sources-h">
-        <h2 id="sources-h" className="text-[22px] leading-7 font-bold text-on-surface mb-4">
-          Sources on the manifest{project ? ` (${sources.length})` : ""}
+        <h2 id="sources-h" className="text-[24px] leading-8 font-bold tracking-[-0.015em] text-on-surface mb-4">
+          Where the claims come from{project ? ` (${sources.length})` : ""}
         </h2>
         {!project ? (
           <div className="flex flex-col gap-2">
@@ -315,11 +334,11 @@ export default function HomePage({
                   </span>
                 </span>
                 <span
-                  className={`shrink-0 px-1.5 py-px rounded-[2px] text-[11px] leading-4 font-semibold uppercase ${
+                  className={`shrink-0 px-2 py-px rounded-full text-[11.5px] leading-4 font-medium ${
                     ACCESS_CHIP[src.access_level] || ACCESS_CHIP.team
                   }`}
                 >
-                  {src.access_level || "team"}
+                  {humanize(src.access_level || "team")}
                 </span>
               </li>
             ))}

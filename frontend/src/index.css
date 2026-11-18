@@ -4,64 +4,69 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --color-secondary-fixed-dim: #b9cccd;
-  --color-primary-container: #0e6b78;
-  --color-tertiary-fixed: #d4ecda;
-  --color-on-secondary-fixed-variant: #1d4a52;
-  --color-primary: #0b5560;
-  --color-on-surface-variant: #465659;
-  --color-surface-variant: #dfe6e6;
-  --color-surface-bright: #f7f9f9;
-  --color-surface-tint: #0b5560;
-  --color-on-primary-fixed: #05343a;
+  --color-secondary-fixed-dim: #c4d2c6;
+  --color-primary-container: #234a31;
+  --color-tertiary-fixed: #dcebdc;
+  --color-on-secondary-fixed-variant: #2a4434;
+  --color-primary: #2c5b3f;
+  --color-on-surface-variant: #4f5a51;
+  --color-surface-variant: #e5e9ec;
+  --color-surface-bright: #fbfcfa;
+  --color-surface-tint: #2c5b3f;
+  --color-on-primary-fixed: #10301c;
   --color-on-tertiary: #ffffff;
-  --color-primary-fixed: #d5ebed;
-  --color-on-tertiary-container: #e3f5e8;
+  --color-primary-fixed: #dbe8dd;
+  --color-on-tertiary-container: #e6f2e6;
   --color-on-error: #ffffff;
-  --color-surface-container-high: #dde4e4;
-  --color-primary-fixed-dim: #9ccfd4;
-  --color-on-surface: #0f1f22;
-  --color-on-primary-container: #e6f4f5;
-  --color-outline-variant: #c3cecf;
-  --color-surface-container: #e7ecec;
-  --color-inverse-surface: #0e2f36;
-  --color-inverse-primary: #9ccfd4;
-  --color-on-primary-fixed-variant: #0b4a52;
-  --color-error: #b0244a;
-  --color-tertiary-fixed-dim: #9fd2ae;
-  --color-tertiary: #1d6a3a;
-  --color-on-error-container: #6c0f2a;
-  --color-surface-dim: #d6dede;
-  --color-surface-container-low: #f5f7f7;
-  --color-surface: #eef1f1;
-  --color-secondary: #0e2f36;
+  --color-surface-container-high: #e2e6e9;
+  --color-primary-fixed-dim: #a9c8b0;
+  --color-on-surface: #18211b;
+  --color-on-primary-container: #eef5ef;
+  --color-outline-variant: #d6dbde;
+  --color-surface-container: #eceff1;
+  --color-inverse-surface: #17291f;
+  --color-inverse-primary: #a9c8b0;
+  --color-on-primary-fixed-variant: #1f4630;
+  --color-error: #a3392b;
+  --color-tertiary-fixed-dim: #a8cfae;
+  --color-tertiary: #2f6b3f;
+  --color-on-error-container: #5e1a11;
+  --color-surface-dim: #dadfe2;
+  --color-surface-container-low: #f8f9fa;
+  --color-surface: #f3f5f6;
+  --color-secondary: #17291f;
   --color-on-primary: #ffffff;
-  --color-secondary-fixed: #dbe6e6;
-  --color-secondary-container: #164049;
-  --color-on-background: #0f1f22;
-  --color-on-secondary-fixed: #0e2f36;
-  --color-on-tertiary-fixed: #0c3a1d;
-  --color-inverse-on-surface: #e8f0ef;
-  --color-outline: #66787b;
-  --color-on-secondary-container: #e8f0ef;
-  --color-tertiary-container: #24804a;
+  --color-secondary-fixed: #e0e7df;
+  --color-secondary-container: #20382b;
+  --color-on-background: #18211b;
+  --color-on-secondary-fixed: #17291f;
+  --color-on-tertiary-fixed: #163a20;
+  --color-inverse-on-surface: #eef3ec;
+  --color-outline: #737b70;
+  --color-on-secondary-container: #eef3ec;
+  --color-tertiary-container: #3a7d4c;
   --color-on-secondary: #ffffff;
-  --color-error-container: #f8dde4;
-  --color-on-tertiary-fixed-variant: #175330;
-  --color-background: #eef1f1;
-  --color-surface-container-highest: #d3dcdc;
+  --color-error-container: #f6e0db;
+  --color-on-tertiary-fixed-variant: #1d4d2a;
+  --color-background: #f3f5f6;
+  --color-surface-container-highest: #d7dce0;
   --color-surface-container-lowest: #ffffff;
-  --color-ink: #0e2f36;
-  --color-ink-2: #164049;
-  --color-ink-line: #2a5560;
-  --color-on-ink: #eef4f3;
-  --color-on-ink-muted: #a9c2c2;
-  --color-canary: #f4cf3f;
-  --color-canary-container: #fdf2c2;
-  --color-on-canary: #4a3800;
-  --color-goldenrod: #9a6410;
-  --color-goldenrod-container: #f6e5c3;
-  --color-on-goldenrod: #4f3204;
+  --color-ink: #17291f;
+  --color-ink-2: #20382b;
+  --color-ink-line: #30493a;
+  --color-on-ink: #eef3ec;
+  --color-on-ink-muted: #a9bcad;
+  --color-canary: #cfe3d3;
+  --color-canary-container: #e3efe5;
+  --color-on-canary: #10301c;
+  --color-goldenrod: #93641a;
+  --color-goldenrod-container: #f3e7cc;
+  --color-on-goldenrod: #4a3307;
+  /* Accession-stamp violet: reserved for decisions a person makes (approve, sign, record). */
+  --color-stamp: #4b3fa6;
+  --color-stamp-2: #3d3290;
+  --color-stamp-container: #ebe8f8;
+  --color-on-stamp-container: #2a2170;
   --text-display-lg-mobile: 26px;
   --text-display-lg-mobile--line-height: 34px;
   --text-display-lg-mobile--letter-spacing: -0.015em;
@@ -101,21 +106,21 @@
   --text-body-sm: 13px;
   --text-body-sm--line-height: 20px;
   --text-body-sm--font-weight: 400;
-  --font-display-lg: "Public Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-headline-lg: "Public Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-headline-md: "Public Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-headline-sm: "Public Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-body-lg: "Public Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-body-md: "Public Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-body-sm: "Public Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-label-md: "Public Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-label-sm: "Public Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-code-sm: "JetBrains Mono", monospace;
-  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-  --font-sans: "Public Sans", ui-sans-serif, system-ui, sans-serif;
-  --radius: 0.125rem;
-  --radius-lg: 0.1875rem;
-  --radius-xl: 0.25rem;
+  --font-display-lg: "Hanken Grotesk Variable", "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-headline-lg: "Hanken Grotesk Variable", "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-headline-md: "Hanken Grotesk Variable", "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-headline-sm: "Hanken Grotesk Variable", "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-body-lg: "Hanken Grotesk Variable", "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-body-md: "Hanken Grotesk Variable", "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-body-sm: "Hanken Grotesk Variable", "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-label-md: "Hanken Grotesk Variable", "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-label-sm: "Hanken Grotesk Variable", "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-code-sm: "Courier Prime", ui-monospace, monospace;
+  --font-mono: "Courier Prime", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-sans: "Hanken Grotesk Variable", "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --radius: 0.25rem;
+  --radius-lg: 0.375rem;
+  --radius-xl: 0.5rem;
   --radius-full: 9999px;
   --spacing-gutter-mobile: 1rem;
   --spacing-space-sm: 0.5rem;
@@ -135,11 +140,11 @@
     padding: 0;
     background-color: var(--color-background);
     color: var(--color-on-surface);
-    font-family: "Public Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-family: "Hanken Grotesk Variable", "Hanken Grotesk", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
     font-feature-settings: "tnum" 0;
   }
-  ::selection { background: var(--color-canary); color: var(--color-on-canary); }
-  :focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+  ::selection { background: var(--color-stamp-container); color: var(--color-on-stamp-container); }
+  :focus-visible { outline: 2px solid var(--color-stamp); outline-offset: 2px; }
   html { scrollbar-color: var(--color-outline-variant) transparent; caret-color: var(--color-primary); }
   a { text-underline-offset: 3px; }
   .tnum { font-variant-numeric: tabular-nums; }
@@ -147,8 +152,11 @@
     *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
   }
   code, pre, kbd {
-    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-family: "Courier Prime", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   }
+  .font-mono { letter-spacing: -0.01em; }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-thumb { background: var(--color-outline-variant); border-radius: 999px; border: 3px solid transparent; background-clip: content-box; }
 }
 
 .material-symbols-outlined {
@@ -170,28 +178,64 @@
 /* Boxed form field: tiny caps label tucked in the box's top-left corner. */
 @layer components {
   .field-label {
-    font-size: 10.5px; line-height: 14px; font-weight: 600; letter-spacing: 0.07em;
-    text-transform: uppercase; color: var(--color-on-surface-variant);
+    font-size: 12.5px; line-height: 16px; font-weight: 500; letter-spacing: 0;
+    color: var(--color-on-surface-variant);
   }
   .panel {
     background: var(--color-surface-container-lowest);
     border: 1px solid var(--color-outline-variant);
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-xl);
+  }
+  /* Determination slip: a small label pinned to a specimen for each human decision. */
+  .slip {
+    background: var(--color-surface-container-lowest);
+    border: 1px solid var(--color-stamp);
+    border-radius: 3px;
+    color: var(--color-on-stamp-container);
+    box-shadow: 0 1px 0 rgb(23 41 31 / 0.04), 0 6px 14px -10px rgb(23 41 31 / 0.35);
   }
   .kbd {
     display: inline-flex; align-items: center; justify-content: center; min-width: 1.25rem; height: 1.25rem;
     padding: 0 0.3rem; border-radius: 2px; border: 1px solid currentColor; opacity: 0.75;
-    font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 10.5px; line-height: 1; font-weight: 600;
+    font-family: "Courier Prime", ui-monospace, monospace; font-size: 11.5px; line-height: 1; font-weight: 700;
   }
   .stamp-in { animation: stamp-in 420ms cubic-bezier(0.16, 1, 0.3, 1) both; }
   @keyframes stamp-in {
-    from { opacity: 0; transform: scale(1.35) rotate(-6deg); filter: blur(2px); }
-    to { opacity: 1; transform: scale(1) rotate(-3deg); filter: blur(0); }
+    from { opacity: 0; transform: translateY(-10px) rotate(-4deg) scale(1.08); filter: blur(1.5px); }
+    to { opacity: 1; transform: none; filter: blur(0); }
   }
+  /* Specimen stack: sheets glide between positions when filed to the back. */
+  .specimen { transition: transform 700ms cubic-bezier(0.16, 1, 0.3, 1), opacity 500ms ease, filter 500ms ease, box-shadow 500ms ease; will-change: transform; }
+  /* Highlighter sweep: the quote is marked as the sheet comes forward. */
+  .quote-mark {
+    background-image: linear-gradient(var(--color-canary-container), var(--color-canary-container));
+    background-repeat: no-repeat; background-size: 0% 100%;
+    transition: background-size 900ms cubic-bezier(0.16, 1, 0.3, 1) 250ms;
+    box-decoration-break: clone; -webkit-box-decoration-break: clone;
+  }
+  .quote-mark.is-on { background-size: 100% 100%; }
+  .slip-drop { animation: slip-drop 520ms cubic-bezier(0.16, 1, 0.3, 1) both; transform-origin: 80% 0; }
+  @keyframes slip-drop {
+    0% { opacity: 0; transform: translateY(-26px) rotate(-9deg) scale(1.25); filter: blur(2px); }
+    60% { opacity: 1; transform: translateY(2px) rotate(3deg) scale(0.98); filter: blur(0); }
+    100% { opacity: 1; transform: rotate(2deg) scale(1); }
+  }
+  /* Sheet index ticks fill in order, once. */
+  .tick-in { animation: tick-in 420ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+  @keyframes tick-in { from { opacity: 0; transform: translateY(6px) scaleY(0.4); } to { opacity: 1; transform: none; } }
+  .tick { transition: transform 150ms ease, outline-color 150ms ease; }
+  .tick:hover, .tick:focus-visible { transform: translateY(-2px); }
   .rise-in { animation: rise-in 220ms cubic-bezier(0.16, 1, 0.3, 1) both; }
   @keyframes rise-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-  dialog.sheet::backdrop { background: rgb(14 47 54 / 0.45); }
+  dialog.sheet::backdrop { background: rgb(23 41 31 / 0.4); }
 }
+
+/* Page change: the old page lifts away, the new one settles in; the rail stays put. */
+::view-transition-old(page) { animation: page-out 160ms ease-in both; }
+::view-transition-new(page) { animation: page-in 320ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+@keyframes page-out { to { opacity: 0; transform: translateY(-6px); } }
+@keyframes page-in { from { opacity: 0; transform: translateY(10px); } }
+::view-transition-old(root), ::view-transition-new(root) { animation: none; }
 
 @layer utilities {
   @media print {

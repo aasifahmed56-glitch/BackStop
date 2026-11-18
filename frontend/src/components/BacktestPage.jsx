@@ -107,7 +107,7 @@ function SampleBacktest() {
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
           <div>
             <h1 className="font-headline-lg text-headline-lg text-on-surface font-bold">
-              Handover Risk Backtest
+              Handover risk backtest
             </h1>
             <p className="font-body-md text-body-md text-on-surface-variant mt-0.5 max-w-3xl">
               Benchmark evaluating Backstop's Knowledge-at-Risk scoring against post-departure ground truth outcomes.
@@ -122,28 +122,28 @@ function SampleBacktest() {
             <button
               onClick={loadBacktest}
               disabled={isLoading}
-              className="px-space-md py-2.5 bg-primary hover:bg-primary-container text-on-primary rounded-lg font-headline-sm text-headline-sm transition-all shadow-sm flex items-center gap-2 cursor-pointer disabled:opacity-50"
+              className="px-space-md py-2.5 bg-primary hover:bg-primary-container text-on-primary rounded-lg font-headline-sm text-headline-sm transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
               type="button"
             >
               <span aria-hidden="true" className={`material-symbols-outlined text-[18px] ${isLoading ? "animate-spin" : ""}`}>
                 {isLoading ? "refresh" : "play_circle"}
               </span>
-              <span>{isLoading ? "Evaluating..." : "Re-run Backtest Benchmark"}</span>
+              <span>{isLoading ? "Evaluating..." : "Re-run the backtest"}</span>
             </button>
           </div>
         </div>
 
         {/* Limitations and Protocol Banner */}
-        <div className="w-full bg-surface-container-low rounded-xl px-space-md py-space-sm flex flex-col sm:flex-row items-center justify-between gap-space-sm shadow-sm border border-surface-container">
+        <div className="w-full bg-surface-container-low rounded-xl px-space-md py-space-sm flex flex-col sm:flex-row items-center justify-between gap-space-sm border border-outline-variant">
           <div className="flex items-center gap-space-sm">
             <span aria-hidden="true" className="material-symbols-outlined text-outline text-[18px]">info</span>
             <div className="text-on-surface-variant font-label-md text-label-md">
-              <strong className="text-on-surface">Limitations Note:</strong> Tiny synthetic dataset, 4 of 7 modules are positives, demonstration only. The algorithm evaluated repository artifacts up to the cutoff date.
+              <strong className="text-on-surface">Limitations:</strong> Tiny synthetic dataset, 4 of 7 modules are positives, demonstration only. The algorithm evaluated repository artifacts up to the cutoff date.
             </div>
           </div>
           <div className="flex items-center gap-space-sm text-tertiary font-label-sm text-label-sm shrink-0 font-semibold">
             <span className="w-2 h-2 rounded-full bg-tertiary"></span>
-            <span>Cutoff Enforced</span>
+            <span>Cutoff enforced</span>
           </div>
         </div>
       </section>
@@ -151,10 +151,10 @@ function SampleBacktest() {
       {/* 3 Metric Cards Grid */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-space-lg">
         {/* Card 1: Cutoff Date */}
-        <div className="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between border border-surface-container">
+        <div className="bg-surface-container-lowest rounded-xl p-space-lg flex flex-col justify-between border border-outline-variant">
           <div className="flex items-center justify-between text-on-surface-variant">
-            <span className="font-label-md text-label-md uppercase tracking-wider font-semibold">
-              Cutoff Date
+            <span className="font-label-md text-label-md font-semibold">
+              Cutoff date
             </span>
             <span aria-hidden="true" className="material-symbols-outlined text-[20px] text-outline">history_toggle_off</span>
           </div>
@@ -164,7 +164,7 @@ function SampleBacktest() {
                 {backtestData?.cutoff_date ?? "—"}
               </span>
             </div>
-            <span className="font-label-sm text-label-sm text-outline mt-1">Audit Cutoff Date</span>
+            <span className="font-label-sm text-label-sm text-outline mt-1">Audit cutoff date</span>
           </div>
           <div className="pt-space-sm bg-surface-container-low -mx-space-lg -mb-space-lg p-space-md rounded-b-xl flex items-center gap-1.5 border-t border-surface-container/60">
             <span className="w-2 h-2 rounded-full bg-tertiary"></span>
@@ -175,10 +175,10 @@ function SampleBacktest() {
         </div>
 
         {/* Card 2: Ground Truth Target Modules */}
-        <div className="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between border border-surface-container">
+        <div className="bg-surface-container-lowest rounded-xl p-space-lg flex flex-col justify-between border border-outline-variant">
           <div className="flex items-center justify-between text-on-surface-variant">
-            <span className="font-label-md text-label-md uppercase tracking-wider font-semibold">
-              Ground Truth Targets
+            <span className="font-label-md text-label-md font-semibold">
+              Ground truth targets
             </span>
             <span aria-hidden="true" className="material-symbols-outlined text-[20px] text-outline">radar</span>
           </div>
@@ -188,7 +188,7 @@ function SampleBacktest() {
                 {groundTruth.length} of {allModules.length || 7}
               </span>
               <span className="font-headline-sm text-headline-sm text-on-surface-variant ml-1 font-semibold">
-                Modules Troubled
+                modules troubled
               </span>
             </div>
             <div className="flex flex-wrap gap-1 mt-2">
@@ -211,10 +211,10 @@ function SampleBacktest() {
         </div>
 
         {/* Card 3: Overall F1 Score */}
-        <div className="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between border border-surface-container">
+        <div className="bg-surface-container-lowest rounded-xl p-space-lg flex flex-col justify-between border border-outline-variant">
           <div className="flex items-center justify-between text-on-surface-variant">
-            <span className="font-label-md text-label-md uppercase tracking-wider font-semibold">
-              Overall Benchmark F1
+            <span className="font-label-md text-label-md font-semibold">
+              Overall benchmark F1
             </span>
             <span aria-hidden="true" className="material-symbols-outlined text-[20px] text-primary">target</span>
           </div>
@@ -239,11 +239,11 @@ function SampleBacktest() {
       </section>
 
       {/* Dynamic Precision@k Comparison Chart */}
-      <section className="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm border border-surface-container flex flex-col gap-space-md">
+      <section className="bg-surface-container-lowest rounded-xl p-space-lg border border-outline-variant flex flex-col gap-space-md">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm pb-space-sm border-b border-surface-container/60">
           <div>
             <h2 className="font-headline-md text-headline-md text-on-surface font-semibold">
-              Precision@k Comparison by Cutoff
+              Precision@k by cutoff
             </h2>
             <p className="font-body-sm text-body-sm text-on-surface-variant">
               Comparing Backstop ranking vs commit-count baseline across top-k module cuts.
@@ -271,16 +271,16 @@ function SampleBacktest() {
             return (
               <div
                 key={b.k}
-                className="flex flex-col gap-1.5 p-space-md rounded-lg bg-surface-container-low transition-colors hover:bg-surface-container border border-surface-container/60"
+                className="flex flex-col gap-1.5 p-space-md rounded-lg bg-surface-container-low transition-colors hover:bg-surface-container border border-outline-variant/60"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-space-sm">
-                    <span className="w-8 h-8 rounded bg-surface-container-lowest flex items-center justify-center font-code-sm text-code-sm font-bold text-on-surface shadow-sm">
+                    <span className="w-8 h-8 rounded bg-surface-container-lowest flex items-center justify-center font-code-sm text-code-sm font-bold text-on-surface">
                       k={b.k}
                     </span>
                     <div>
                       <span className="font-headline-sm text-headline-sm text-on-surface font-semibold">
-                        Top {b.k} {b.k === 1 ? "Module" : "Modules"}
+                        Top {b.k} {b.k === 1 ? "module" : "modules"}
                       </span>
                       <span className="font-body-sm text-body-sm text-outline ml-2">
                         Backstop: {b.top_k.join(", ")} | Baseline: {base.top_k.join(", ")}
@@ -337,7 +337,7 @@ function SampleBacktest() {
         </div>
 
         {/* Note on Ties */}
-        <div className="p-space-md rounded-xl bg-surface-container-low flex flex-col md:flex-row items-start md:items-center gap-space-md border border-surface-container">
+        <div className="p-space-md rounded-xl bg-surface-container-low flex flex-col md:flex-row items-start md:items-center gap-space-md border border-outline-variant">
           <div className="w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center text-primary flex-shrink-0">
             <span aria-hidden="true" className="material-symbols-outlined text-[22px]">balance</span>
           </div>
@@ -358,7 +358,7 @@ function SampleBacktest() {
       </section>
 
       {/* Side-by-Side Metric Comparison Table */}
-      <section className="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden border border-surface-container">
+      <section className="bg-surface-container-lowest rounded-xl overflow-hidden border border-outline-variant">
         <div className="p-space-lg flex flex-col sm:flex-row sm:items-center justify-between gap-space-md bg-surface-container-low border-b border-surface-container/60">
           <div>
             <h2 className="font-headline-md text-headline-md text-on-surface font-semibold">
@@ -452,7 +452,7 @@ function SampleBacktest() {
       {/* Analytical Rationale Cards */}
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-space-lg">
         {/* Card 1: Risk Formulation */}
-        <div className="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between border border-surface-container">
+        <div className="bg-surface-container-lowest rounded-xl p-space-lg flex flex-col justify-between border border-outline-variant">
           <div className="space-y-space-sm">
             <h3 className="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2 font-semibold">
               <span aria-hidden="true" className="material-symbols-outlined text-secondary text-[20px]">calculate</span>
@@ -483,25 +483,25 @@ function SampleBacktest() {
         </div>
 
         {/* Card 2: deploy vs auth module prioritization */}
-        <div className="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between border border-surface-container">
+        <div className="bg-surface-container-lowest rounded-xl p-space-lg flex flex-col justify-between border border-outline-variant">
           <div className="space-y-space-sm">
             <h3 className="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2 font-semibold">
               <span aria-hidden="true" className="material-symbols-outlined text-outline text-[20px]">swap_vert</span>
-              Module Prioritization: deploy vs auth
+              Module priority: deploy vs auth
             </h3>
             <p className="font-body-sm text-body-sm text-on-surface-variant">
               Different ranking mechanisms produce different priorities:
             </p>
             <div className="grid grid-cols-2 gap-space-sm pt-1">
-              <div className="bg-surface-container-low p-space-sm rounded-lg border border-surface-container/60">
-                <span className="font-label-sm text-label-sm uppercase text-outline block">Raw Commits Rank #1</span>
+              <div className="bg-surface-container-low p-space-sm rounded-lg border border-outline-variant/60">
+                <span className="font-label-sm text-label-sm text-outline block">Raw Commits Rank #1</span>
                 <span className="font-headline-md text-headline-md text-on-surface font-bold">auth</span>
                 <p className="font-body-sm text-body-sm text-on-surface-variant mt-1 text-[11px]">
                   35 of 41 commits by leaver (highest raw volume)
                 </p>
               </div>
-              <div className="bg-surface-container-low p-space-sm rounded-lg border border-surface-container/60">
-                <span className="font-label-sm text-label-sm uppercase text-outline block">Backstop Rank #1</span>
+              <div className="bg-surface-container-low p-space-sm rounded-lg border border-outline-variant/60">
+                <span className="font-label-sm text-label-sm text-outline block">Backstop Rank #1</span>
                 <span className="font-headline-md text-headline-md text-primary font-bold">deploy</span>
                 <p className="font-body-sm text-body-sm text-on-surface-variant mt-1 text-[11px]">
                   13 of 14 commits by leaver (92.9% concentration)

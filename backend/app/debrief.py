@@ -110,19 +110,19 @@ def question_for(claim: Claim, leaver: str) -> Optional[dict[str, Any]]:
         q = f"Who should own {task} after you leave, and what is it waiting on?"
         priority, reason = "high", "Blocked work with no owner"
     elif claim.status == ClaimStatus.conflicting:
-        q = f"Two records disagree: {rest.rstrip('.')}. Which one is current?"
+        q = f"Two records disagree: {rest.rstrip('.?! ')}. Which one is current?"
         priority, reason = "high", "Sources disagree"
     elif claim.status == ClaimStatus.missing:
-        q = f"The records do not say who owns this or why: {rest.rstrip('.')}. Can you fill the gap?"
+        q = f"The records do not say who owns this or why: {rest.rstrip('.?! ')}. Can you fill the gap?"
         priority, reason = "high", "No evidence in the records"
     elif claim.status == ClaimStatus.inferred:
-        q = f"We inferred: “{rest.rstrip('.')}.” Is that right, and where is it written down?"
+        q = f"We inferred: “{rest.rstrip('.?! ')}.” Is that right, and where is it written down?"
         priority, reason = "medium", "Only partly supported by its quote"
     elif claim.type == ClaimType.open_question:
-        q = f"Still open: {rest.rstrip('.')}. What is the answer, or who would know?"
+        q = f"Still open: {rest.rstrip('.?! ')}? What is the answer, or who would know?"
         priority, reason = "medium", "Recorded as an open question"
     elif claim.type == ClaimType.blocker and claim.review_state == ReviewState.pending:
-        q = f"What is the next step to unblock this: {rest.rstrip('.')}?"
+        q = f"What is the next step to unblock this: {rest.rstrip('.?! ')}?"
         priority, reason = "medium", "Open blocker"
 
     if q is None:

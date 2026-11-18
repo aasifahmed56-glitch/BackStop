@@ -1,8 +1,9 @@
 import React, { useEffect, useRef } from "react";
 import { X } from "lucide-react";
 
-/* Shared vocabulary for every screen: the consignment-note world.
-   Status = what the automated checks found. Review = what a person decided. */
+/* Shared vocabulary for every screen: the herbarium sheet.
+   Status = what the automated checks found (leaf, ochre, rust, graphite).
+   Review = what a person decided (violet stamp). */
 
 export const STATUS = {
   verified: {
@@ -44,12 +45,12 @@ export const STATUS = {
 
 export const REVIEW = {
   pending: { label: "Not checked", text: "text-on-surface-variant", tick: "bg-surface-container-highest" },
-  approved: { label: "Approved", text: "text-tertiary", tick: "bg-tertiary" },
-  corrected: { label: "Corrected", text: "text-primary", tick: "bg-primary" },
+  approved: { label: "Approved", text: "text-stamp", tick: "bg-stamp" },
+  corrected: { label: "Corrected", text: "text-stamp", tick: "bg-stamp/55" },
   rejected: { label: "Rejected", text: "text-error", tick: "bg-error" },
 };
 
-// Form number for the consignment, derived from the project id.
+// Accession number for the collection, derived from the project id.
 export const consignmentNo = (id) => `BS-${String(id || 1).padStart(4, "0")}`;
 
 export const humanize = (t) => (t ? t.charAt(0).toUpperCase() + t.slice(1).replace(/_/g, " ") : "");
@@ -59,8 +60,8 @@ export function StatusChip({ status, size = "md" }) {
   return (
     <span
       title={s.help}
-      className={`inline-flex items-center gap-1.5 rounded-[2px] font-semibold whitespace-nowrap ${s.chip} ${
-        size === "sm" ? "px-1.5 py-px text-[11px] leading-4" : "px-2 py-0.5 text-[12px] leading-[18px]"
+      className={`inline-flex items-center gap-1.5 rounded-full font-medium whitespace-nowrap ${s.chip} ${
+        size === "sm" ? "px-2 py-px text-[11.5px] leading-4" : "px-2.5 py-0.5 text-[12.5px] leading-[18px]"
       }`}
     >
       <span aria-hidden="true" className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
@@ -69,21 +70,36 @@ export function StatusChip({ status, size = "md" }) {
   );
 }
 
-/* A boxed form field: small caps label in the corner, content beneath. */
+/* A label field: a hairline above, a quiet label, the content beneath. No box. */
 export function Field({ label, aside, children, className = "", bodyClassName = "" }) {
   return (
-    <section className={`border border-outline-variant rounded-[3px] bg-surface-container-lowest ${className}`}>
-      <div className="flex items-center justify-between gap-2 px-3 pt-2">
+    <section className={`border-t border-outline-variant ${className}`}>
+      <div className="flex items-center justify-between gap-2 pt-2.5">
         <h3 className="field-label">{label}</h3>
         {aside}
       </div>
-      <div className={`px-3 pb-3 pt-1.5 ${bodyClassName}`}>{children}</div>
+      <div className={`pb-3 pt-1.5 ${bodyClassName}`}>{children}</div>
     </section>
+  );
+}
+
+/* Determination slip: one per human decision, stamped violet. */
+export function Slip({ who, when, what, note, className = "" }) {
+  return (
+    <div className={`slip stamp-in w-fit max-w-full sm:max-w-[30rem] px-3 py-2 text-[12.5px] leading-[18px] ${className}`}>
+      <p className="font-mono">
+        <span className="font-bold">det.</span> {who}
+        {when ? <span className="opacity-75"> · {when}</span> : null}
+      </p>
+      <p className="font-semibold text-[13px]">{what}</p>
+      {note ? <p className="opacity-80 line-clamp-2">{note}</p> : null}
+    </div>
   );
 }
 
 const BTN = {
   primary: "bg-primary text-on-primary hover:bg-primary-container border border-primary",
+  stamp: "bg-stamp text-white hover:bg-stamp-2 border border-stamp",
   ink: "bg-secondary text-on-secondary hover:bg-secondary-container border border-secondary",
   outline: "bg-surface-container-lowest text-on-surface border border-outline-variant hover:border-outline hover:bg-surface-container-low",
   danger: "bg-surface-container-lowest text-error border border-outline-variant hover:border-error hover:bg-error-container",
@@ -95,7 +111,7 @@ export function Button({ variant = "outline", size = "md", className = "", child
   return (
     <button
       type="button"
-      className={`inline-flex items-center justify-center rounded-[3px] font-semibold transition-colors duration-150 cursor-pointer disabled:cursor-not-allowed disabled:opacity-45 ${sz} ${BTN[variant]} ${className}`}
+      className={`inline-flex items-center justify-center rounded-[6px] font-semibold transition-[background-color,border-color,color,transform] duration-150 active:translate-y-px cursor-pointer disabled:cursor-not-allowed disabled:opacity-45 ${sz} ${BTN[variant]} ${className}`}
       {...props}
     >
       {children}
@@ -126,7 +142,7 @@ export function Dialog({ open, onClose, title, description, children, footer, wi
       onClick={(e) => {
         if (e.target === ref.current) onClose?.();
       }}
-      className={`sheet m-auto w-[calc(100vw-2rem)] ${width} p-0 rounded-[4px] border border-outline-variant bg-surface-container-lowest text-on-surface shadow-[0_18px_48px_-12px_rgb(14_47_54/0.45)]`}
+      className={`sheet m-auto w-[calc(100vw-2rem)] ${width} p-0 rounded-[10px] border border-outline-variant bg-surface-container-lowest text-on-surface shadow-[0_24px_60px_-20px_rgb(23_41_31/0.45)]`}
       aria-labelledby="dialog-title"
     >
       {open && (
@@ -154,7 +170,7 @@ export function TextArea({ id, label, hint, ...props }) {
       <span className="text-[13px] font-semibold">{label}</span>
       <textarea
         id={id}
-        className="w-full min-h-24 p-2.5 rounded-[3px] border border-outline-variant bg-surface-container-lowest text-[14px] leading-[22px] text-on-surface placeholder:text-outline focus:outline-2 focus:outline-primary focus:border-primary"
+        className="w-full min-h-24 p-2.5 rounded-[6px] border border-outline-variant bg-surface-container-lowest text-[14px] leading-[22px] text-on-surface placeholder:text-outline focus:outline-2 focus:outline-stamp focus:border-stamp"
         {...props}
       />
       {hint && <span className="text-[12px] text-on-surface-variant">{hint}</span>}
@@ -169,7 +185,7 @@ export function TextInput({ id, label, hint, ...props }) {
       <input
         id={id}
         type="text"
-        className="w-full h-10 px-2.5 rounded-[3px] border border-outline-variant bg-surface-container-lowest text-[14px] text-on-surface placeholder:text-outline focus:outline-2 focus:outline-primary focus:border-primary"
+        className="w-full h-10 px-2.5 rounded-[6px] border border-outline-variant bg-surface-container-lowest text-[14px] text-on-surface placeholder:text-outline focus:outline-2 focus:outline-stamp focus:border-stamp"
         {...props}
       />
       {hint && <span className="text-[12px] text-on-surface-variant">{hint}</span>}
@@ -190,7 +206,7 @@ export function TallyStrip({ claims, selectedId, onSelect, className = "" }) {
     <div className={`flex flex-col gap-2 ${className}`}>
       <div className="flex items-baseline justify-between gap-3 flex-wrap">
         <p className="text-[13px] text-on-surface-variant">
-          <span className="font-bold text-on-surface tnum">{done}</span> of <span className="tnum">{claims.length}</span> lines checked
+          <span className="font-bold text-on-surface tnum">{done}</span> of <span className="tnum">{claims.length}</span> claims determined
         </p>
         <ul className="flex items-center gap-3 text-[12px] text-on-surface-variant flex-wrap" aria-label="Legend">
           {["approved", "corrected", "rejected", "pending"].map((k) => (
@@ -210,11 +226,11 @@ export function TallyStrip({ claims, selectedId, onSelect, className = "" }) {
               key={c.id}
               type="button"
               tabIndex={-1}
-              title={`Line ${c.id}: ${REVIEW[c.review_state]?.label || c.review_state} · ${STATUS[c.status]?.label || c.status}`}
+              title={`Claim ${c.id}: ${REVIEW[c.review_state]?.label || c.review_state} · ${STATUS[c.status]?.label || c.status}`}
               onClick={() => onSelect?.(c)}
-              className={`relative flex-1 min-w-0 rounded-[1px] cursor-pointer transition-transform duration-150 hover:scale-y-110 ${
+              className={`relative flex-1 min-w-0 rounded-[1px] cursor-pointer transition-[transform,background-color] duration-300 hover:scale-y-110 ${
                 REVIEW[c.review_state]?.tick || "bg-surface-container-highest"
-              } ${sel ? "outline-2 outline-offset-1 outline-canary !bg-canary" : ""}`}
+              } ${sel ? "outline-2 outline-offset-1 outline-on-surface !bg-on-surface" : ""}`}
             >
               {flag && <span className={`absolute inset-x-0 top-0 h-1.5 rounded-t-[1px] ${STATUS[c.status].dot}`} />}
             </button>
