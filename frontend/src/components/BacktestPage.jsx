@@ -82,7 +82,7 @@ function SampleBacktest() {
     setIsLoading(true);
     setError(null);
     try {
-      const data = await api.getBacktest(1);
+      const data = await api.getBacktest();
       setBacktestData(data);
     } catch (err) {
       setError(err.message || "Failed to load backtest data");

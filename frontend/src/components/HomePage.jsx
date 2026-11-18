@@ -74,24 +74,27 @@ export default function HomePage({
   isLoading,
   actionStatus,
 }) {
+  const isSample = !project || project.name === "Campus Event App";
   // Real claims for the specimen stack: a spread of kinds and statuses.
   const [specimens, setSpecimens] = useState([]);
   const [allClaims, setAllClaims] = useState([]);
   useEffect(() => {
     let live = true;
     api
-      .getClaims({ projectId: 1, role: "lead" })
+      .getClaims({ role: "lead" })
       .then((list) => {
         if (!live || !Array.isArray(list)) return;
         setAllClaims(list);
         const seen = list.filter((c) => !c.withheld);
         const pick = [];
         const add = (c) => c && !pick.some((p) => p.id === c.id) && pick.push(c);
-        add(seen.find((c) => c.kind === "interpreted" && c.status === "verified" && c.type === "blocker" && c.evidence?.[0]?.quote));
+        add(seen.find((c) => ["interpreted", "rule"].includes(c.kind) && ["verified", "inferred"].includes(c.status) && c.type === "blocker" && c.evidence?.[0]?.quote));
         add(seen.find((c) => c.kind === "derived" && c.type === "risk"));
-        add(seen.find((c) => c.kind === "interpreted" && c.status === "verified" && c.type === "decision" && c.evidence?.[0]?.quote));
+        add(seen.find((c) => ["interpreted", "rule"].includes(c.kind) && ["verified", "inferred"].includes(c.status) && c.type === "decision" && c.evidence?.[0]?.quote));
         add(seen.find((c) => c.status === "conflicting"));
-        add(seen.find((c) => c.kind === "interpreted" && c.status === "verified" && c.type === "owner" && c.evidence?.[0]?.quote));
+        add(seen.find((c) => ["interpreted", "rule"].includes(c.kind) && ["verified", "inferred"].includes(c.status) && c.type === "owner" && c.evidence?.[0]?.quote));
+        // Small projects: fill the stack with any claim that carries a quote.
+        seen.filter((c) => c.evidence?.[0]?.quote).forEach((c) => pick.length < 5 && add(c));
         setSpecimens(pick);
         pick.forEach((c) =>
           api
@@ -184,7 +187,7 @@ export default function HomePage({
             </Button>
           </div>
           <p className="text-[13px] text-on-surface-variant" role="status">
-            {actionStatus?.text || actionStatus || "Runs on synthetic sample data. Automated checks assist; a person decides."}
+            {actionStatus?.text || actionStatus || (isSample ? "Runs on synthetic sample data. " : "") + "Automated checks assist; a person decides."}
           </p>
         </div>
 
@@ -237,7 +240,7 @@ export default function HomePage({
               })}
             </div>
           ) : hasStats ? (
-            <p className="text-[13px] text-on-surface-variant">No claims yet. Reload the sample to start.</p>
+            <p className="text-[13px] text-on-surface-variant">No claims yet. Add records and build claims to start.</p>
           ) : (
             <Skeleton className="h-16 w-full" />
           )}
@@ -343,7 +346,7 @@ export default function HomePage({
                 </p>
               </div>
             ))}
-            <p className="text-[12.5px] text-on-surface-variant px-1">Claims each role can read, out of {allClaims.length || "all"} in the sample.</p>
+            <p className="text-[12.5px] text-on-surface-variant px-1">Claims each role can read, out of {allClaims.length || "all"} in this project.</p>
           </div>
         }
       />
@@ -354,12 +357,16 @@ export default function HomePage({
           Where the claims come from.
         </h2>
         <p className="text-[15px] leading-6 text-on-surface-variant max-w-[60ch]">
-          {project ? `${sources.length} synthetic sources: commits, issues, meeting notes, tasks and chat.` : "Loading the sources…"} Secrets and contact details are masked before anything is analysed.
+          {project ? `${sources.length} ${isSample ? "synthetic " : ""}record${sources.length === 1 ? "" : "s"}: commits, issues, notes, tasks and chat.` : "Loading the sources…"} Secrets and contact details are masked before anything is analysed.
         </p>
         {project && sources.length === 0 ? (
           <div className="flex flex-col items-start gap-3">
             <p className="text-[14px] text-on-surface-variant">No sources are loaded, so there is nothing to check yet.</p>
-            <Button variant="outline" onClick={onResetSample} disabled={isLoading}>Reload the sample</Button>
+            {isSample ? (
+              <Button variant="outline" onClick={onResetSample} disabled={isLoading}>Reload the sample</Button>
+            ) : (
+              <Button variant="primary" onClick={() => setActiveTab("records")}>Add records</Button>
+            )}
           </div>
         ) : (
           <ul className="flex flex-wrap gap-2">

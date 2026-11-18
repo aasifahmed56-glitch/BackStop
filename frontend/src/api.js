@@ -4,6 +4,26 @@
 
 const BASE_URL = "/api";
 
+// The project every page works on. Kept per browser so a refresh lands in the same place.
+const PROJECT_KEY = "backstop.project";
+let currentProject = 1;
+try {
+  const v = Number(window.localStorage.getItem(PROJECT_KEY));
+  if (Number.isInteger(v) && v > 0) currentProject = v;
+} catch {
+  /* storage blocked: start on the sample */
+}
+export const getCurrentProject = () => currentProject;
+export function setCurrentProject(id) {
+  currentProject = Number(id) || 1;
+  try {
+    window.localStorage.setItem(PROJECT_KEY, String(currentProject));
+  } catch {
+    /* storage blocked: the choice lasts for this visit */
+  }
+}
+const cur = () => currentProject;
+
 export function formatErrorMessage(err) {
   if (!err) return "Unknown error";
   if (typeof err === "string") return err;
@@ -70,14 +90,37 @@ async function request(path, options = {}) {
 
 export const api = {
   // Project & Samples
-  getProject: (id = 1) => request(`/projects/${id}`),
+  getProject: (id = cur()) => request(`/projects/${id}`),
   resetSample: () => request("/sample/reset", { method: "POST" }),
   loadSample: () => request("/sample/load", { method: "POST" }),
-  deriveClaims: (id = 1) => request(`/projects/${id}/derive`, { method: "POST" }),
-  extractClaims: (id = 1) => request(`/projects/${id}/extract`, { method: "POST" }),
+  deriveClaims: (id = cur()) => request(`/projects/${id}/derive`, { method: "POST" }),
+  extractClaims: (id = cur()) => request(`/projects/${id}/extract`, { method: "POST" }),
+
+  // Workspaces
+  listProjects: () => request("/projects", { cache: "no-store" }),
+  createProject: ({ name, leaverName, departureDate }) =>
+    request("/projects", {
+      method: "POST",
+      body: JSON.stringify({ role: "lead", name, leaver_name: leaverName, departure_date: departureDate }),
+    }),
+  deleteProject: (id) => request(`/projects/${id}?role=lead`, { method: "DELETE" }),
+  listSources: (id = cur(), role = "lead") => request(`/projects/${id}/sources?role=${encodeURIComponent(role)}`, { cache: "no-store" }),
+  pasteSource: ({ projectId = cur(), kind, name, accessLevel = "team", text }) =>
+    request(`/projects/${projectId}/sources/paste`, {
+      method: "POST",
+      body: JSON.stringify({ role: "lead", kind, name, access_level: accessLevel, text }),
+    }),
+  githubSource: ({ projectId = cur(), url, leaver }) =>
+    request(`/projects/${projectId}/sources/github`, {
+      method: "POST",
+      body: JSON.stringify({ role: "lead", url, leaver: leaver || null }),
+    }),
+  deleteSource: (sourceId, projectId = cur()) => request(`/projects/${projectId}/sources/${sourceId}?role=lead`, { method: "DELETE" }),
+  analyseProject: (projectId = cur()) =>
+    request(`/projects/${projectId}/analyse`, { method: "POST", body: JSON.stringify({ role: "lead" }) }),
 
   // Claims & Review
-  getClaims: ({ projectId = 1, role = "lead", status, type, reviewState } = {}) => {
+  getClaims: ({ projectId = cur(), role = "lead", status, type, reviewState } = {}) => {
     const params = new URLSearchParams({
       project_id: projectId.toString(),
       role,
@@ -88,7 +131,7 @@ export const api = {
     return request(`/claims?${params.toString()}`);
   },
 
-  getClaimStats: ({ projectId = 1, role = "lead" } = {}) => {
+  getClaimStats: ({ projectId = cur(), role = "lead" } = {}) => {
     const params = new URLSearchParams({
       project_id: projectId.toString(),
       role,
@@ -108,7 +151,7 @@ export const api = {
       body: JSON.stringify({ role, note }),
     }),
 
-  bulkApproveVerified: ({ projectId = 1, role = "lead" } = {}) =>
+  bulkApproveVerified: ({ projectId = cur(), role = "lead" } = {}) =>
     request(`/claims/bulk-approve-verified?project_id=${projectId}`, {
       method: "POST",
       body: JSON.stringify({ role }),
@@ -127,16 +170,16 @@ export const api = {
     }),
 
   // Debrief questions and readiness (plain rules, no AI)
-  getDebrief: ({ projectId = 1, role = "lead" } = {}) =>
+  getDebrief: ({ projectId = cur(), role = "lead" } = {}) =>
     request(`/projects/${projectId}/debrief?role=${encodeURIComponent(role)}`, { cache: "no-store" }),
-  answerDebrief: ({ projectId = 1, role = "lead", questionClaimId, answer }) =>
+  answerDebrief: ({ projectId = cur(), role = "lead", questionClaimId, answer }) =>
     request(`/projects/${projectId}/debrief/answer`, {
       method: "POST",
       body: JSON.stringify({ role, question_claim_id: questionClaimId, answer }),
     }),
 
   // Handover & Acknowledge
-  getHandover: ({ projectId = 1, role = "incoming_dev" } = {}) => {
+  getHandover: ({ projectId = cur(), role = "incoming_dev" } = {}) => {
     const params = new URLSearchParams({ role, _ts: Date.now().toString() });
     return request(`/projects/${projectId}/handover?${params.toString()}`, {
       cache: "no-store",
@@ -147,21 +190,21 @@ export const api = {
     });
   },
 
-  acknowledgeHandover: (projectId = 1, { role = "incoming_dev", recipientName = "Team Member", note } = {}) =>
+  acknowledgeHandover: (projectId = cur(), { role = "incoming_dev", recipientName = "Team Member", note } = {}) =>
     request(`/projects/${projectId}/acknowledge`, {
       method: "POST",
       body: JSON.stringify({ role, recipient_name: recipientName, note }),
     }),
 
   // Backtest
-  getBacktest: (projectId = 1) => request(`/backtest/projects/${projectId}`),
+  getBacktest: (projectId = cur()) => request(`/backtest/projects/${projectId}`),
   getBacktestDatasets: () => request(`/backtest/datasets`),
   getTrustReport: () => request(`/trust/report`),
   importGithub: (body) => request(`/import/github`, { method: "POST", body: JSON.stringify(body) }),
   getRealBacktest: (name) => request(`/backtest/real/${encodeURIComponent(name)}`),
 
   // Tripwires
-  checkChange: ({ projectId = 1, role = "incoming_dev", files = [], diff = null, description = "" } = {}) =>
+  checkChange: ({ projectId = cur(), role = "incoming_dev", files = [], diff = null, description = "" } = {}) =>
     request(`/projects/${projectId}/tripwires/check`, {
       method: "POST",
       body: JSON.stringify({ role, files, diff, description }),

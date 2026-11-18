@@ -174,7 +174,7 @@ export default function CheckChangePage({ role, setRole, setActiveTab }) {
     setIsChecking(true);
     setError(null);
     try {
-      setResult(await api.checkChange({ projectId: 1, role, files, diff, description: desc }));
+      setResult(await api.checkChange({ role, files, diff, description: desc }));
     } catch (err) {
       setResult(null);
       setError(formatErrorMessage(err));

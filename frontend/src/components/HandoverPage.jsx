@@ -87,7 +87,7 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
     setIsLoading(true);
     setError(null);
     try {
-      const data = await api.getHandover({ projectId: 1, role });
+      const data = await api.getHandover({ role });
       if (myId !== requestId.current) return;
       setHandoverData(data);
     } catch (err) {
@@ -161,7 +161,7 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
     setIsSubmittingAck(true);
     setAckError(null);
     try {
-      const res = await api.acknowledgeHandover(1, {
+      const res = await api.acknowledgeHandover(undefined, {
         role,
         recipientName: name,
         note: ackNote.trim() || undefined,

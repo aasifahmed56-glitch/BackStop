@@ -83,7 +83,10 @@ def _task_sentences(text: str) -> Iterable[tuple[ClaimType, str]]:
     status = fields.get("status", "").lower()
     title = fields.get("title") or fields.get("task") or fields.get("name") or ""
     if title and status in {"blocked", "on hold", "waiting"}:
-        yield ClaimType.blocker, text
+        # A blocked task with no owner is already a MISSING OWNER claim from code.
+        owner = fields.get("owner") or fields.get("assignee") or ""
+        if owner:
+            yield ClaimType.blocker, (text, f'Task "{title}" is {status}; {owner} owns it.')
 
 
 def extract_rule_claims(project_id: int, source: Source, chunks: list[Chunk],
@@ -97,14 +100,14 @@ def extract_rule_claims(project_id: int, source: Source, chunks: list[Chunk],
         if source.kind == SourceKind.task:
             found = list(_task_sentences(ch.text))
         else:
-            found = [(t, s) for s in sentences(ch.text) if (t := classify(s))]
-        for ctype, sent in found:
+            found = [(t, (s, s)) for s in sentences(ch.text) if (t := classify(s))]
+        for ctype, (sent, said) in found:
             key = (source.id, sent.lower())
             if key in known:
                 continue
             known.add(key)
             status = ClaimStatus.inferred
-            text = redact(sent)
+            text = redact(said)
             if ctype == ClaimType.decision and not _REASON_RE.search(sent):
                 status = ClaimStatus.missing
                 ctype = ClaimType.open_question

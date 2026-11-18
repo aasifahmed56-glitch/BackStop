@@ -1,5 +1,5 @@
 import React from "react";
-import { RotateCcw, Keyboard, Search } from "lucide-react";
+import { RotateCcw, Keyboard, Search, ChevronsUpDown } from "lucide-react";
 import { consignmentNo } from "./ui";
 
 export const ROLES = [
@@ -10,11 +10,12 @@ export const ROLES = [
 
 export const NAV_ITEMS = [
   { id: "overview", n: 1, label: "Overview" },
-  { id: "review", n: 2, label: "Check the claims", short: "Check" },
-  { id: "debrief", n: 3, label: "Debrief questions", short: "Debrief" },
-  { id: "handover", n: 4, label: "Handover" },
-  { id: "backtest", n: 5, label: "Backtest" },
-  { id: "trust", n: 6, label: "Trust report", short: "Trust" },
+  { id: "records", n: 2, label: "Records" },
+  { id: "review", n: 3, label: "Check the claims", short: "Check" },
+  { id: "debrief", n: 4, label: "Debrief questions", short: "Debrief" },
+  { id: "handover", n: 5, label: "Handover" },
+  { id: "backtest", n: 6, label: "Backtest" },
+  { id: "trust", n: 7, label: "Trust report", short: "Trust" },
 ];
 
 /* A specimen sheet: board, one pressed stem, the collection label in the corner. */
@@ -69,6 +70,7 @@ function NavLink({ item, active, progress, onNavigate, compact = false }) {
 
 export default function Navbar({ activeTab, onNavigate, onResetSample, isResetting, project, progress, onShowShortcuts, onOpenPalette }) {
   const leaves = fmtDate(project?.departure_date);
+  const isSample = !project || project.name === "Campus Event App";
   return (
     <>
       {/* Desktop: the green rail */}
@@ -85,13 +87,26 @@ export default function Navbar({ activeTab, onNavigate, onResetSample, isResetti
           <span className="text-[18px] font-bold tracking-[-0.01em]">Backstop</span>
         </a>
 
-        <div className="mx-5 pb-4 mb-3 border-b border-ink-line">
-          <p className="text-[14px] font-semibold leading-5 truncate">{project?.name || "Campus Event App"}</p>
-          <p className="text-[12.5px] text-on-ink-muted leading-5">
-            {project?.leaver_name || "Riya"} {leaves ? `leaves ${leaves}` : "is leaving"}
-          </p>
-          <p className="font-mono text-[11.5px] text-on-ink-muted/90 mt-1">Acc. no. {consignmentNo(project?.id)}</p>
-        </div>
+        <a
+          href="#/projects"
+          onClick={(e) => {
+            e.preventDefault();
+            onNavigate("projects");
+          }}
+          aria-current={activeTab === "projects" ? "page" : undefined}
+          title="Switch or start a project"
+          className={`group mx-3 px-2 pb-3 pt-2 mb-3 rounded-[8px] flex items-start gap-2 border-b border-ink-line hover:bg-ink-2/60 ${activeTab === "projects" ? "bg-ink-2" : ""}`}
+        >
+          <span className="min-w-0 flex-1">
+            <span className="block text-[14px] font-semibold leading-5 truncate">{project?.name || "Loading…"}</span>
+            <span className="block text-[12.5px] text-on-ink-muted leading-5 truncate">
+              {project?.leaver_name || "…"} {leaves ? `leaves ${leaves}` : ""}
+            </span>
+            <span className="block font-mono text-[11.5px] text-on-ink-muted/90 mt-1">Acc. no. {consignmentNo(project?.id)}</span>
+          </span>
+          <ChevronsUpDown size={16} aria-hidden="true" className="mt-0.5 text-on-ink-muted group-hover:text-on-ink shrink-0" />
+          <span className="sr-only">Switch project</span>
+        </a>
 
         <button
           type="button"
@@ -118,18 +133,20 @@ export default function Navbar({ activeTab, onNavigate, onResetSample, isResetti
             <Keyboard size={16} aria-hidden="true" />
             Keyboard shortcuts
           </button>
-          <button
-            type="button"
-            onClick={onResetSample}
-            disabled={isResetting}
-            className="flex items-center gap-2.5 h-9 px-3 rounded-[6px] text-[13px] text-on-ink-muted hover:text-on-ink hover:bg-ink-2/60 cursor-pointer disabled:opacity-50 disabled:cursor-wait"
-            title="Reload the sample project and clear review decisions"
-          >
-            <RotateCcw size={16} aria-hidden="true" className={isResetting ? "animate-spin [animation-direction:reverse]" : ""} />
-            {isResetting ? "Resetting…" : "Reset sample"}
-          </button>
+          {isSample && (
+            <button
+              type="button"
+              onClick={onResetSample}
+              disabled={isResetting}
+              className="flex items-center gap-2.5 h-9 px-3 rounded-[6px] text-[13px] text-on-ink-muted hover:text-on-ink hover:bg-ink-2/60 cursor-pointer disabled:opacity-50 disabled:cursor-wait"
+              title="Reload the sample project and clear review decisions"
+            >
+              <RotateCcw size={16} aria-hidden="true" className={isResetting ? "animate-spin [animation-direction:reverse]" : ""} />
+              {isResetting ? "Resetting…" : "Reset sample"}
+            </button>
+          )}
           <p className="px-3 pt-3 mt-1 border-t border-ink-line text-[11.5px] leading-4 text-on-ink-muted">
-            Synthetic sample data. Roles are simulated; there is no sign-in. A person approves every claim.
+            {isSample ? "Synthetic sample data. " : ""}Roles are simulated; there is no sign-in. A person approves every claim.
           </p>
         </div>
       </aside>
@@ -148,9 +165,17 @@ export default function Navbar({ activeTab, onNavigate, onResetSample, isResetti
             <Mark size={24} />
             <span className="text-[17px] font-bold">Backstop</span>
           </a>
-          <span className="truncate text-[12.5px] text-on-ink-muted min-w-0">
-            {project?.name || "Campus Event App"} · {project?.leaver_name || "Riya"}
-          </span>
+          <a
+            href="#/projects"
+            onClick={(e) => {
+              e.preventDefault();
+              onNavigate("projects");
+            }}
+            className="truncate text-[12.5px] text-on-ink-muted hover:text-on-ink min-w-0 inline-flex items-center gap-1"
+          >
+            <span className="truncate">{project?.name || "…"} · {project?.leaver_name || "…"}</span>
+            <ChevronsUpDown size={13} aria-hidden="true" className="shrink-0" />
+          </a>
           <div className="ml-auto flex items-center gap-1">
             <button
               type="button"
@@ -160,7 +185,7 @@ export default function Navbar({ activeTab, onNavigate, onResetSample, isResetti
             >
               <Search size={18} aria-hidden="true" />
             </button>
-            <button
+            {isSample && <button
               type="button"
               onClick={onResetSample}
               disabled={isResetting}
@@ -169,7 +194,7 @@ export default function Navbar({ activeTab, onNavigate, onResetSample, isResetti
               className="inline-flex items-center justify-center w-9 h-9 rounded-[6px] text-on-ink-muted hover:text-on-ink hover:bg-ink-2 cursor-pointer disabled:opacity-50"
             >
               <RotateCcw size={17} aria-hidden="true" className={isResetting ? "animate-spin [animation-direction:reverse]" : ""} />
-            </button>
+            </button>}
           </div>
         </div>
         <nav aria-label="Steps" className="flex overflow-x-auto border-t border-ink-line [scrollbar-width:none]">

@@ -107,7 +107,7 @@ export default function SpecimenStack({ claims, onOpen }) {
                 <div className="flex items-center gap-2 flex-wrap">
                   <StatusChip status={c.status} size="sm" />
                   <span className="text-[12.5px] text-on-surface-variant">
-                    {c.kind === "derived" ? "Calculated by code" : c.kind === "debrief" ? "Told in the debrief" : "Extracted, then quote-checked"}
+                    {c.kind === "derived" ? "Calculated by code" : c.kind === "debrief" ? "Told in the debrief" : c.kind === "rule" ? "Found by keyword rule" : "Extracted, then quote-checked"}
                   </span>
                 </div>
                 <p className="mt-5 text-[21px] sm:text-[25px] leading-[1.25] font-semibold tracking-[-0.015em] text-on-surface text-balance line-clamp-4">{c.text}</p>
@@ -176,7 +176,7 @@ export default function SpecimenStack({ claims, onOpen }) {
           {paused ? <Play size={13} aria-hidden="true" /> : <Pause size={13} aria-hidden="true" />}
           {paused ? "Play" : "Pause"}
         </button>
-        <span className="ml-auto text-[12.5px] text-on-surface-variant hidden sm:inline">Real claims from the sample. Click a sheet behind to bring it forward.</span>
+        <span className="ml-auto text-[12.5px] text-on-surface-variant hidden sm:inline">Real claims from this project. Click a sheet behind to bring it forward.</span>
       </div>
     </div>
   );

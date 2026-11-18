@@ -6,10 +6,11 @@ import { api, formatErrorMessage } from "../api";
 import { STATUS, REVIEW, humanize, StatusChip, Field, Button, Dialog, TextArea, TextInput, TallyStrip, Skeleton, Slip } from "./ui";
 
 const isSeeded = (claim) => (claim?.evidence || []).some((ev) => ev.origin === "seeded");
-const kindLabel = (claim) => (isSeeded(claim) ? "Seeded fixture" : claim.kind === "derived" ? "Calculated by code" : claim.kind === "debrief" ? "Told in the debrief" : "Extracted by AI");
+const kindLabel = (claim) => (isSeeded(claim) ? "Seeded fixture" : claim.kind === "derived" ? "Calculated by code" : claim.kind === "debrief" ? "Told in the debrief" : claim.kind === "rule" ? "Found by keyword rule" : "Extracted by AI");
 const kindHelp = (claim) => {
   if (isSeeded(claim)) return "Hand-written demo claim for the synthetic sample. Its quote is checked, but no AI produced it.";
   if (claim.kind === "derived") return "Calculated by plain code from git history, tasks or notes. No AI involved.";
+  if (claim.kind === "rule") return "A published keyword rule matched this sentence in the records. The quote is the sentence word for word; decide whether it is still true and matters.";
   if (claim.kind === "debrief") return "Said by the person leaving in the debrief and typed in by the lead. The quote is their words; check it before approving.";
   return "Extracted by an AI model, then checked: the quote must exist in the source and support the claim.";
 };
@@ -86,7 +87,8 @@ function SourceExcerpt({ text, quote, lineStart }) {
   );
 }
 
-export default function ReviewQueuePage({ onRefreshStats, initialClaimId, onSelectClaimId }) {
+export default function ReviewQueuePage({ onRefreshStats, initialClaimId, onSelectClaimId, leaverName }) {
+  const projectLeaver = leaverName || "the person leaving";
   const [claims, setClaims] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -124,7 +126,7 @@ export default function ReviewQueuePage({ onRefreshStats, initialClaimId, onSele
   const loadClaims = useCallback(async () => {
     setError(null);
     try {
-      const data = await api.getClaims({ projectId: 1, role: "lead" });
+      const data = await api.getClaims({ role: "lead" });
       setClaims(Array.isArray(data) ? data : []);
       return Array.isArray(data) ? data : [];
     } catch (err) {
@@ -323,7 +325,7 @@ export default function ReviewQueuePage({ onRefreshStats, initialClaimId, onSele
     if (busy) return;
     setBusy(true);
     try {
-      const res = await api.bulkApproveVerified({ projectId: 1, role: "lead" });
+      const res = await api.bulkApproveVerified({ role: "lead" });
       setDialog(null);
       const n = res?.approved ?? res?.count ?? pendingVerified;
       await loadClaims();
@@ -399,7 +401,7 @@ export default function ReviewQueuePage({ onRefreshStats, initialClaimId, onSele
       <div className="panel max-w-xl mx-auto mt-10 p-6 flex flex-col gap-3">
         <h1 className="text-[20px] font-bold">No claims to check yet</h1>
         <p className="text-[14px] text-on-surface-variant">
-          The sample project has not been analysed. Use <strong>Reset sample</strong> in the top bar to load it; it takes a few seconds.
+          Add records to this project and build claims on the Records page. For the sample, use <strong>Reset sample</strong> in the side bar.
         </p>
       </div>
     );
@@ -412,7 +414,7 @@ export default function ReviewQueuePage({ onRefreshStats, initialClaimId, onSele
         <div className="max-w-2xl">
           <h1 className="text-[26px] sm:text-[28px] leading-tight font-extrabold tracking-[-0.015em]">Check the claims</h1>
           <p className="text-[15px] leading-6 text-on-surface-variant mt-1.5">
-            Each claim is something Backstop believes Riya knew. Read its proof, then approve, correct or reject it. Only approved claims reach the handover.
+            Each claim is something Backstop believes {projectLeaver} knew. Read its proof, then approve, correct or reject it. Only approved claims reach the handover.
           </p>
         </div>
         <div className="flex flex-col items-start lg:items-end gap-1.5 shrink-0">
@@ -489,7 +491,7 @@ export default function ReviewQueuePage({ onRefreshStats, initialClaimId, onSele
         <div className="flex flex-wrap gap-2 items-center">
           {[
             ["Review", reviewFilter, setReviewFilter, REVIEW_FILTERS.map((r) => [r.id, r.label])],
-            ["Source", kindFilter, setKindFilter, [["all", "Any source"], ["derived", "Calculated by code"], ["interpreted", "Extracted by AI"]]],
+            ["Source", kindFilter, setKindFilter, [["all", "Any source"], ["derived", "Calculated by code"], ["interpreted", "Extracted by AI"], ["rule", "Keyword rule"], ["debrief", "Debrief"]]],
             ["Type", typeFilter, setTypeFilter, [["all", "Any type"], ...typeOptions.map((t) => [t, humanize(t)])]],
           ].map(([label, value, set, opts]) => (
             <label key={label} className="relative">
@@ -554,7 +556,7 @@ export default function ReviewQueuePage({ onRefreshStats, initialClaimId, onSele
                         <span className="text-[12px] text-on-surface-variant flex items-center gap-1.5 flex-wrap">
                           <span>{humanize(claim.type)}</span>
                           <span aria-hidden="true">·</span>
-                          <span>{claim.kind === "derived" ? "Code" : claim.kind === "debrief" ? "Debrief" : "AI"}</span>
+                          <span>{claim.kind === "derived" ? "Code" : claim.kind === "debrief" ? "Debrief" : claim.kind === "rule" ? "Rule" : "AI"}</span>
                           {claim.access_level !== "team" && claim.access_level !== "public" && (
                             <>
                               <span aria-hidden="true">·</span>

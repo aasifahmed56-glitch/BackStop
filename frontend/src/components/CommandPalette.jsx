@@ -31,7 +31,7 @@ export default function CommandPalette({ open, onClose, onNavigate, dataVersion 
     let live = true;
     setError(null);
     api
-      .getClaims({ projectId: 1, role: "lead" })
+      .getClaims({ role: "lead" })
       .then((list) => live && setClaims(Array.isArray(list) ? list.filter((c) => !c.withheld) : []))
       .catch(() => live && setError("Claims could not be loaded. Pages still work."));
     return () => {

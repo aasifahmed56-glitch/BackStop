@@ -10,12 +10,14 @@ import TrustReportPage from "./components/TrustReportPage";
 import CheckChangePage from "./components/CheckChangePage";
 import DebriefPage from "./components/DebriefPage";
 import CommandPalette from "./components/CommandPalette";
+import ProjectsPage from "./components/ProjectsPage";
+import RecordsPage from "./components/RecordsPage";
 import { Button, Dialog } from "./components/ui";
-import { api, formatErrorMessage } from "./api";
+import { api, formatErrorMessage, getCurrentProject, setCurrentProject } from "./api";
 
 const TABS = NAV_ITEMS.map((n) => n.id);
 // Screens reached from a page rather than the step bar.
-const ROUTES = [...TABS, "check"];
+const ROUTES = [...TABS, "check", "projects"];
 const LEGACY = { home: "overview" };
 
 // Route lives in the hash so refresh, back/forward and shared links all land on the same screen.
@@ -43,6 +45,7 @@ export default function App() {
   const [role, setRoleState] = useState(readRole);
 
   const [project, setProject] = useState(null);
+  const [projectId, setProjectId] = useState(getCurrentProject);
   const [stats, setStats] = useState(null);
   const [loadError, setLoadError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -101,10 +104,13 @@ export default function App() {
   }, []);
 
   const loadInitialData = useCallback(async () => {
-    const [projRes, statsRes] = await Promise.allSettled([
-      api.getProject(1),
-      api.getClaimStats({ projectId: 1, role: "lead" }),
-    ]);
+    const [projRes, statsRes] = await Promise.allSettled([api.getProject(), api.getClaimStats({ role: "lead" })]);
+    // The saved project was deleted elsewhere: fall back to the sample.
+    if (projRes.status === "rejected" && /not found/i.test(String(projRes.reason?.message)) && getCurrentProject() !== 1) {
+      setCurrentProject(1);
+      setProjectId(1);
+      return;
+    }
     setProject(projRes.status === "fulfilled" ? projRes.value : null);
     setStats(statsRes.status === "fulfilled" ? statsRes.value : null);
     setLoadError(
@@ -116,7 +122,18 @@ export default function App() {
 
   useEffect(() => {
     loadInitialData();
-  }, [loadInitialData]);
+  }, [loadInitialData, projectId]);
+
+  const switchProject = useCallback(
+    (id, tab = "overview") => {
+      setCurrentProject(id);
+      setProjectId(id);
+      setStats(null);
+      setDataVersion((v) => v + 1);
+      navigate(tab);
+    },
+    [navigate]
+  );
 
   // Keyboard: number keys switch steps, ? opens the shortcut sheet. Ignored while typing.
   useEffect(() => {
@@ -185,7 +202,7 @@ export default function App() {
     setIsLoading(true);
     setActionStatus({ tone: "info", text: "Running derivations from git history and tasks…" });
     try {
-      const result = await api.deriveClaims(1);
+      const result = await api.deriveClaims();
       await loadInitialData();
       setDataVersion((v) => v + 1);
       flash({ tone: "ok", text: `Derivation complete: ${result?.claims_created ?? 0} claims from code.` });
@@ -200,7 +217,7 @@ export default function App() {
     setIsLoading(true);
     setActionStatus({ tone: "info", text: "Running extraction with quote and support checks…" });
     try {
-      const result = await api.extractClaims(1);
+      const result = await api.extractClaims();
       await loadInitialData();
       setDataVersion((v) => v + 1);
       const st = result?.stats || {};
@@ -246,8 +263,37 @@ export default function App() {
             </div>
           )}
 
+          {activeTab === "projects" && (
+            <ProjectsPage
+              key={`projects-${dataVersion}`}
+              currentId={projectId}
+              onOpen={switchProject}
+              startOpen={route.claimId === null && window.location.hash.includes("new")}
+              onDeleted={(id) => {
+                if (id === projectId) {
+                  setCurrentProject(1);
+                  setProjectId(1);
+                  setDataVersion((v) => v + 1);
+                }
+              }}
+            />
+          )}
+
+          {activeTab === "records" && (
+            <RecordsPage
+              key={`records-${dataVersion}-${projectId}`}
+              project={project}
+              onChanged={loadInitialData}
+              setActiveTab={navigate}
+              onNewProject={() => {
+                window.location.hash = "#/projects/new";
+              }}
+            />
+          )}
+
           {activeTab === "overview" && (
             <HomePage
+              key={`home-${dataVersion}`}
               project={project}
               stats={stats}
               onResetSample={handleResetSample}
@@ -263,6 +309,7 @@ export default function App() {
           {activeTab === "review" && (
             <ReviewQueuePage
               key={`review-${dataVersion}`}
+              leaverName={project?.leaver_name}
               role="lead"
               stats={stats}
               onRefreshStats={loadInitialData}
