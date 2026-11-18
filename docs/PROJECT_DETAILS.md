@@ -1,5 +1,7 @@
 # Backstop — Comprehensive Project Documentation & Technical Specification
 
+> **Round 2 specification.** This describes Backstop as it stood at the end of Round 2. For Round 3 changes see the [README](../README.md#6-changes-since-round-2), [ARCHITECTURE.md](ARCHITECTURE.md) and [CHANGELOG.md](../CHANGELOG.md).
+
 > **Every claim shows its source quote and a status. A human approves before handover.**  
 > *A deterministic transition intelligence platform that turns unstructured developer activity into an auditable, role-gated handover ledger.*
 

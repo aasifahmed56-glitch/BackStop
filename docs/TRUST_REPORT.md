@@ -18,9 +18,10 @@ That page reads the saved files in `backend/data/trust/` through `GET /api/trust
 
 ## 1. Leak attacks
 
-**Important:** roles are simulated with a switcher and there is no sign-in. The server trusts the role value
-it is sent. The harness therefore tests the access rules (what each role value may read or change), not
-authentication. Anyone who sends `role=admin` gets admin access by design of the demo.
+**Important:** every person now signs in, and the server refuses any role the signed-in account may not act
+as (a newcomer cannot send `role=lead`, a lead cannot send `role=admin`). The harness runs with sign-in
+switched off so it can send every role value, so it tests the access rules (what each role value may read or
+change). The sign-in guard itself is tested in `backend/tests/test_auth.py`.
 
 ### How it works
 
@@ -150,8 +151,7 @@ Run it: `cd backend && python scripts/run_support_eval.py`. Tests: `tests/trust/
 
 ## 3. Limitations
 
-- Roles are simulated; the server trusts the role value. This is a test of the access rules, not of
-  authentication.
+- The harness tests the access rules with sign-in switched off; `test_auth.py` covers the sign-in guard.
 - The leak harness looks for known planted strings and the text of known restricted and confidential claims.
   Text it was not told about would not be flagged.
 - Mutating admin routes (load, reset, derive, extract, upload, recompute access) take no role at all. The

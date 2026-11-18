@@ -37,6 +37,6 @@ The trust leak harness attacks every one of these with every role variant (1,543
 
 ## Limits
 
-- Roles are still simulated; there is no sign-in. Anyone who can reach the server can choose the lead role.
+- Only lead and admin accounts can create projects or change records. The server takes the role from the signed-in account.
 - Keyword rules are blunt. They find sentences that look like decisions or warnings; they cannot tell whether a sentence is still true or important. That is the reviewer's job.
 - A server holds at most 200 projects and a project at most 40 records of up to 2 MB each.

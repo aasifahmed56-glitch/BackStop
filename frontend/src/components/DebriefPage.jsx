@@ -270,6 +270,16 @@ export default function DebriefPage({ setActiveTab, onChanged }) {
             <Skeleton className="h-16 w-full" />
             <Skeleton className="h-16 w-full" />
           </div>
+        ) : (data.questions || []).length === 0 && !(data.readiness?.parts || []).some((p) => p.total > 0 && p.key !== "signed") ? (
+          <div className="py-10 flex flex-col items-start gap-3 border-t border-outline-variant">
+            <p className="text-[15px] font-semibold">No claims yet, so there is nothing to ask.</p>
+            <p className="text-[14px] text-on-surface-variant max-w-[60ch]">
+              Add records and build claims. Gaps, disagreements and modules only one person knows turn into questions here.
+            </p>
+            <Button variant="primary" size="sm" onClick={() => setActiveTab("records")}>
+              Add records <ArrowRight size={14} aria-hidden="true" />
+            </Button>
+          </div>
         ) : shown.length === 0 ? (
           <div className="py-10 flex flex-col items-start gap-3 border-t border-outline-variant">
             <p className="text-[15px] font-semibold">

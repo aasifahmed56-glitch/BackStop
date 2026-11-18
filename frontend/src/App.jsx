@@ -12,12 +12,15 @@ import DebriefPage from "./components/DebriefPage";
 import CommandPalette from "./components/CommandPalette";
 import ProjectsPage from "./components/ProjectsPage";
 import RecordsPage from "./components/RecordsPage";
+import AccountsPage from "./components/AccountsPage";
 import { Button, Dialog } from "./components/ui";
-import { api, formatErrorMessage, getCurrentProject, setCurrentProject } from "./api";
+import { api, formatErrorMessage, getCurrentProject, setCurrentProject, clampRole, canReview } from "./api";
 
 const TABS = NAV_ITEMS.map((n) => n.id);
 // Screens reached from a page rather than the step bar.
-const ROUTES = [...TABS, "check", "projects"];
+const ROUTES = [...TABS, "check", "projects", "accounts"];
+// Screens that change claims or records: lead and admin accounts only.
+const REVIEWER_ONLY = ["projects", "records", "review", "debrief"];
 const LEGACY = { home: "overview" };
 
 // Route lives in the hash so refresh, back/forward and shared links all land on the same screen.
@@ -33,15 +36,16 @@ const ROLE_KEY = "backstop.role";
 const readRole = () => {
   try {
     const r = window.localStorage.getItem(ROLE_KEY);
-    return ["incoming_dev", "incoming_pm", "lead"].includes(r) ? r : "incoming_dev";
+    return clampRole(["incoming_dev", "incoming_pm", "lead"].includes(r) ? r : "incoming_dev");
   } catch {
-    return "incoming_dev";
+    return clampRole("incoming_dev");
   }
 };
 
 export default function App() {
   const [route, setRoute] = useState(parseHash);
-  const activeTab = route.tab;
+  // A newcomer's account cannot open the reviewer screens; they get a short note instead.
+  const activeTab = !canReview() && REVIEWER_ONLY.includes(route.tab) ? "locked" : route.tab;
   const [role, setRoleState] = useState(readRole);
 
   const [project, setProject] = useState(null);
@@ -246,12 +250,15 @@ export default function App() {
         onResetSample={handleResetSample}
         isResetting={isLoading}
         project={project}
+        projectId={projectId}
+        onSwitchProject={switchProject}
+        dataVersion={dataVersion}
         progress={progress}
         onShowShortcuts={() => setShowShortcuts(true)}
         onOpenPalette={() => setShowPalette(true)}
       />
 
-      <main id="main" className="w-full flex-1 lg:pl-[248px] [view-transition-name:page]">
+      <main id="main" className="w-full flex-1 [view-transition-name:page]">
         <div className="max-w-[1280px] mx-auto px-4 sm:px-8 lg:px-12 py-7 sm:py-10">
           {loadError && (
             <div role="alert" className="mb-6 panel border-error/40 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
@@ -262,6 +269,18 @@ export default function App() {
               <Button size="sm" onClick={loadInitialData}>Try again</Button>
             </div>
           )}
+
+          {activeTab === "locked" && (
+            <div className="panel px-5 py-5 max-w-[60ch]">
+              <h1 className="text-[20px] font-bold">This screen is for leads</h1>
+              <p className="mt-1.5 text-[14.5px] leading-6 text-on-surface-variant">
+                Your account reads the handover for your role. Checking claims and editing records needs a lead or admin account.
+              </p>
+              <Button className="mt-4" variant="primary" onClick={() => navigate("handover")}>Open my handover</Button>
+            </div>
+          )}
+
+          {activeTab === "accounts" && <AccountsPage />}
 
           {activeTab === "projects" && (
             <ProjectsPage

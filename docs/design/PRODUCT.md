@@ -1,8 +1,7 @@
 # Product
 
-<!-- impeccable:product-schema 1 -->
 
-> Inferred from the README, PROJECT_DETAILS.md and the running app; the owner was away when this was written. Lines marked (inferred) await confirmation.
+> Who Backstop is for, what it must do, and the constraints every screen follows.
 
 ## Platform
 

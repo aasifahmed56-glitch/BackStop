@@ -26,6 +26,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.db import create_db_and_tables
+from app.auth import role_guard, seed_accounts
 
 app = FastAPI(title="Backstop", version="0.1.0")
 
@@ -47,10 +48,15 @@ async def add_security_headers(request: Request, call_next):
 # Rate Limiting Middleware (In-memory, for upload & extract endpoints)
 # ---------------------------------------------------------------------------
 
+# Sign-in guard: every /api request needs a session, and the role it asks for
+# must be one the signed-in account may act as. See app/auth.py.
+app.middleware("http")(role_guard)
+
 _rate_limits: dict[str, list[float]] = defaultdict(list)
 _RATE_RULES = {
     "/upload": (10, 60),    # max 10 uploads per 60s
     "/extract": (6, 60),    # max 6 extractions per 60s
+    "/login": (10, 60),     # max 10 sign-in attempts per 60s
 }
 
 @app.middleware("http")
@@ -169,6 +175,7 @@ def on_startup() -> None:
         format="%(asctime)s %(levelname)s %(name)s %(message)s",
     )
     create_db_and_tables()
+    seed_accounts()
     _seed_sample_if_needed()
 
 
@@ -201,6 +208,7 @@ from app.trust import router as trust_router         # noqa: E402
 from app.tripwires import router as tripwires_router  # noqa: E402
 from app.debrief import router as debrief_router
 from app.workspace import router as workspace_router
+from app.auth import router as auth_router           # noqa: E402
 
 app.include_router(ingest_router, prefix="/api")
 app.include_router(derived_router, prefix="/api")
@@ -213,6 +221,7 @@ app.include_router(trust_router, prefix="/api")
 app.include_router(tripwires_router, prefix="/api")
 app.include_router(debrief_router, prefix="/api")
 app.include_router(workspace_router, prefix="/api")
+app.include_router(auth_router, prefix="/api")
 
 
 # ---------------------------------------------------------------------------

@@ -5,9 +5,10 @@ import '@fontsource/courier-prime/400.css'
 import '@fontsource/courier-prime/700.css'
 import './index.css'
 import App from './App.jsx'
+import AuthGate from './components/AuthGate.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <App />
+    <AuthGate>{(user) => <App key={user.id} />}</AuthGate>
   </StrictMode>,
 )

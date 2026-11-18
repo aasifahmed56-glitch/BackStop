@@ -8,4 +8,11 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  // `npm run dev` talks to the FastAPI server on port 8000.
+  server: {
+    proxy: {
+      '/api': 'http://localhost:8000',
+      '/healthz': 'http://localhost:8000',
+    },
+  },
 })

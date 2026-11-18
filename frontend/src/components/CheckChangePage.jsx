@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { api, formatErrorMessage } from "../api";
-import { ROLES } from "./Navbar";
+import { api, formatErrorMessage, canActAs } from "../api";
+import { ROLES as ALL_ROLES } from "./Navbar";
 import { Button } from "./ui";
 import { ArrowLeft, ListChecks } from "lucide-react";
 
@@ -157,6 +157,8 @@ function ReplaySummary() {
 }
 
 export default function CheckChangePage({ role, setRole, setActiveTab }) {
+  // Only the views this account may open; the server refuses the rest.
+  const ROLES = ALL_ROLES.filter((r) => canActAs(r.id));
   const [changes, setChanges] = useState("");
   const [description, setDescription] = useState("");
   const [result, setResult] = useState(null);
