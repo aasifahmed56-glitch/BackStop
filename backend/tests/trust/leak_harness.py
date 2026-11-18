@@ -279,6 +279,8 @@ class LeakHarness:
             ("real backtest", "/api/backtest/real/{name}", "/api/backtest/real/mocha", {}),
             ("trust report", "/api/trust/report", "/api/trust/report", {}),
             ("debrief questions", "/api/projects/{project_id}/debrief", "/api/projects/1/debrief", {}),
+            ("project list", "/api/projects", "/api/projects", {}),
+            ("project records", "/api/projects/{project_id}/sources", "/api/projects/1/sources", {}),
             ("health", "/healthz", "/healthz", {}),
             ("OpenAPI schema", "/openapi.json", "/openapi.json", {}),
         ]
@@ -397,6 +399,47 @@ class LeakHarness:
                         elif after != before:
                             fail = "claims changed although the request was refused"
                         self._record(f"record debrief answer on {level} claim without permission", endpoint, "POST", "/api/projects/1/debrief/answer", v, r, fail)
+
+        # Workspaces: every write is lead-only, and the sample is read-only even for the lead.
+        if self._has_route("POST", "/api/projects"):
+            probes = [
+                ("create a project", "POST", "/api/projects", "/api/projects",
+                 {"name": "Harness", "leaver_name": "Harness", "departure_date": "2025-01-01"}),
+                ("paste a record into the sample", "POST", "/api/projects/{project_id}/sources/paste", "/api/projects/1/sources/paste",
+                 {"kind": "note", "text": "HARNESS NOTE that should never be stored", "access_level": "public"}),
+                ("import GitHub history into the sample", "POST", "/api/projects/{project_id}/sources/github", "/api/projects/1/sources/github",
+                 {"url": "https://example.com/not-github"}),
+                ("analyse the sample", "POST", "/api/projects/{project_id}/analyse", "/api/projects/1/analyse", {}),
+            ]
+            for attack, method, endpoint, url, body in probes:
+                for v in ROLE_VARIANTS + BODY_TAMPER_VARIANTS:
+                    if v.value == "lead" and endpoint == "/api/projects":
+                        continue  # a lead creating a project is permitted
+                    before = self._state()
+                    r = self._post(url, v, body)
+                    after = self._state()
+                    fail = ""
+                    if r.status_code < 400:
+                        fail = f"write accepted (HTTP {r.status_code})"
+                    elif after != before:
+                        fail = "claims changed although the request was refused"
+                    self._record(attack, endpoint, method, url, v, r, fail)
+            src = (self.client.get("/api/projects/1", params={"role": "admin"}).json().get("sources") or [{"id": 1}])[0]["id"]
+            for attack, endpoint, url in (
+                ("delete the sample project", "/api/projects/{project_id}", "/api/projects/1"),
+                ("delete a sample record", "/api/projects/{project_id}/sources/{source_id}", f"/api/projects/1/sources/{src}"),
+            ):
+                for v in ROLE_VARIANTS:
+                    before = self._state()
+                    params = {} if v.value is _MISSING else {"role": v.value}
+                    r = self.client.delete(url, params=params)
+                    after = self._state()
+                    fail = ""
+                    if r.status_code < 400:
+                        fail = f"delete accepted (HTTP {r.status_code})"
+                    elif after != before:
+                        fail = "claims changed although the request was refused"
+                    self._record(attack, endpoint, "DELETE", url, v, r, fail)
 
         for v in ROLE_VARIANTS + BODY_TAMPER_VARIANTS:
             r = self._post("/api/projects/1/acknowledge", v, {"recipient_name": "Harness"})
