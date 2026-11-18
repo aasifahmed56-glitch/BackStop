@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { flushSync } from "react-dom";
 import { X } from "lucide-react";
 import Navbar, { NAV_ITEMS } from "./components/Navbar";
 import HomePage from "./components/HomePage";
@@ -7,12 +8,16 @@ import HandoverPage from "./components/HandoverPage";
 import BacktestPage from "./components/BacktestPage";
 import TrustReportPage from "./components/TrustReportPage";
 import CheckChangePage from "./components/CheckChangePage";
+import DebriefPage from "./components/DebriefPage";
+import CommandPalette from "./components/CommandPalette";
+import ProjectsPage from "./components/ProjectsPage";
+import RecordsPage from "./components/RecordsPage";
 import { Button, Dialog } from "./components/ui";
-import { api, formatErrorMessage } from "./api";
+import { api, formatErrorMessage, getCurrentProject, setCurrentProject } from "./api";
 
 const TABS = NAV_ITEMS.map((n) => n.id);
 // Screens reached from a page rather than the step bar.
-const ROUTES = [...TABS, "check"];
+const ROUTES = [...TABS, "check", "projects"];
 const LEGACY = { home: "overview" };
 
 // Route lives in the hash so refresh, back/forward and shared links all land on the same screen.
@@ -40,12 +45,14 @@ export default function App() {
   const [role, setRoleState] = useState(readRole);
 
   const [project, setProject] = useState(null);
+  const [projectId, setProjectId] = useState(getCurrentProject);
   const [stats, setStats] = useState(null);
   const [loadError, setLoadError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [actionStatus, setActionStatus] = useState(null);
   const [confirmReset, setConfirmReset] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
+  const [showPalette, setShowPalette] = useState(false);
   // Bumped after a reset so open pages remount and refetch instead of showing stale claims.
   const [dataVersion, setDataVersion] = useState(0);
 
@@ -59,7 +66,21 @@ export default function App() {
   };
 
   useEffect(() => {
-    const onHash = () => setRoute(parseHash());
+    // Page changes cross-fade with a short View Transition where the browser has one.
+    const onHash = () => {
+      const next = parseHash();
+      let reduce = false;
+      try {
+        reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      } catch {
+        /* no matchMedia */
+      }
+      setRoute((cur) => {
+        if (cur.tab === next.tab || reduce || !document.startViewTransition) return next;
+        document.startViewTransition(() => flushSync(() => setRoute(next)));
+        return cur;
+      });
+    };
     window.addEventListener("hashchange", onHash);
     return () => window.removeEventListener("hashchange", onHash);
   }, []);
@@ -83,10 +104,13 @@ export default function App() {
   }, []);
 
   const loadInitialData = useCallback(async () => {
-    const [projRes, statsRes] = await Promise.allSettled([
-      api.getProject(1),
-      api.getClaimStats({ projectId: 1, role: "lead" }),
-    ]);
+    const [projRes, statsRes] = await Promise.allSettled([api.getProject(), api.getClaimStats({ role: "lead" })]);
+    // The saved project was deleted elsewhere: fall back to the sample.
+    if (projRes.status === "rejected" && /not found/i.test(String(projRes.reason?.message)) && getCurrentProject() !== 1) {
+      setCurrentProject(1);
+      setProjectId(1);
+      return;
+    }
     setProject(projRes.status === "fulfilled" ? projRes.value : null);
     setStats(statsRes.status === "fulfilled" ? statsRes.value : null);
     setLoadError(
@@ -98,12 +122,28 @@ export default function App() {
 
   useEffect(() => {
     loadInitialData();
-  }, [loadInitialData]);
+  }, [loadInitialData, projectId]);
+
+  const switchProject = useCallback(
+    (id, tab = "overview") => {
+      setCurrentProject(id);
+      setProjectId(id);
+      setStats(null);
+      setDataVersion((v) => v + 1);
+      navigate(tab);
+    },
+    [navigate]
+  );
 
   // Keyboard: number keys switch steps, ? opens the shortcut sheet. Ignored while typing.
   useEffect(() => {
     const onKey = (e) => {
       const t = e.target;
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setShowPalette((v) => !v);
+        return;
+      }
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       if (t && (t.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(t.tagName))) return;
       if (document.querySelector("dialog[open]")) return;
@@ -162,7 +202,7 @@ export default function App() {
     setIsLoading(true);
     setActionStatus({ tone: "info", text: "Running derivations from git history and tasks…" });
     try {
-      const result = await api.deriveClaims(1);
+      const result = await api.deriveClaims();
       await loadInitialData();
       setDataVersion((v) => v + 1);
       flash({ tone: "ok", text: `Derivation complete: ${result?.claims_created ?? 0} claims from code.` });
@@ -177,7 +217,7 @@ export default function App() {
     setIsLoading(true);
     setActionStatus({ tone: "info", text: "Running extraction with quote and support checks…" });
     try {
-      const result = await api.extractClaims(1);
+      const result = await api.extractClaims();
       await loadInitialData();
       setDataVersion((v) => v + 1);
       const st = result?.stats || {};
@@ -197,7 +237,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-background text-on-surface flex flex-col antialiased">
-      <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:px-3 focus:py-2 focus:bg-canary focus:text-on-canary focus:font-semibold">
+      <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:px-3 focus:py-2 focus:rounded-[6px] focus:bg-stamp focus:text-white focus:font-semibold">
         Skip to content
       </a>
       <Navbar
@@ -208,10 +248,11 @@ export default function App() {
         project={project}
         progress={progress}
         onShowShortcuts={() => setShowShortcuts(true)}
+        onOpenPalette={() => setShowPalette(true)}
       />
 
-      <main id="main" className="w-full flex-1">
-        <div className="max-w-[1360px] mx-auto px-4 sm:px-6 py-6 sm:py-8">
+      <main id="main" className="w-full flex-1 lg:pl-[248px] [view-transition-name:page]">
+        <div className="max-w-[1280px] mx-auto px-4 sm:px-8 lg:px-12 py-7 sm:py-10">
           {loadError && (
             <div role="alert" className="mb-6 panel border-error/40 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
               <p className="text-[14px]">
@@ -222,8 +263,37 @@ export default function App() {
             </div>
           )}
 
+          {activeTab === "projects" && (
+            <ProjectsPage
+              key={`projects-${dataVersion}`}
+              currentId={projectId}
+              onOpen={switchProject}
+              startOpen={route.claimId === null && window.location.hash.includes("new")}
+              onDeleted={(id) => {
+                if (id === projectId) {
+                  setCurrentProject(1);
+                  setProjectId(1);
+                  setDataVersion((v) => v + 1);
+                }
+              }}
+            />
+          )}
+
+          {activeTab === "records" && (
+            <RecordsPage
+              key={`records-${dataVersion}-${projectId}`}
+              project={project}
+              onChanged={loadInitialData}
+              setActiveTab={navigate}
+              onNewProject={() => {
+                window.location.hash = "#/projects/new";
+              }}
+            />
+          )}
+
           {activeTab === "overview" && (
             <HomePage
+              key={`home-${dataVersion}`}
               project={project}
               stats={stats}
               onResetSample={handleResetSample}
@@ -239,6 +309,7 @@ export default function App() {
           {activeTab === "review" && (
             <ReviewQueuePage
               key={`review-${dataVersion}`}
+              leaverName={project?.leaver_name}
               role="lead"
               stats={stats}
               onRefreshStats={loadInitialData}
@@ -246,6 +317,10 @@ export default function App() {
               onSelectClaimId={replaceClaimInHash}
               setActiveTab={navigate}
             />
+          )}
+
+          {activeTab === "debrief" && (
+            <DebriefPage key={`debrief-${dataVersion}`} setActiveTab={navigate} onChanged={loadInitialData} />
           )}
 
           {activeTab === "handover" && (
@@ -263,7 +338,7 @@ export default function App() {
         <div
           role={actionStatus.tone === "error" ? "alert" : "status"}
           aria-live="polite"
-          className={`rise-in no-print fixed bottom-4 right-4 left-4 sm:left-auto z-50 sm:max-w-md flex items-start gap-3 pl-4 pr-2 py-3 rounded-[4px] border shadow-[0_12px_32px_-12px_rgb(14_47_54/0.5)] text-[14px] leading-5 ${
+          className={`rise-in no-print fixed bottom-4 right-4 left-4 sm:left-auto z-50 sm:max-w-md flex items-start gap-3 pl-4 pr-2 py-3 rounded-[8px] border shadow-[0_16px_36px_-14px_rgb(29_32_31/0.5)] text-[14px] leading-5 ${
             actionStatus.tone === "error"
               ? "bg-error-container text-on-error-container border-error/40"
               : actionStatus.tone === "warn"
@@ -302,6 +377,7 @@ export default function App() {
             ["E", "Correct the open claim"],
             ["R", "Reject the open claim"],
             ["/", "Search claims"],
+            ["⌘K", "Jump to a page or claim"],
             ["?", "Show this sheet"],
           ].map(([k, v]) => (
             <React.Fragment key={k}>
@@ -312,14 +388,7 @@ export default function App() {
         </dl>
       </Dialog>
 
-      <footer className="no-print mt-auto bg-ink text-on-ink-muted">
-        <div className="max-w-[1360px] mx-auto px-4 sm:px-6 py-5 flex flex-col sm:flex-row gap-2 sm:items-center justify-between text-[13px]">
-          <p>
-            <span className="font-bold text-on-ink">Backstop</span> · Automated checks find the evidence. A person approves every claim.
-          </p>
-          <p>Synthetic sample data. Roles are simulated; there is no sign-in.</p>
-        </div>
-      </footer>
+      <CommandPalette open={showPalette} onClose={() => setShowPalette(false)} onNavigate={navigate} dataVersion={dataVersion} />
     </div>
   );
 }

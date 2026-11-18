@@ -3,13 +3,15 @@ import {
   Check, X, PencilLine, Search, Copy, Link2, Lock, Code2, ArrowLeftRight, ChevronDown, CheckCheck, RotateCw, History,
 } from "lucide-react";
 import { api, formatErrorMessage } from "../api";
-import { STATUS, REVIEW, humanize, StatusChip, Field, Button, Dialog, TextArea, TextInput, TallyStrip, Skeleton } from "./ui";
+import { STATUS, REVIEW, humanize, StatusChip, Field, Button, Dialog, TextArea, TextInput, TallyStrip, Skeleton, Slip } from "./ui";
 
 const isSeeded = (claim) => (claim?.evidence || []).some((ev) => ev.origin === "seeded");
-const kindLabel = (claim) => (isSeeded(claim) ? "Seeded fixture" : claim.kind === "derived" ? "Calculated by code" : "Extracted by AI");
+const kindLabel = (claim) => (isSeeded(claim) ? "Seeded fixture" : claim.kind === "derived" ? "Calculated by code" : claim.kind === "debrief" ? "Told in the debrief" : claim.kind === "rule" ? "Found by keyword rule" : "Extracted by AI");
 const kindHelp = (claim) => {
   if (isSeeded(claim)) return "Hand-written demo claim for the synthetic sample. Its quote is checked, but no AI produced it.";
   if (claim.kind === "derived") return "Calculated by plain code from git history, tasks or notes. No AI involved.";
+  if (claim.kind === "rule") return "A published keyword rule matched this sentence in the records. The quote is the sentence word for word; decide whether it is still true and matters.";
+  if (claim.kind === "debrief") return "Said by the person leaving in the debrief and typed in by the lead. The quote is their words; check it before approving.";
   return "Extracted by an AI model, then checked: the quote must exist in the source and support the claim.";
 };
 
@@ -85,7 +87,8 @@ function SourceExcerpt({ text, quote, lineStart }) {
   );
 }
 
-export default function ReviewQueuePage({ onRefreshStats, initialClaimId, onSelectClaimId }) {
+export default function ReviewQueuePage({ onRefreshStats, initialClaimId, onSelectClaimId, leaverName }) {
+  const projectLeaver = leaverName || "the person leaving";
   const [claims, setClaims] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -98,7 +101,8 @@ export default function ReviewQueuePage({ onRefreshStats, initialClaimId, onSele
 
   const [selectedId, setSelectedId] = useState(initialClaimId ?? null);
   const [claimContext, setClaimContext] = useState(null);
-  const [claimVersions, setClaimVersions] = useState([]);
+  const [, setClaimVersions] = useState([]);
+  const [claimLogs, setClaimLogs] = useState([]);
   const [isDetailLoading, setIsDetailLoading] = useState(false);
 
   const [dialog, setDialog] = useState(null); // "reject" | "edit" | "conflict" | "bulk"
@@ -122,7 +126,7 @@ export default function ReviewQueuePage({ onRefreshStats, initialClaimId, onSele
   const loadClaims = useCallback(async () => {
     setError(null);
     try {
-      const data = await api.getClaims({ projectId: 1, role: "lead" });
+      const data = await api.getClaims({ role: "lead" });
       setClaims(Array.isArray(data) ? data : []);
       return Array.isArray(data) ? data : [];
     } catch (err) {
@@ -143,6 +147,7 @@ export default function ReviewQueuePage({ onRefreshStats, initialClaimId, onSele
     const req = ++detailReq.current;
     setClaimContext(null);
     setClaimVersions([]);
+    setClaimLogs([]);
     if (!claim || claim.withheld) {
       setIsDetailLoading(false);
       return;
@@ -155,6 +160,7 @@ export default function ReviewQueuePage({ onRefreshStats, initialClaimId, onSele
     if (req !== detailReq.current) return; // a newer selection won
     setClaimContext(ctx);
     setClaimVersions(vers?.versions || []);
+    setClaimLogs(vers?.audit_logs || []);
     setIsDetailLoading(false);
   }, []);
 
@@ -239,6 +245,8 @@ export default function ReviewQueuePage({ onRefreshStats, initialClaimId, onSele
     else {
       const vers = await api.getClaimVersions(claimId).catch(() => null);
       setClaimVersions(vers?.versions || []);
+      setClaimLogs(vers?.audit_logs || []);
+    setClaimLogs(vers?.audit_logs || []);
     }
   };
 
@@ -317,7 +325,7 @@ export default function ReviewQueuePage({ onRefreshStats, initialClaimId, onSele
     if (busy) return;
     setBusy(true);
     try {
-      const res = await api.bulkApproveVerified({ projectId: 1, role: "lead" });
+      const res = await api.bulkApproveVerified({ role: "lead" });
       setDialog(null);
       const n = res?.approved ?? res?.count ?? pendingVerified;
       await loadClaims();
@@ -391,9 +399,9 @@ export default function ReviewQueuePage({ onRefreshStats, initialClaimId, onSele
   if (!claims.length) {
     return (
       <div className="panel max-w-xl mx-auto mt-10 p-6 flex flex-col gap-3">
-        <h1 className="text-[20px] font-bold">No claims on the manifest yet</h1>
+        <h1 className="text-[20px] font-bold">No claims to check yet</h1>
         <p className="text-[14px] text-on-surface-variant">
-          The sample project has not been analysed. Use <strong>Reset sample</strong> in the top bar to load it; it takes a few seconds.
+          Add records to this project and build claims on the Records page. For the sample, use <strong>Reset sample</strong> in the side bar.
         </p>
       </div>
     );
@@ -406,7 +414,7 @@ export default function ReviewQueuePage({ onRefreshStats, initialClaimId, onSele
         <div className="max-w-2xl">
           <h1 className="text-[26px] sm:text-[28px] leading-tight font-extrabold tracking-[-0.015em]">Check the claims</h1>
           <p className="text-[15px] leading-6 text-on-surface-variant mt-1.5">
-            Each line is something Backstop believes Riya knew. Read its proof, then approve, correct or reject it. Only approved lines reach the handover.
+            Each claim is something Backstop believes {projectLeaver} knew. Read its proof, then approve, correct or reject it. Only approved claims reach the handover.
           </p>
         </div>
         <div className="flex flex-col items-start lg:items-end gap-1.5 shrink-0">
@@ -483,7 +491,7 @@ export default function ReviewQueuePage({ onRefreshStats, initialClaimId, onSele
         <div className="flex flex-wrap gap-2 items-center">
           {[
             ["Review", reviewFilter, setReviewFilter, REVIEW_FILTERS.map((r) => [r.id, r.label])],
-            ["Source", kindFilter, setKindFilter, [["all", "Any source"], ["derived", "Calculated by code"], ["interpreted", "Extracted by AI"]]],
+            ["Source", kindFilter, setKindFilter, [["all", "Any source"], ["derived", "Calculated by code"], ["interpreted", "Extracted by AI"], ["rule", "Keyword rule"], ["debrief", "Debrief"]]],
             ["Type", typeFilter, setTypeFilter, [["all", "Any type"], ...typeOptions.map((t) => [t, humanize(t)])]],
           ].map(([label, value, set, opts]) => (
             <label key={label} className="relative">
@@ -511,9 +519,9 @@ export default function ReviewQueuePage({ onRefreshStats, initialClaimId, onSele
         {/* Manifest list */}
         <section aria-label="Claims" className="lg:col-span-5 panel overflow-hidden lg:sticky lg:top-[72px]">
           <div className="flex items-center justify-between px-3 py-2 border-b border-outline-variant bg-surface-container-low">
-            <h2 className="field-label">Manifest · highest risk first</h2>
+            <h2 className="field-label">Highest risk first</h2>
             <span className="text-[12px] text-on-surface-variant tnum" aria-live="polite">
-              {filteredClaims.length === claims.length ? `${claims.length} lines` : `${filteredClaims.length} of ${claims.length}`}
+              {filteredClaims.length === claims.length ? `${claims.length} claims` : `${filteredClaims.length} of ${claims.length}`}
             </span>
           </div>
           <ol ref={listRef} className="max-h-[60vh] lg:max-h-[calc(100vh-260px)] overflow-y-auto divide-y divide-outline-variant/70" id="claims-ledger-container">
@@ -548,7 +556,7 @@ export default function ReviewQueuePage({ onRefreshStats, initialClaimId, onSele
                         <span className="text-[12px] text-on-surface-variant flex items-center gap-1.5 flex-wrap">
                           <span>{humanize(claim.type)}</span>
                           <span aria-hidden="true">·</span>
-                          <span>{claim.kind === "derived" ? "Code" : "AI"}</span>
+                          <span>{claim.kind === "derived" ? "Code" : claim.kind === "debrief" ? "Debrief" : claim.kind === "rule" ? "Rule" : "AI"}</span>
                           {claim.access_level !== "team" && claim.access_level !== "public" && (
                             <>
                               <span aria-hidden="true">·</span>
@@ -575,7 +583,7 @@ export default function ReviewQueuePage({ onRefreshStats, initialClaimId, onSele
               <div className="px-5 pt-4 pb-4 border-b border-outline-variant flex flex-col gap-3">
                 <div className="flex items-center justify-between gap-3 flex-wrap">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-mono text-[13px] font-bold text-on-surface-variant tnum">Line #{selectedClaim.id}</span>
+                    <span className="font-mono text-[13px] font-bold text-on-surface-variant tnum">Claim #{selectedClaim.id}</span>
                     <StatusChip status={selectedClaim.withheld ? "withheld" : selectedClaim.status} />
                     <ReviewMark state={selectedClaim.review_state} />
                   </div>
@@ -586,25 +594,68 @@ export default function ReviewQueuePage({ onRefreshStats, initialClaimId, onSele
                     </Button>
                   </div>
                 </div>
+                <div className="grid grid-cols-1 xl:grid-cols-[1fr_auto] gap-4 items-start">
                 <h2 id="inspect-claim-header" tabIndex={-1} className="text-[19px] sm:text-[20px] leading-7 font-bold break-words scroll-mt-24">
                   {selectedClaim.withheld ? `Withheld: needs ${selectedClaim.access_level} access` : selectedClaim.text}
                 </h2>
-                <dl className="grid grid-cols-2 sm:grid-cols-4 border border-outline-variant rounded-[2px] divide-x divide-outline-variant [&>div:nth-child(3)]:border-l-0 sm:[&>div:nth-child(3)]:border-l [&>div:nth-child(n+3)]:border-t sm:[&>div:nth-child(n+3)]:border-t-0">
-                  {[
-                    ["Type", humanize(selectedClaim.type)],
-                    ["Found by", <span key="k" title={kindHelp(selectedClaim)}>{kindLabel(selectedClaim)}</span>],
-                    ["Access", <AccessChip key="a" level={selectedClaim.access_level} />],
-                    ["Version", <span key="v" className="font-mono tnum">v{selectedClaim.current_version}</span>],
-                  ].map(([l, v]) => (
-                    <div key={l} className="px-2.5 py-1.5 min-w-0">
-                      <dt className="field-label">{l}</dt>
-                      <dd className="text-[13px] font-semibold mt-0.5 truncate">{v}</dd>
-                    </div>
-                  ))}
-                </dl>
+                {/* Collection label: typed, hairline, lower right of the specimen heading */}
+                <div className="flex xl:justify-end">
+                  <dl className="font-mono text-[12px] leading-[18px] text-on-surface border border-on-surface/70 rounded-[3px] px-3 py-2 grid grid-cols-[auto_1fr] gap-x-3 min-w-[230px] max-w-full">
+                    <dt className="text-on-surface-variant">Claim</dt>
+                    <dd className="tnum">#{selectedClaim.id} · v{selectedClaim.current_version}</dd>
+                    <dt className="text-on-surface-variant">Type</dt>
+                    <dd>{humanize(selectedClaim.type)}</dd>
+                    <dt className="text-on-surface-variant">Found by</dt>
+                    <dd title={kindHelp(selectedClaim)} className="truncate">{kindLabel(selectedClaim)}</dd>
+                    <dt className="text-on-surface-variant">Access</dt>
+                    <dd>{humanize(selectedClaim.access_level)}</dd>
+                  </dl>
+                </div>
+                </div>
               </div>
 
               <div className="px-5 py-4 flex flex-col gap-4">
+                {/* Determinations: one stamped slip per human decision, newest on top. */}
+                {(() => {
+                  const fmt = (t) => {
+                    const d = t ? new Date(t) : null;
+                    return d && !Number.isNaN(d.getTime()) ? d.toLocaleDateString("en-GB", { day: "numeric", month: "short" }) : null;
+                  };
+                  const ACTION = { review_approved: "approved", review_corrected: "corrected", review_rejected: "rejected", review_bulk_approved: "approved" };
+                  const slips = claimLogs
+                    .filter((l) => ACTION[l.action] || /approv|correct|reject/.test(l.action || ""))
+                    .map((l, i) => ({
+                      version: i,
+                      review_state: ACTION[l.action] || (/reject/.test(l.action) ? "rejected" : /correct/.test(l.action) ? "corrected" : "approved"),
+                      changed_by: l.actor_role,
+                      changed_at: l.created_at,
+                      change_note: l.detail,
+                    }));
+                  return (
+                    <Field
+                      label={`Determinations · ${slips.length}`}
+                      aside={<History size={14} className="text-on-surface-variant" aria-hidden="true" />}
+                    >
+                      {slips.length === 0 ? (
+                        <p className="text-[13px] text-on-surface-variant">No one has decided on this claim yet. Your decision is stamped here.</p>
+                      ) : (
+                        <ol className="flex flex-col gap-2">
+                          {slips.map((v, i) => (
+                            <li key={`${v.version}-${v.review_state}-${i}`} style={{ marginLeft: `${Math.min(i, 3) * 10}px` }}>
+                              <Slip
+                                who={humanize(v.changed_by || "lead")}
+                                when={fmt(v.changed_at)}
+                                what={REVIEW[v.review_state]?.label || humanize(v.review_state)}
+                                note={v.change_note}
+                                className={i > 0 ? "opacity-70" : ""}
+                              />
+                            </li>
+                          ))}
+                        </ol>
+                      )}
+                    </Field>
+                  );
+                })()}
                 {/* Evidence */}
                 {selectedClaim.withheld ? (
                   <Field label="Evidence">
@@ -689,26 +740,13 @@ export default function ReviewQueuePage({ onRefreshStats, initialClaimId, onSele
                   </ul>
                 </Field>
 
-                {/* History */}
-                {claimVersions.length > 0 && (
-                  <Field label={`History · ${claimVersions.length} version${claimVersions.length === 1 ? "" : "s"}`} aside={<History size={14} className="text-on-surface-variant" aria-hidden="true" />}>
-                    <ol className="flex flex-col divide-y divide-outline-variant/70 text-[13px]">
-                      {claimVersions.map((v) => (
-                        <li key={v.version} className="py-1.5 flex items-start justify-between gap-3">
-                          <span><span className="font-mono font-bold mr-2">v{v.version}</span>{v.change_note || "First version"}</span>
-                          <span className="font-mono text-[12px] text-outline shrink-0">{v.changed_by}</span>
-                        </li>
-                      ))}
-                    </ol>
-                  </Field>
-                )}
               </div>
 
               {/* Decision bar */}
               <div className="sticky bottom-0 mt-auto px-3 sm:px-5 py-3 border-t border-outline-variant bg-surface-container-lowest flex items-center gap-2">
                 <Button
                   id="btn-approve"
-                  variant="primary"
+                  variant="stamp"
                   onClick={handleApprove}
                   disabled={busy || selectedClaim.withheld || selectedClaim.review_state === "approved"}
                   className="flex-1 sm:flex-none px-2.5 sm:px-3.5"
@@ -766,7 +804,7 @@ export default function ReviewQueuePage({ onRefreshStats, initialClaimId, onSele
         footer={
           <>
             <Button onClick={() => setDialog(null)}>Cancel</Button>
-            <Button variant="primary" onClick={handleEditConfirm} disabled={!editText.trim() || editUnchanged || busy}>{busy ? "Saving…" : "Save correction"}</Button>
+            <Button variant="stamp" onClick={handleEditConfirm} disabled={!editText.trim() || editUnchanged || busy}>{busy ? "Saving…" : "Save correction"}</Button>
           </>
         }
       >
@@ -782,7 +820,7 @@ export default function ReviewQueuePage({ onRefreshStats, initialClaimId, onSele
         footer={
           <>
             <Button onClick={() => setDialog(null)}>Cancel</Button>
-            <Button variant="primary" onClick={() => runApprove(`Conflict resolved: ${conflictNote.trim()}`)} disabled={!conflictNote.trim() || busy}>{busy ? "Approving…" : "Approve with this answer"}</Button>
+            <Button variant="stamp" onClick={() => runApprove(`Conflict resolved: ${conflictNote.trim()}`)} disabled={!conflictNote.trim() || busy}>{busy ? "Approving…" : "Approve with this answer"}</Button>
           </>
         }
       >
@@ -797,7 +835,7 @@ export default function ReviewQueuePage({ onRefreshStats, initialClaimId, onSele
         footer={
           <>
             <Button onClick={() => setDialog(null)}>Cancel</Button>
-            <Button variant="primary" onClick={handleBulk} disabled={busy}>{busy ? "Approving…" : "Approve them"}</Button>
+            <Button variant="stamp" onClick={handleBulk} disabled={busy}>{busy ? "Approving…" : "Approve them"}</Button>
           </>
         }
       >

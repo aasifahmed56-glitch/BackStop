@@ -338,7 +338,7 @@ def build_tripwires(session: Session, project_id: int, role: Role) -> dict[str, 
 
     tripwires: list[Tripwire] = []
     revert_related: set[int] = set()
-    interpreted = [c for c in visible if c.kind == ClaimKind.interpreted and c.type in _REASON_TYPES]
+    interpreted = [c for c in visible if c.kind in (ClaimKind.interpreted, ClaimKind.rule) and c.type in _REASON_TYPES]
 
     # 1. Reverted work ------------------------------------------------------
     for c in visible:

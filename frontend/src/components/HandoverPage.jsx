@@ -87,7 +87,7 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
     setIsLoading(true);
     setError(null);
     try {
-      const data = await api.getHandover({ projectId: 1, role });
+      const data = await api.getHandover({ role });
       if (myId !== requestId.current) return;
       setHandoverData(data);
     } catch (err) {
@@ -161,7 +161,7 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
     setIsSubmittingAck(true);
     setAckError(null);
     try {
-      const res = await api.acknowledgeHandover(1, {
+      const res = await api.acknowledgeHandover(undefined, {
         role,
         recipientName: name,
         note: ackNote.trim() || undefined,
@@ -208,7 +208,7 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
             <Printer size={16} aria-hidden="true" />
             Print or save PDF
           </Button>
-          <Button id="btn-ack" variant="primary" onClick={openSign} disabled={!canSign || isLoading} title={signDisabledReason}>
+          <Button id="btn-ack" variant="stamp" onClick={openSign} disabled={!canSign || isLoading} title={signDisabledReason}>
             <PenLine size={16} aria-hidden="true" />
             Sign for receipt
           </Button>
@@ -245,7 +245,7 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
               >
                 <span className="flex items-baseline justify-between gap-2">
                   <span className="text-[14px] font-semibold">{r.label}</span>
-                  <span className={`text-[11px] font-semibold uppercase tracking-[0.05em] ${on ? "text-canary" : "text-on-surface-variant"}`}>{r.access}</span>
+                  <span className={`text-[12px] font-medium ${on ? "text-canary" : "text-on-surface-variant"}`}>{r.access}</span>
                 </span>
                 <span className={`block text-[12px] leading-[18px] mt-0.5 ${on ? "text-on-ink-muted" : "text-on-surface-variant"}`}>{r.desc}</span>
               </button>
@@ -288,12 +288,12 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
         </div>
       ) : (
         <>
-          {/* Consignment summary */}
-          <section aria-label="Consignment summary" className="grid grid-cols-2 lg:grid-cols-6 gap-px bg-outline-variant border border-outline-variant rounded-[3px] overflow-hidden print-shadow-none">
+          {/* Handover summary */}
+          <section aria-label="Handover summary" className="grid grid-cols-2 lg:grid-cols-6 gap-px bg-outline-variant border border-outline-variant rounded-[3px] overflow-hidden print-shadow-none">
             {[
-              ["Consignment no.", consignmentNo(project.id)],
-              ["Consignor", project.leaver_name || "Not recorded"],
-              ["Consignee", currentRoleObj.label],
+              ["Handover no.", consignmentNo(project.id)],
+              ["From", project.leaver_name || "Not recorded"],
+              ["To", currentRoleObj.label],
               ["Project", project.name || "Not recorded"],
               ["Departure", project.departure_date || "Not recorded"],
               [
@@ -482,7 +482,7 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
             </div>
           </section>
 
-          {/* Receipt: the slip that closes the consignment note */}
+          {/* Receipt: the slip that closes the handover */}
           <section aria-labelledby="receipt-h" className="panel print-shadow-none overflow-hidden">
             <div className="flex items-center justify-between gap-3 px-4 py-2.5 border-b border-dashed border-outline bg-surface-container-low">
               <h2 id="receipt-h" className="text-[15px] font-bold">Receipt</h2>
@@ -490,7 +490,7 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
             </div>
             {ackSuccess ? (
               <div id="ack-banner" className="flex flex-col md:flex-row md:items-center gap-5 p-4 overflow-hidden">
-                <div className="stamp-in shrink-0 self-start md:self-center border-2 border-tertiary text-tertiary rounded-[3px] px-4 py-1.5 text-[18px] leading-6 font-extrabold uppercase tracking-[0.14em] m-1" style={{ transform: "rotate(-3deg)" }}>
+                <div className="stamp-in shrink-0 self-start md:self-center border-2 border-stamp text-stamp rounded-[3px] px-4 py-1.5 text-[18px] leading-6 font-extrabold uppercase tracking-[0.14em] m-1" style={{ transform: "rotate(-3deg)" }}>
                   Received
                 </div>
                 <dl className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-px bg-outline-variant border border-outline-variant rounded-[2px] min-w-0">
@@ -518,7 +518,7 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
                   <div className="h-8 border-b border-outline max-w-sm" aria-hidden="true" />
                   <p className="text-[13px] text-on-surface-variant mt-1">Not signed yet. The person taking over signs here.</p>
                 </div>
-                <Button variant="primary" onClick={openSign} disabled={!canSign} title={signDisabledReason} className="no-print self-start sm:self-center">
+                <Button variant="stamp" onClick={openSign} disabled={!canSign} title={signDisabledReason} className="no-print self-start sm:self-center">
                   <PenLine size={16} aria-hidden="true" />
                   Sign for receipt
                 </Button>
@@ -538,7 +538,7 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
             <Button variant="outline" onClick={closeSign} disabled={isSubmittingAck}>
               Cancel
             </Button>
-            <Button variant="primary" onClick={handleAcknowledge} disabled={!recipientName.trim() || isSubmittingAck}>
+            <Button variant="stamp" onClick={handleAcknowledge} disabled={!recipientName.trim() || isSubmittingAck}>
               {isSubmittingAck ? "Signing…" : "Sign for receipt"}
             </Button>
           </>

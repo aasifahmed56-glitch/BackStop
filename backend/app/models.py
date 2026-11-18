@@ -47,6 +47,8 @@ _ACCESS_RANK: dict[AccessLevel, int] = {
 class ClaimKind(str, Enum):
     derived = "derived"
     interpreted = "interpreted"
+    debrief = "debrief"          # stated by the person leaving, typed in by the lead
+    rule = "rule"                # found by a keyword rule in the records (no AI)
 
 
 class ClaimType(str, Enum):

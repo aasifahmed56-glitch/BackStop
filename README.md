@@ -141,6 +141,10 @@ When a core team member departs, teams typically face an information cliff: stal
 | Deterministic Day 1 / Week 1 / Month 1 roadmap | Built | Rule-based assignment from approved claims |
 | Formal handover acknowledgment receipt | Built | Saved permanently to audit log |
 | Backtest benchmark (Precision@k, Recall@k vs baseline) | Built | Side-by-side comparison & visual bar chart |
+| Debrief questions for the person leaving, answers recorded as checked claims | Built | Plain rules, no AI; see `docs/DEBRIEF.md` |
+| Your own projects: create one, paste or upload records, import a GitHub history, build claims | Built | Works offline with keyword rules; see `docs/WORKSPACES.md` |
+| Handover readiness score | Built | Weighted checklist, every part shown |
+| Quick jump (⌘K / Ctrl+K) to any page or claim | Built | Keyboard first |
 | Production single-service deployment for Render | Built | Serves React build from FastAPI, startup auto-seeding |
 | Real enterprise OAuth / SSO integration | Planned | Currently simulated via role switcher |
 | Live GitHub / GitLab webhook ingestion | Planned | Currently ingests exports & file uploads |
