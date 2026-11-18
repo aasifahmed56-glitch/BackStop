@@ -15,7 +15,7 @@ Audience/job: a lead inspects and signs off claims and gathers questions for the
 
 THESIS: Knowledge that leaves with a person is a collected specimen: each claim is mounted on clean board with its collection label (source, line, date), and gains determination slips as people verify it. Refuses the blue card-grid SaaS dashboard, its dark-terminal opposite, and the old boxed-form consignment note.
 
-OWN-WORLD: Cool archival white board, generous margins, almost no boxes. Deep herbarium green side rail. Pressed-leaf green for quote matched, dried-ochre inferred, iron-gall rust conflicting, graphite missing. Accession-stamp violet is reserved for human decisions: approve, sign, stamps. Hanken Grotesk for UI; Courier Prime for verbatim quotes, collection numbers and dates, set like a typed label. Hairline rules, 6px radius, no shadows except the floating slip.
+OWN-WORLD: Neutral herbarium sheet (user asked for a neutral base with one unique colour): neutral archival board, white sheets, almost no boxes, graphite side rail and graphite primary actions. Status colours keep meaning only: leaf green quote matched, dried-ochre inferred, iron-gall rust conflicting, graphite missing. Accession-stamp violet is the one unique colour, reserved for human decisions: approve, sign, stamps, the sheet index filling. Hanken Grotesk for UI; Courier Prime for verbatim quotes, collection labels, numbers and dates. Hairline rules, 6px radius, no shadows except the floating slip.
 
 STORY: The Overview shows the whole collection as one sheet index and a readiness reading; the visitor checks a claim against its quote, stamps it, watches the sheet index fill violet, opens the debrief questions for what is still missing, switches role on the handover and signs for receipt.
 

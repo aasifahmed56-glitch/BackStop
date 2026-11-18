@@ -5,60 +5,60 @@
 
 @theme {
   --color-secondary-fixed-dim: #c4d2c6;
-  --color-primary-container: #234a31;
+  --color-primary-container: #3a403d;
   --color-tertiary-fixed: #dcebdc;
   --color-on-secondary-fixed-variant: #2a4434;
-  --color-primary: #2c5b3f;
-  --color-on-surface-variant: #4f5a51;
-  --color-surface-variant: #e5e9ec;
+  --color-primary: #232826;
+  --color-on-surface-variant: #545956;
+  --color-surface-variant: #e7e8e6;
   --color-surface-bright: #fbfcfa;
-  --color-surface-tint: #2c5b3f;
-  --color-on-primary-fixed: #10301c;
+  --color-surface-tint: #232826;
+  --color-on-primary-fixed: #151817;
   --color-on-tertiary: #ffffff;
-  --color-primary-fixed: #dbe8dd;
+  --color-primary-fixed: #e6e8e7;
   --color-on-tertiary-container: #e6f2e6;
   --color-on-error: #ffffff;
-  --color-surface-container-high: #e2e6e9;
-  --color-primary-fixed-dim: #a9c8b0;
-  --color-on-surface: #18211b;
-  --color-on-primary-container: #eef5ef;
-  --color-outline-variant: #d6dbde;
-  --color-surface-container: #eceff1;
-  --color-inverse-surface: #17291f;
+  --color-surface-container-high: #e4e5e3;
+  --color-primary-fixed-dim: #c4c8c6;
+  --color-on-surface: #1a1c1b;
+  --color-on-primary-container: #f1f2f1;
+  --color-outline-variant: #d9dad7;
+  --color-surface-container: #ededec;
+  --color-inverse-surface: #1d201f;
   --color-inverse-primary: #a9c8b0;
-  --color-on-primary-fixed-variant: #1f4630;
+  --color-on-primary-fixed-variant: #2f3432;
   --color-error: #a3392b;
   --color-tertiary-fixed-dim: #a8cfae;
   --color-tertiary: #2f6b3f;
   --color-on-error-container: #5e1a11;
-  --color-surface-dim: #dadfe2;
-  --color-surface-container-low: #f8f9fa;
-  --color-surface: #f3f5f6;
-  --color-secondary: #17291f;
+  --color-surface-dim: #dcdddb;
+  --color-surface-container-low: #f9f9f8;
+  --color-surface: #f4f4f3;
+  --color-secondary: #1d201f;
   --color-on-primary: #ffffff;
   --color-secondary-fixed: #e0e7df;
-  --color-secondary-container: #20382b;
-  --color-on-background: #18211b;
-  --color-on-secondary-fixed: #17291f;
+  --color-secondary-container: #2a2e2c;
+  --color-on-background: #1a1c1b;
+  --color-on-secondary-fixed: #1d201f;
   --color-on-tertiary-fixed: #163a20;
   --color-inverse-on-surface: #eef3ec;
-  --color-outline: #737b70;
+  --color-outline: #767a77;
   --color-on-secondary-container: #eef3ec;
   --color-tertiary-container: #3a7d4c;
   --color-on-secondary: #ffffff;
   --color-error-container: #f6e0db;
   --color-on-tertiary-fixed-variant: #1d4d2a;
-  --color-background: #f3f5f6;
-  --color-surface-container-highest: #d7dce0;
+  --color-background: #f4f4f3;
+  --color-surface-container-highest: #d9dad8;
   --color-surface-container-lowest: #ffffff;
-  --color-ink: #17291f;
-  --color-ink-2: #20382b;
-  --color-ink-line: #30493a;
-  --color-on-ink: #eef3ec;
-  --color-on-ink-muted: #a9bcad;
-  --color-canary: #cfe3d3;
-  --color-canary-container: #e3efe5;
-  --color-on-canary: #10301c;
+  --color-ink: #1d201f;
+  --color-ink-2: #2a2e2c;
+  --color-ink-line: #3a3f3d;
+  --color-on-ink: #f1f2f1;
+  --color-on-ink-muted: #a9aeab;
+  --color-canary: #dcd9ee;
+  --color-canary-container: #efedf7;
+  --color-on-canary: #2a2170;
   --color-goldenrod: #93641a;
   --color-goldenrod-container: #f3e7cc;
   --color-on-goldenrod: #4a3307;
@@ -192,7 +192,7 @@
     border: 1px solid var(--color-stamp);
     border-radius: 3px;
     color: var(--color-on-stamp-container);
-    box-shadow: 0 1px 0 rgb(23 41 31 / 0.04), 0 6px 14px -10px rgb(23 41 31 / 0.35);
+    box-shadow: 0 1px 0 rgb(29 32 31 / 0.04), 0 6px 14px -10px rgb(29 32 31 / 0.35);
   }
   .kbd {
     display: inline-flex; align-items: center; justify-content: center; min-width: 1.25rem; height: 1.25rem;
@@ -227,7 +227,7 @@
   .tick:hover, .tick:focus-visible { transform: translateY(-2px); }
   .rise-in { animation: rise-in 220ms cubic-bezier(0.16, 1, 0.3, 1) both; }
   @keyframes rise-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-  dialog.sheet::backdrop { background: rgb(23 41 31 / 0.4); }
+  dialog.sheet::backdrop { background: rgb(29 32 31 / 0.4); }
 }
 
 /* Page change: the old page lifts away, the new one settles in; the rail stays put. */

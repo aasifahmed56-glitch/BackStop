@@ -142,7 +142,7 @@ export function Dialog({ open, onClose, title, description, children, footer, wi
       onClick={(e) => {
         if (e.target === ref.current) onClose?.();
       }}
-      className={`sheet m-auto w-[calc(100vw-2rem)] ${width} p-0 rounded-[10px] border border-outline-variant bg-surface-container-lowest text-on-surface shadow-[0_24px_60px_-20px_rgb(23_41_31/0.45)]`}
+      className={`sheet m-auto w-[calc(100vw-2rem)] ${width} p-0 rounded-[10px] border border-outline-variant bg-surface-container-lowest text-on-surface shadow-[0_24px_60px_-20px_rgb(29_32_31/0.45)]`}
       aria-labelledby="dialog-title"
     >
       {open && (

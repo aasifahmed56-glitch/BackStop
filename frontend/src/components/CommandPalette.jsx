@@ -82,7 +82,7 @@ export default function CommandPalette({ open, onClose, onNavigate, dataVersion 
       onClick={(e) => {
         if (e.target === ref.current) onClose();
       }}
-      className="sheet mt-[12vh] mx-auto w-[calc(100vw-2rem)] max-w-xl p-0 rounded-[10px] border border-outline-variant bg-surface-container-lowest text-on-surface shadow-[0_24px_60px_-20px_rgb(23_41_31/0.45)]"
+      className="sheet mt-[12vh] mx-auto w-[calc(100vw-2rem)] max-w-xl p-0 rounded-[10px] border border-outline-variant bg-surface-container-lowest text-on-surface shadow-[0_24px_60px_-20px_rgb(29_32_31/0.45)]"
     >
       {open && (
         <div onKeyDown={onKeyDown}>
