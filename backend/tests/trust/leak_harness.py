@@ -278,6 +278,7 @@ class LeakHarness:
             ("dataset list", "/api/backtest/datasets", "/api/backtest/datasets", {}),
             ("real backtest", "/api/backtest/real/{name}", "/api/backtest/real/mocha", {}),
             ("trust report", "/api/trust/report", "/api/trust/report", {}),
+            ("debrief questions", "/api/projects/{project_id}/debrief", "/api/projects/1/debrief", {}),
             ("health", "/healthz", "/healthz", {}),
             ("OpenAPI schema", "/openapi.json", "/openapi.json", {}),
         ]
@@ -378,6 +379,24 @@ class LeakHarness:
                 elif after != before:
                     fail = "claims changed although the request was refused"
                 self._record("bulk approve without a reviewer role", endpoint, "POST", url, v, r, fail)
+
+        # Debrief answers: only the lead may record one, and never for a claim above its ceiling.
+        if self._has_route("POST", "/api/projects/{project_id}/debrief/answer"):
+            endpoint = "/api/projects/{project_id}/debrief/answer"
+            for level in ("restricted", "confidential", "team"):
+                for cid in self.targets.get(level, []):
+                    for v in ROLE_VARIANTS + BODY_TAMPER_VARIANTS:
+                        if v.value == "lead" and ACCESS_RANK[level] <= ACCESS_RANK[v.ceiling]:
+                            continue  # a permitted write is not an attack
+                        before = self._state()
+                        r = self._post("/api/projects/1/debrief/answer", v, {"question_claim_id": cid, "answer": "HARNESS ANSWER"})
+                        after = self._state()
+                        fail = ""
+                        if r.status_code < 400:
+                            fail = f"answer accepted (HTTP {r.status_code})"
+                        elif after != before:
+                            fail = "claims changed although the request was refused"
+                        self._record(f"record debrief answer on {level} claim without permission", endpoint, "POST", "/api/projects/1/debrief/answer", v, r, fail)
 
         for v in ROLE_VARIANTS + BODY_TAMPER_VARIANTS:
             r = self._post("/api/projects/1/acknowledge", v, {"recipient_name": "Harness"})

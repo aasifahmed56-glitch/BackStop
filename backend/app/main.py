@@ -199,6 +199,7 @@ from app.backtest import router as backtest_router   # noqa: E402
 from app.githubimport import router as import_router  # noqa: E402
 from app.trust import router as trust_router         # noqa: E402
 from app.tripwires import router as tripwires_router  # noqa: E402
+from app.debrief import router as debrief_router
 
 app.include_router(ingest_router, prefix="/api")
 app.include_router(derived_router, prefix="/api")
@@ -209,6 +210,7 @@ app.include_router(backtest_router, prefix="/api")
 app.include_router(import_router, prefix="/api")
 app.include_router(trust_router, prefix="/api")
 app.include_router(tripwires_router, prefix="/api")
+app.include_router(debrief_router, prefix="/api")
 
 
 # ---------------------------------------------------------------------------
