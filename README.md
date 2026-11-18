@@ -4,7 +4,7 @@
 
 Backstop turns a departing engineer's scattered activity (git log, issues, meeting notes, tasks and chat) into a checked, role-gated handover. Every statement it makes carries proof: either a deterministic calculation over the history, or an exact quote from a source record. A lead approves, corrects or rejects each claim before the successor sees it.
 
-> **Demo notice.** Everyone signs in: team members at `/login`, admins at `/admin/login`. The demo deployment has ready-made accounts (`lead`, `dev`, `pm`, and `admin`), all with the password `backstop-demo`. The sample project and everyone in it are fictional. The real-project backtest uses the public, MIT-licensed history of [mochajs/mocha](https://github.com/mochajs/mocha) with every contributor pseudonymised.
+> **Demo notice.** Everyone signs in: team members at `/login`, admins at `/admin/login`. The demo deployment has ready-made accounts: `lead`, `dev` and `pm` with the password `backstop-demo`, and `admin` with the password `admin`. The sample project and everyone in it are fictional. The real-project backtest uses the public, MIT-licensed history of [mochajs/mocha](https://github.com/mochajs/mocha) with every contributor pseudonymised.
 
 ---
 
@@ -240,7 +240,8 @@ BackStop/
 |---|---|
 | `ADMIN_USERNAME`, `ADMIN_PASSWORD` | Create the first admin on an empty database |
 | `DEMO_ACCOUNTS=1` | Create `admin`, `lead`, `dev` and `pm` for a public demo |
-| `DEMO_PASSWORD` | Password for the demo accounts (default `backstop-demo`) |
+| `DEMO_PASSWORD` | Password for the demo `lead`, `dev` and `pm` accounts (default `backstop-demo`) |
+| `DEMO_ADMIN_PASSWORD` | Password for the demo `admin` account (default `admin`) |
 | `COOKIE_SECURE=1` | Send the session cookie over HTTPS only (set on Render) |
 
 ## 11. Limitations

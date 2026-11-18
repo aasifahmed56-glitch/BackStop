@@ -142,8 +142,9 @@ def seed_accounts() -> None:
     """Create the first accounts on an empty database.
 
     - ADMIN_USERNAME / ADMIN_PASSWORD create the first admin.
-    - DEMO_ACCOUNTS=1 creates admin, lead, dev and pm with DEMO_PASSWORD
-      (default "backstop-demo"), so a public demo can be tried at once.
+    - DEMO_ACCOUNTS=1 creates lead, dev and pm with DEMO_PASSWORD (default
+      "backstop-demo") and admin with DEMO_ADMIN_PASSWORD (default "admin"),
+      so a public demo can be tried at once.
     Accounts that already exist are left alone.
     """
     with Session(engine) as session:
@@ -156,10 +157,11 @@ def seed_accounts() -> None:
             existing.add(admin_user)
         if demo_mode():
             pw = os.getenv("DEMO_PASSWORD", "backstop-demo")
+            admin_demo_pw = os.getenv("DEMO_ADMIN_PASSWORD", "admin")
             for username, name, role in DEMO_USERS:
                 if username not in existing:
                     session.add(UserAccount(username=username, display_name=name, role=role,
-                                            password_hash=hash_password(pw)))
+                                            password_hash=hash_password(admin_demo_pw if role == Role.admin else pw)))
         session.commit()
 
 
@@ -332,6 +334,7 @@ def config():
         "demo_users": [u for u, _, r in DEMO_USERS if r != Role.admin] if demo_mode() else [],
         "demo_admin": "admin" if demo_mode() else None,
         "demo_password_hint": demo_mode() and not os.getenv("DEMO_PASSWORD"),
+        "demo_admin_password_hint": demo_mode() and not os.getenv("DEMO_ADMIN_PASSWORD"),
     }
 
 

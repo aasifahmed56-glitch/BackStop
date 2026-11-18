@@ -21,7 +21,9 @@ def client(monkeypatch):
     main_mod._rate_limits.clear()
 
 
-def login(c, username, admin=False, password=PW):
+def login(c, username, admin=False, password=None):
+    if password is None:
+        password = "admin" if username == "admin" else PW
     path = "/api/auth/admin/login" if admin else "/api/auth/login"
     return c.post(path, json={"username": username, "password": password})
 

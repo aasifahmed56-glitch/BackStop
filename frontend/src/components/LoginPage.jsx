@@ -96,7 +96,9 @@ export default function LoginPage({ admin = false, onSignedIn }) {
                 </button>
               </React.Fragment>
             ))}
-            {config?.demo_password_hint ? <> with password <span className="font-mono">backstop-demo</span>.</> : "."}
+            {admin
+              ? config?.demo_admin_password_hint ? <> with password <span className="font-mono">admin</span>.</> : "."
+              : config?.demo_password_hint ? <> with password <span className="font-mono">backstop-demo</span>.</> : "."}
           </p>
         )}
 
