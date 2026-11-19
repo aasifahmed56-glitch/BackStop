@@ -16,11 +16,12 @@ const TrustReportPage = React.lazy(() => import("./components/TrustReportPage"))
 const CheckChangePage = React.lazy(() => import("./components/CheckChangePage"));
 const RecordsPage = React.lazy(() => import("./components/RecordsPage"));
 const AccountsPage = React.lazy(() => import("./components/AccountsPage"));
+const TeamPage = React.lazy(() => import("./components/TeamPage"));
 import { api, formatErrorMessage, getCurrentProject, setCurrentProject, clampRole, canReview } from "./api";
 
 const TABS = NAV_ITEMS.map((n) => n.id);
 // Screens reached from a page rather than the step bar.
-const ROUTES = [...TABS, "check", "projects", "accounts"];
+const ROUTES = [...TABS, "check", "projects", "accounts", "team"];
 const lockedName = (tab) => {
   const item = NAV_ITEMS.find((n) => n.id === tab);
   return item ? item.long || item.label : tab === "projects" ? "Projects" : "This screen";
@@ -56,6 +57,7 @@ export default function App() {
   const [projectId, setProjectId] = useState(getCurrentProject);
   const [stats, setStats] = useState(null);
   const [loadError, setLoadError] = useState(null);
+  const [noProjects, setNoProjects] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [actionStatus, setActionStatus] = useState(null);
   const [confirmReset, setConfirmReset] = useState(false);
@@ -97,7 +99,7 @@ export default function App() {
   // so keyboard and screen reader users land on the new page instead of the old link.
   const firstScreen = useRef(true);
   useEffect(() => {
-    const extra = { check: "Check a change", projects: "Projects", accounts: "Accounts", locked: "For leads only" };
+    const extra = { check: "Check a change", projects: "Projects", accounts: "Accounts", team: "Team", locked: "For leads only" };
     const item = NAV_ITEMS.find((n) => n.id === activeTab);
     document.title = `${extra[activeTab] || item?.long || item?.label || "Overview"} · Backstop`;
     if (firstScreen.current) {
@@ -134,12 +136,22 @@ export default function App() {
 
   const loadInitialData = useCallback(async () => {
     const [projRes, statsRes] = await Promise.allSettled([api.getProject(), api.getClaimStats({ role: "lead" })]);
-    // The saved project was deleted elsewhere: fall back to the sample.
-    if (projRes.status === "rejected" && /not found/i.test(String(projRes.reason?.message)) && getCurrentProject() !== 1) {
-      setCurrentProject(1);
-      setProjectId(1);
+    // The saved project is gone or not one this account works on: open the first one it can reach.
+    if (projRes.status === "rejected" && /not found/i.test(String(projRes.reason?.message))) {
+      const mine = await api.listProjects().catch(() => []);
+      const next = (Array.isArray(mine) ? mine : []).find((p) => p.id !== getCurrentProject());
+      if (next) {
+        setCurrentProject(next.id);
+        setProjectId(next.id);
+        return;
+      }
+      setProject(null);
+      setStats(null);
+      setLoadError(null);
+      setNoProjects(true);
       return;
     }
+    setNoProjects(false);
     setProject(projRes.status === "fulfilled" ? projRes.value : null);
     setStats(statsRes.status === "fulfilled" ? statsRes.value : null);
     setLoadError(
@@ -310,6 +322,13 @@ export default function App() {
           )}
 
           {activeTab === "accounts" && <AccountsPage />}
+          {activeTab === "team" && <TeamPage onOpenProject={(id) => switchProject(id, "handover")} />}
+          {noProjects && activeTab !== "team" && activeTab !== "accounts" && (
+            <div role="status" className="mb-6 panel px-5 py-4 max-w-[60ch]">
+              <h2 className="text-[17px] font-bold">No projects assigned to you yet</h2>
+              <p className="mt-1 text-[14px] leading-6 text-on-surface-variant">Ask your lead or admin to add you to a project. It appears here as soon as they do.</p>
+            </div>
+          )}
 
           {activeTab === "projects" && (
             <ProjectsPage

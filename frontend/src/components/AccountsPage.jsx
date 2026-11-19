@@ -3,15 +3,18 @@ import { KeyRound, Plus, Trash2, UserCheck, UserX } from "lucide-react";
 import { api, formatErrorMessage, getCurrentUser } from "../api";
 import { Button, Dialog, Skeleton } from "./ui";
 
+// "manager" is a lead-level account that oversees several teams.
 const ROLE_LABEL = {
   admin: "Admin",
+  manager: "Manager",
   lead: "Lead",
   incoming_dev: "New developer",
   incoming_pm: "New project manager",
 };
 const ROLE_HELP = {
   admin: "Signs in at /admin/login. Manages accounts and sees every access level.",
-  lead: "Reviews claims and sees restricted notes. Can preview the newcomer views.",
+  manager: "Oversees several teams: every project and person in them. Reviews claims like a lead.",
+  lead: "Runs one team: its projects and members. Reviews claims and sees restricted notes.",
   incoming_dev: "Reads the developer handover at team level.",
   incoming_pm: "Reads the project manager handover at team level.",
 };
@@ -24,6 +27,10 @@ const fmt = (iso) => {
   const d = new Date(iso.endsWith("Z") ? iso : iso + "Z");
   return Number.isNaN(d.getTime()) ? "—" : d.toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 };
+
+const positionOf = (u) => (u.is_manager ? "manager" : u.role);
+const positionToAccount = (f) =>
+  f.role === "manager" ? { ...f, role: "lead", isManager: true } : { ...f, isManager: false };
 
 /* Admin only: who can sign in, and as what. */
 export default function AccountsPage() {
@@ -80,7 +87,7 @@ export default function AccountsPage() {
     setBusy(true);
     setFormError(null);
     try {
-      await api.createUser(form);
+      await api.createUser(positionToAccount(form));
       setForm({ username: "", displayName: "", role: "incoming_dev", password: "" });
       setCreating(false);
       await load();
@@ -182,9 +189,13 @@ export default function AccountsPage() {
                       <select
                         aria-label={`Role for ${u.username}`}
                         className="min-h-9 sm:min-h-8 px-2 rounded-[6px] border border-outline-variant bg-surface-container-lowest text-[13.5px] disabled:opacity-60"
-                        value={u.role}
+                        value={positionOf(u)}
                         disabled={self}
-                        onChange={(e) => run(() => api.updateUser(u.id, { role: e.target.value }), `Role for ${u.username} is now ${ROLE_LABEL[e.target.value]}.`)}
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          const change = v === "manager" ? { role: "lead", is_manager: true } : { role: v, is_manager: false };
+                          run(() => api.updateUser(u.id, change), `Role for ${u.username} is now ${ROLE_LABEL[v]}.`);
+                        }}
                       >
                         {Object.entries(ROLE_LABEL).map(([id, label]) => (
                           <option key={id} value={id}>{label}</option>

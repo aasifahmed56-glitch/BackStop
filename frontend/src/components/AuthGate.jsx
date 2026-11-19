@@ -35,7 +35,7 @@ export default function AuthGate({ children }) {
     setCurrentUser(user);
     setState({ status: "in", user });
     if (isLoginPath()) {
-      window.history.replaceState(null, "", user.is_admin ? "/#/accounts" : "/#/overview");
+      window.history.replaceState(null, "", ["admin", "manager"].includes(user.rank) ? "/#/team" : "/#/overview");
       window.dispatchEvent(new HashChangeEvent("hashchange"));
     }
   }, []);

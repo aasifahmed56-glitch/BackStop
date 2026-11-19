@@ -184,6 +184,11 @@ function MoreMenu({ isSample, onResetSample, isResetting, onShowShortcuts }) {
               <RotateCcw size={15} aria-hidden="true" className="text-outline" /> {isResetting ? "Resetting…" : "Reset sample"}
             </button>
           )}
+          {account && account.rank !== "member" && (
+            <button type="button" role="menuitem" className={item} onClick={() => (setOpen(false), (window.location.hash = "#/team"))}>
+              <Users size={15} aria-hidden="true" className="text-outline" /> {account.is_admin ? "Teams and people" : "My team"}
+            </button>
+          )}
           {account?.is_admin && (
             <button type="button" role="menuitem" className={item} onClick={() => (setOpen(false), (window.location.hash = "#/accounts"))}>
               <Users size={15} aria-hidden="true" className="text-outline" /> Manage accounts

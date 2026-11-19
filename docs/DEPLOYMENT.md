@@ -42,8 +42,8 @@ The live service is https://backstop-redesign.onrender.com. It is a Docker web s
 | `DATABASE_URL` | `sqlite:///backend/backstop.db` | SQLAlchemy URL. Point it at a persistent disk to keep data across restarts. |
 | `PORT` | `8000` | Set by Render automatically. |
 | `ADMIN_USERNAME`, `ADMIN_PASSWORD` | – | Create the first admin on an empty database. Set both as secrets. |
-| `DEMO_ACCOUNTS` | `0` | Set to `1` to create the `admin`, `lead`, `dev` and `pm` demo accounts. |
-| `DEMO_PASSWORD` | `backstop-demo` | Password for the demo `lead`, `dev` and `pm` accounts. |
+| `DEMO_ACCOUNTS` | `0` | Set to `1` to create the demo organisation: `admin`, a `manager` over two teams, leads `lead` and `lead2`, and members `dev`, `pm`, `dev2`, `pm2`. |
+| `DEMO_PASSWORD` | `backstop-demo` | Password for every demo account except `admin`. |
 | `DEMO_ADMIN_PASSWORD` | `admin` | Password for the demo `admin` account. |
 | `COOKIE_SECURE` | – | Set to `1` to send the session cookie over HTTPS only. Set it on Render. |
 | `SESSION_HOURS` | `12` | How long a sign-in lasts. |
@@ -56,7 +56,7 @@ The live service is https://backstop-redesign.onrender.com. It is a Docker web s
 Accounts are created on start from the settings above, if they do not already exist. Existing accounts are left alone. On an empty database, nobody can sign in until `ADMIN_USERNAME` and `ADMIN_PASSWORD` or `DEMO_ACCOUNTS=1` create an account.
 
 - Team members sign in at `/login`. Administrators sign in at `/admin/login`.
-- With `DEMO_ACCOUNTS=1`, the demo accounts are `lead`, `dev` and `pm` (password `DEMO_PASSWORD`), and `admin` (password `DEMO_ADMIN_PASSWORD`). Use the admin sign-in page for `admin`.
+- With `DEMO_ACCOUNTS=1`, the demo accounts are `manager`, `lead`, `dev`, `pm`, `lead2`, `dev2` and `pm2` (password `DEMO_PASSWORD`), and `admin` (password `DEMO_ADMIN_PASSWORD`). Use the admin sign-in page for `admin`.
 - Sessions last `SESSION_HOURS` and are stored on the server.
 
 ## What happens on start
@@ -76,4 +76,4 @@ SQLite lives in the container's file system. On Render's free tier it resets whe
 3. Review → approve a claim → it appears on the Handover page.
 4. Backtest, Trust report and Check a change open without errors.
 5. On Docker, Analyse a GitHub repository works for a small public repository.
-6. Sign in with each demo account: `lead`, `dev` and `pm` at `/login`, and `admin` at `/admin/login`.
+6. Sign in with each demo account: `manager`, `lead`, `dev`, `pm`, `lead2`, `dev2` and `pm2` at `/login`, and `admin` at `/admin/login`. Check that `dev2` sees only the Mobile Check-in App and that `manager` lands on the Team page with both teams.

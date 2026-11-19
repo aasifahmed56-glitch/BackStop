@@ -6,7 +6,7 @@ Backstop turns a departing engineer's scattered activity (git log, issues, meeti
 
 **Live demo:** https://backstop-redesign.onrender.com · **Demo script:** [docs/DEMO_SCRIPT.md](docs/DEMO_SCRIPT.md) · **Screenshots:** [every screen, from sign-in on](#4a-screenshots)
 
-> **Demo notice.** Everyone signs in: team members at `/login`, admins at `/admin/login`. The demo deployment has ready-made accounts: `lead`, `dev` and `pm` with the password `backstop-demo`, and `admin` with the password `admin`. The sample project and everyone in it are fictional. The real-project backtest uses the public, MIT-licensed history of [mochajs/mocha](https://github.com/mochajs/mocha) with every contributor pseudonymised.
+> **Demo notice.** Everyone signs in: team members at `/login`, admins at `/admin/login`. The demo deployment has a ready-made organisation: `admin` (password `admin`), plus `manager`, `lead`, `dev`, `pm`, `lead2`, `dev2` and `pm2` (password `backstop-demo`). See [Sign-in and roles](#10a-sign-in-and-roles). The sample project and everyone in it are fictional. The real-project backtest uses the public, MIT-licensed history of [mochajs/mocha](https://github.com/mochajs/mocha) with every contributor pseudonymised.
 
 ---
 
@@ -405,9 +405,23 @@ BackStop/
 
 | Who | Signs in at | Can |
 |---|---|---|
-| Admin | `/admin/login` | Manage accounts on the Accounts page (`#/accounts`), see every access level, act as any role |
-| Lead | `/login` | Review claims, edit records and projects, see restricted notes, preview the newcomer handovers |
-| New developer / New project manager | `/login` | Read their own handover and check a change; reviewer screens are closed to them |
+| Admin | `/admin/login` | Everything: every project, every access level, accounts (`#/accounts`), and teams on the Teams page (`#/team`) |
+| Manager | `/login` | Oversee several teams: every project and person in them, who works on what and their recent activity; review claims like a lead |
+| Lead | `/login` | Run one team: its projects and members, tick which team projects each member works on, review claims, edit records |
+| Member (developer or project manager) | `/login` | Only the projects assigned to them: read the handover and check a change; reviewer screens are closed |
+
+**Teams and projects.** A team has a manager, a lead, members and projects. Leads and managers reach a project through their team; members reach only the projects their lead (or a manager or admin) ticks for them. A request for any other project gets `404`, as if it did not exist. A project a lead creates joins their team. The Team page (`#/team`) shows who is under whom, which projects each person works on, and what they last did and where (read the handover, approved a claim, added a record), with a recent-activity feed.
+
+**Demo organisation** (with `DEMO_ACCOUNTS=1`):
+
+| Username | Password | Position |
+|---|---|---|
+| `admin` | `admin` | Admin (sign in at `/admin/login`) |
+| `manager` | `backstop-demo` | Manager of both teams |
+| `lead` | `backstop-demo` | Lead, Platform team (Campus Event App) |
+| `dev`, `pm` | `backstop-demo` | Members, Platform team |
+| `lead2` | `backstop-demo` | Lead, Mobile team (Mobile Check-in App) |
+| `dev2`, `pm2` | `backstop-demo` | Members, Mobile team |
 
 - Each page refuses the other kind of account, so an admin cannot sign in through `/login` and a lead cannot sign in through `/admin/login`.
 - Passwords are stored as scrypt hashes. A session is a random token kept on the server and sent as an HttpOnly cookie that lasts 12 hours (`SESSION_HOURS`).
@@ -418,8 +432,8 @@ BackStop/
 | Setting | Effect |
 |---|---|
 | `ADMIN_USERNAME`, `ADMIN_PASSWORD` | Create the first admin on an empty database |
-| `DEMO_ACCOUNTS=1` | Create `admin`, `lead`, `dev` and `pm` for a public demo |
-| `DEMO_PASSWORD` | Password for the demo `lead`, `dev` and `pm` accounts (default `backstop-demo`) |
+| `DEMO_ACCOUNTS=1` | Create the demo organisation above: one manager, two teams, each with a lead and two members |
+| `DEMO_PASSWORD` | Password for every demo account except `admin` (default `backstop-demo`) |
 | `DEMO_ADMIN_PASSWORD` | Password for the demo `admin` account (default `admin`) |
 | `COOKIE_SECURE=1` | Send the session cookie over HTTPS only (set on Render) |
 
