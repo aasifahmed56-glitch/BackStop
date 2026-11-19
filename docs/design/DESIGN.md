@@ -9,7 +9,7 @@ colors:
   surface-container-high: "#e4e5e3"
   surface-container-highest: "#d9dad8"
   outline-variant: "#d9dad7"
-  outline: "#767a77"
+  outline: "#686c69"
   on-surface: "#1a1c1b"
   on-surface-variant: "#545956"
   ink: "#1d201f"

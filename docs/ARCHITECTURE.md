@@ -18,11 +18,13 @@ Backstop is one web service. FastAPI serves the REST API under `/api` and the bu
 | `views.py` | Role-gated handover, locked placeholders, Day 1 / Week 1 / Month 1 plan, acknowledgement, sample reset |
 | `debrief.py` | Debrief questions, recorded answers and readiness score |
 | `workspace.py` | User projects: create, delete, add or remove records, build claims |
-| `githubimport.py` | Public GitHub import: bare blob-less clone, 60 s timeout, 3,000 commits, one at a time, 3 per hour per client |
+| `githubimport.py` | Public GitHub import: blob-less download of only the needed window of history, falling back to the last year when slow; 10,000 commits; one at a time, 3 per hour per client |
 | `realdata.py` | Pseudonymises and cleans real commit histories |
 | `backtest.py`, `realbacktest.py` | Sample and real-project backtests against baselines |
 | `tripwires.py`, `tripwires_replay.py` | Check a change; saved replay results |
 | `trust.py` | Serves the saved trust report |
+| `repomap.py` | Repository map: git history as a file tree, module risk, flags and a commit timeline, filtered by role |
+| `auth.py` | Sign-in for team members and administrators, sessions, the role guard on every `/api` request, and admin account routes |
 
 ## Data model
 
@@ -35,12 +37,13 @@ Backstop is one web service. FastAPI serves the REST API under `/api` and the bu
 | `ClaimVersion` | every version of a claim, who changed it, when and why |
 | `AuditLog` | review actions, access denials, acknowledgements |
 | `LLMCallRecord` | live provider calls per day, for the cost guard |
+| `UserAccount`, `LoginSession` | accounts (username, display name, role, scrypt password hash, active flag, last sign-in) and sign-in sessions (hashed token, account, expiry) |
 
 **Access levels:** `public < team < restricted < confidential`. A claim's level is the strictest level of the sources it cites, recomputed from evidence.
 
 **Statuses:** `verified`, `inferred`, `conflicting`, `missing`. **Review states:** `pending`, `approved`, `corrected`, `rejected`.
 
-**Roles:** `incoming_dev`, `incoming_pm`, `lead`, `admin`. Every route that returns claim or source text takes a role and enforces its ceiling on the server.
+**Roles:** `incoming_dev`, `incoming_pm`, `lead`, `admin`. Each account has one role and may act as a set of roles (`ACTING_ROLES` in `auth.py`): an admin as any role, a lead as itself or a newcomer, a newcomer only as itself. Every route that returns claim or source text takes a role and enforces its ceiling on the server.
 
 ## Request flow: building claims
 
@@ -52,11 +55,11 @@ Backstop is one web service. FastAPI serves the REST API under `/api` and the bu
 
 ## Request flow: reading the handover
 
-1. The client sends its role.
+1. Every `/api` request is checked for a session first. `auth.py` refuses a `role` the signed-in account may not act as, so the role the client sends is only ever one it is allowed to use.
 2. `views.py` loads approved claims and compares each claim's access level with the role.
 3. Claims above the role's level come back as locked placeholders with no text and no quote.
 4. Rules place the visible claims into Day 1, Week 1 and Month 1.
 
 ## Frontend
 
-React 19, Vite and Tailwind CSS 4. Routing lives in the URL hash, so refresh, back and shared links land on the same screen. Main pages are in `frontend/src/components/`: Home, Review queue, Debrief, Handover, Check a change, Backtest, Trust report, Projects and Records, plus a command palette (Ctrl/⌘ + K). `src/api.js` is the only place that calls the API.
+React 19, Vite and Tailwind CSS 4. Routing lives in the URL hash, so refresh, back and shared links land on the same screen. Main pages are in `frontend/src/components/`: Home, Review queue, Debrief, Handover, Check a change, Backtest, Trust report, Projects and Records (which draws the repository map), plus a command palette (Ctrl/⌘ + K). Sign-in pages are at `/login` (team members) and `/admin/login` (administrators); the Accounts page for admins is `#/accounts`. Navigation is a slim top bar. `src/api.js` is the only place that calls the API.

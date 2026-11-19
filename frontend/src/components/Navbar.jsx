@@ -20,6 +20,9 @@ export const NAV_ITEMS = [
   { id: "trust", n: 7, label: "Trust" , long: "Trust report" },
 ];
 
+// Screens that change claims or records: lead and admin accounts only.
+export const REVIEWER_ONLY = ["projects", "records", "review", "debrief"];
+
 /* A specimen sheet: board, one pressed stem, the collection label in the corner. */
 export function Mark({ size = 26 }) {
   return (
@@ -167,7 +170,7 @@ function MoreMenu({ isSample, onResetSample, isResetting, onShowShortcuts }) {
         aria-expanded={open}
         aria-label="More"
         onClick={() => setOpen((v) => !v)}
-        className="w-8 h-8 inline-flex items-center justify-center rounded-full text-on-surface-variant hover:text-on-surface hover:bg-surface-container cursor-pointer"
+        className="w-9 h-9 sm:w-8 sm:h-8 inline-flex items-center justify-center rounded-full text-on-surface-variant hover:text-on-surface hover:bg-surface-container cursor-pointer"
       >
         <MoreHorizontal size={18} aria-hidden="true" />
       </button>
@@ -179,6 +182,11 @@ function MoreMenu({ isSample, onResetSample, isResetting, onShowShortcuts }) {
           {isSample && canReview() && (
             <button type="button" role="menuitem" className={item} disabled={isResetting} onClick={() => (setOpen(false), onResetSample())}>
               <RotateCcw size={15} aria-hidden="true" className="text-outline" /> {isResetting ? "Resetting…" : "Reset sample"}
+            </button>
+          )}
+          {account && account.rank !== "member" && (
+            <button type="button" role="menuitem" className={item} onClick={() => (setOpen(false), (window.location.hash = "#/team"))}>
+              <Users size={15} aria-hidden="true" className="text-outline" /> {account.is_admin ? "Teams and people" : account.rank === "manager" ? "Your teams" : "Your team"}
             </button>
           )}
           {account?.is_admin && (
@@ -213,6 +221,7 @@ export default function Navbar({
   onOpenPalette,
 }) {
   const isSample = !project || project.name === "Campus Event App";
+  const items = canReview() ? NAV_ITEMS : NAV_ITEMS.filter((n) => !REVIEWER_ONLY.includes(n.id));
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 4);
@@ -220,6 +229,15 @@ export default function Navbar({
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  // On phones the steps scroll sideways; keep the current one in view.
+  const phoneNavRef = useRef(null);
+  useEffect(() => {
+    const nav = phoneNavRef.current;
+    const el = nav?.querySelector('[aria-current="page"]');
+    if (!nav || !el) return;
+    nav.scrollLeft = Math.max(0, el.offsetLeft - (nav.clientWidth - el.offsetWidth) / 2);
+  }, [activeTab]);
 
   // A single pill slides under the active step.
   const navRef = useRef(null);
@@ -233,7 +251,7 @@ export default function Navbar({
     window.addEventListener("resize", measure);
     document.fonts?.ready.then(measure);
     return () => window.removeEventListener("resize", measure);
-  }, [activeTab]);
+  }, [activeTab, items.length]);
 
   return (
     <header
@@ -266,7 +284,7 @@ export default function Navbar({
               style={{ left: pill.left, width: pill.width }}
             />
           )}
-          {NAV_ITEMS.map((item) => {
+          {items.map((item) => {
             const active = activeTab === item.id;
             return (
               <a
@@ -297,7 +315,7 @@ export default function Navbar({
           <button
             type="button"
             onClick={onOpenPalette}
-            className="h-8 pl-2.5 pr-1.5 inline-flex items-center gap-2 rounded-full border border-outline-variant bg-surface-container-lowest hover:border-outline text-[13px] text-on-surface-variant hover:text-on-surface cursor-pointer"
+            className="h-9 sm:h-8 pl-2.5 pr-1.5 min-w-9 inline-flex items-center justify-center gap-2 rounded-full border border-outline-variant bg-surface-container-lowest hover:border-outline text-[13px] text-on-surface-variant hover:text-on-surface cursor-pointer"
             aria-label="Search pages and claims"
           >
             <Search size={14} aria-hidden="true" />
@@ -309,8 +327,8 @@ export default function Navbar({
       </div>
 
       {/* Phones and tablets: the steps scroll under the bar */}
-      <nav aria-label="Steps" className="lg:hidden flex overflow-x-auto px-2 sm:px-6 pb-1.5 gap-0.5 [scrollbar-width:none]">
-        {NAV_ITEMS.map((item) => {
+      <nav ref={phoneNavRef} aria-label="Steps" className="lg:hidden flex overflow-x-auto px-2 sm:px-6 pb-1.5 gap-0.5 [scrollbar-width:none]">
+        {items.map((item) => {
           const active = activeTab === item.id;
           return (
             <a
@@ -321,7 +339,7 @@ export default function Navbar({
                 e.preventDefault();
                 onNavigate(item.id);
               }}
-              className={`shrink-0 h-8 px-3 inline-flex items-center rounded-full text-[13px] font-medium whitespace-nowrap ${
+              className={`shrink-0 h-9 px-3 inline-flex items-center rounded-full text-[13px] font-medium whitespace-nowrap ${
                 active ? "bg-on-surface text-surface-container-lowest" : "text-on-surface-variant"
               }`}
             >

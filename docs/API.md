@@ -2,10 +2,21 @@
 
 All routes are under `/api` except `/healthz`. The interactive reference is served at `/docs` (Swagger UI) when the app runs.
 
+Every route under `/api` needs a signed-in session, except the sign-in routes. The session is an HttpOnly cookie set at sign-in. A `role` the account may not act as is refused with `403`, on any route.
+
 Routes that return claim or source text take a `role` (`incoming_dev`, `incoming_pm`, `lead`, `admin`). If none is sent, the lowest role is used. Text above the role's access level is never returned. Routes marked *lead only* refuse lower roles.
 
 | Method | Path | What it does |
 |---|---|---|
+| `GET` | `/api/admin/users` | List accounts (admin only) |
+| `POST` | `/api/admin/users` | Create an account (admin only) |
+| `PUT` | `/api/admin/users/{user_id}` | Change an account's name, role, status or password (admin only) |
+| `DELETE` | `/api/admin/users/{user_id}` | Delete an account (admin only) |
+| `POST` | `/api/auth/admin/login` | Administrator sign-in (`/admin/login`) |
+| `GET` | `/api/auth/config` | Settings the sign-in pages need, including the demo accounts |
+| `POST` | `/api/auth/login` | Team member sign-in (`/login`) |
+| `POST` | `/api/auth/logout` | Sign out and end the session |
+| `GET` | `/api/auth/me` | The signed-in account and the roles it may act as |
 | `GET` | `/api/backtest/datasets` | Backtest Datasets |
 | `GET` | `/api/backtest/projects/{project_id}` | Backtest Project |
 | `GET` | `/api/backtest/real/{name}` | Backtest Real |
@@ -32,6 +43,7 @@ Routes that return claim or source text take a `role` (`incoming_dev`, `incoming
 | `POST` | `/api/projects/{project_id}/derive` | Compute all derived claims from git/task data |
 | `POST` | `/api/projects/{project_id}/extract` | Extract and verify interpreted claims |
 | `GET` | `/api/projects/{project_id}/handover` | Generate permission-aware handover |
+| `GET` | `/api/projects/{project_id}/repo-map` | Repository map: git history as a file tree with per-file stats, module risk scores, tripwires and claims the role may see, and a commit timeline |
 | `GET` | `/api/projects/{project_id}/sources` | Records the role may see, with part counts |
 | `POST` | `/api/projects/{project_id}/sources/github` | Add a public repository's commit history (lead only) |
 | `POST` | `/api/projects/{project_id}/sources/paste` | Add a record by pasting text (lead only) |
@@ -51,4 +63,5 @@ Routes that return claim or source text take a `role` (`incoming_dev`, `incoming
 |---|---|
 | `POST …/upload` | 10 per minute; 5 MB; `.txt`, `.json`, `.md`, `.csv` only |
 | `POST …/extract` | 6 per minute |
-| GitHub import | One at a time; 3 per hour per client; 60 s clone timeout; 3,000 commits |
+| `POST /api/auth/login`, `POST /api/auth/admin/login` | 10 attempts per minute |
+| GitHub import | One at a time; 3 per hour per client; downloads only the needed window of history (shorter window if slow); 10,000 commits |

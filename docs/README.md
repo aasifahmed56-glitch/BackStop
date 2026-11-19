@@ -15,5 +15,8 @@ Start with the [project README](../README.md). Everything else is here.
 | Understand debrief and readiness | [DEBRIEF.md](DEBRIEF.md) |
 | Use your own projects and records | [WORKSPACES.md](WORKSPACES.md) |
 | Prepare the final PDF | [FINAL_REPORT.md](FINAL_REPORT.md) |
+| Give the demo | [DEMO_SCRIPT.md](DEMO_SCRIPT.md) |
+| Run the final checks before submitting | [SUBMISSION_CHECKLIST.md](SUBMISSION_CHECKLIST.md) |
+| See every page | [screenshots/](screenshots/) |
 | Read the Round 2 specification | [PROJECT_DETAILS.md](PROJECT_DETAILS.md) |
 | See the product brief and design system | [design/PRODUCT.md](design/PRODUCT.md), [design/DESIGN.md](design/DESIGN.md) |

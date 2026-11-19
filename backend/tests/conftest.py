@@ -11,6 +11,8 @@ import tempfile
 _TEST_DB_DIR = tempfile.mkdtemp(prefix="backstop-tests-")
 os.environ["DATABASE_URL"] = f"sqlite:///{os.path.join(_TEST_DB_DIR, 'test.db')}"
 os.environ.setdefault("LLM_PROVIDER", "none")
+# GitHub imports in tests use local repositories; never call the GitHub API.
+os.environ["GITHUB_API_DISABLED"] = "1"
 # Older suites test the API's role rules directly; tests/test_auth.py turns
 # sign-in back on to test the login and the role guard.
 os.environ["AUTH_DISABLED"] = "1"

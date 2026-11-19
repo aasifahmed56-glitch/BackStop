@@ -143,10 +143,18 @@ export const api = {
 
   // Accounts (admin only)
   listUsers: () => request("/admin/users", { cache: "no-store" }),
-  createUser: ({ username, displayName, role, password }) =>
-    request("/admin/users", { method: "POST", body: JSON.stringify({ username, display_name: displayName, role, password }) }),
+  createUser: ({ username, displayName, role, password, isManager = false }) =>
+    request("/admin/users", { method: "POST", body: JSON.stringify({ username, display_name: displayName, role, password, is_manager: isManager }) }),
   updateUser: (id, changes) => request(`/admin/users/${id}`, { method: "PUT", body: JSON.stringify(changes) }),
   deleteUser: (id) => request(`/admin/users/${id}`, { method: "DELETE" }),
+
+  // Teams: who is under whom, and what each person works on
+  orgOverview: () => request("/org/overview", { cache: "no-store" }),
+  setAssignments: (teamId, userId, projectIds) =>
+    request(`/org/teams/${teamId}/assignments`, { method: "PUT", body: JSON.stringify({ user_id: userId, project_ids: projectIds }) }),
+  createTeam: (team) => request("/admin/teams", { method: "POST", body: JSON.stringify(team) }),
+  updateTeam: (id, changes) => request(`/admin/teams/${id}`, { method: "PUT", body: JSON.stringify(changes) }),
+  deleteTeam: (id) => request(`/admin/teams/${id}`, { method: "DELETE" }),
 
   // Project & Samples
   getProject: (id = cur()) => request(`/projects/${id}`),
@@ -174,6 +182,8 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ role: "lead", url, leaver: leaver || null }),
     }),
+  repoMap: (projectId = cur(), role = "lead") =>
+    request(`/projects/${projectId}/repo-map?role=${encodeURIComponent(role)}`, { cache: "no-store" }),
   deleteSource: (sourceId, projectId = cur()) => request(`/projects/${projectId}/sources/${sourceId}?role=lead`, { method: "DELETE" }),
   analyseProject: (projectId = cur()) =>
     request(`/projects/${projectId}/analyse`, { method: "POST", body: JSON.stringify({ role: "lead" }) }),

@@ -3,7 +3,7 @@ import {
   Check, X, PencilLine, Search, Copy, Link2, Lock, Code2, ArrowLeftRight, ChevronDown, CheckCheck, RotateCw, History,
 } from "lucide-react";
 import { api, formatErrorMessage } from "../api";
-import { STATUS, REVIEW, humanize, StatusChip, Field, Button, Dialog, TextArea, TextInput, TallyStrip, Skeleton, Slip } from "./ui";
+import { STATUS, REVIEW, humanize, StatusChip, Field, Button, Dialog, TextArea, TextInput, TallyStrip, Skeleton, Slip, AccessChip } from "./ui";
 
 const isSeeded = (claim) => (claim?.evidence || []).some((ev) => ev.origin === "seeded");
 const kindLabel = (claim) => (isSeeded(claim) ? "Seeded fixture" : claim.kind === "derived" ? "Calculated by code" : claim.kind === "debrief" ? "Told in the debrief" : claim.kind === "rule" ? "Found by keyword rule" : "Extracted by AI");
@@ -20,22 +20,6 @@ const REVIEW_FILTERS = [
   { id: "pending", label: "Not checked" },
   { id: "decided", label: "Decided" },
 ];
-
-const ACCESS_CHIP = {
-  restricted: "bg-error-container text-on-error-container",
-  confidential: "bg-goldenrod-container text-on-goldenrod",
-  team: "bg-surface-container text-on-surface",
-  public: "bg-tertiary-fixed text-on-tertiary-fixed",
-};
-
-function AccessChip({ level }) {
-  return (
-    <span className={`inline-flex items-center gap-1 px-1.5 py-px rounded-[2px] text-[11px] font-semibold capitalize ${ACCESS_CHIP[level] || ACCESS_CHIP.team}`}>
-      {(level === "restricted" || level === "confidential") && <Lock size={10} aria-hidden="true" />}
-      {level || "team"}
-    </span>
-  );
-}
 
 function ReviewMark({ state }) {
   const r = REVIEW[state] || REVIEW.pending;
@@ -54,7 +38,7 @@ function SourceExcerpt({ text, quote, lineStart }) {
   const idx = quote ? text.indexOf(quote) : -1;
   const starts = lines.reduce((acc, l, i) => (i === 0 ? [0] : [...acc, acc[i - 1] + lines[i - 1].length + 1]), []);
   return (
-    <div className="font-mono text-[12.5px] leading-[20px] bg-surface-container-low border border-outline-variant rounded-[2px] max-h-56 overflow-auto">
+    <div className="font-mono text-[12.5px] leading-[20px] bg-surface-container-low border-y border-outline-variant py-2 pr-3 max-h-56 overflow-auto">
       <table className="w-full border-collapse">
         <tbody>
           {lines.map((line, i) => {
@@ -241,12 +225,14 @@ export default function ReviewQueuePage({ onRefreshStats, initialClaimId, onSele
     flash({ tone: "ok", text: message });
     if (!fresh) return;
     const next = candidate ? fresh.find((c) => c.id === candidate.id && c.review_state === "pending") : null;
-    if (next) select(next);
+    if (next) {
+      select(next);
+      requestAnimationFrame(() => requestAnimationFrame(() => document.getElementById("inspect-claim-header")?.focus({ preventScroll: true })));
+    }
     else {
       const vers = await api.getClaimVersions(claimId).catch(() => null);
       setClaimVersions(vers?.versions || []);
       setClaimLogs(vers?.audit_logs || []);
-    setClaimLogs(vers?.audit_logs || []);
     }
   };
 
@@ -359,8 +345,9 @@ export default function ReviewQueuePage({ onRefreshStats, initialClaimId, onSele
       }
       if (document.querySelector("dialog[open]")) return;
       const k = e.key.toLowerCase();
-      if (k === "j" || e.key === "ArrowDown") { e.preventDefault(); step(1); }
-      else if (k === "k" || e.key === "ArrowUp") { e.preventDefault(); step(-1); }
+      const inList = !!(t && t.closest && t.closest("#claims-ledger-container"));
+      if (k === "j" || (e.key === "ArrowDown" && inList)) { e.preventDefault(); step(1); }
+      else if (k === "k" || (e.key === "ArrowUp" && inList)) { e.preventDefault(); step(-1); }
       else if (k === "a") { e.preventDefault(); handleApprove(); }
       else if (k === "r") { e.preventDefault(); openReject(); }
       else if (k === "e") { e.preventDefault(); openEdit(); }
@@ -401,7 +388,7 @@ export default function ReviewQueuePage({ onRefreshStats, initialClaimId, onSele
       <div className="panel max-w-xl mx-auto mt-10 p-6 flex flex-col gap-3">
         <h1 className="text-[20px] font-bold">No claims to check yet</h1>
         <p className="text-[14px] text-on-surface-variant">
-          Add records to this project and build claims on the Records page. For the sample, use <strong>Reset sample</strong> in the side bar.
+          Add records to this project and build claims on the Records page. For the sample, use <strong>Reset sample</strong> in the More menu in the top bar.
         </p>
         <Button variant="primary" className="self-start" onClick={() => setActiveTab?.("records")}>
           Go to records
@@ -464,7 +451,7 @@ export default function ReviewQueuePage({ onRefreshStats, initialClaimId, onSele
             maxLength={120}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search text, quote or #id"
-            className="w-full h-9 pl-8 pr-9 rounded-[3px] border border-outline-variant bg-surface-container-lowest text-[14px] placeholder:text-outline focus:outline-2 focus:outline-primary focus:border-primary"
+            className="w-full h-9 pl-8 pr-9 rounded-[3px] border border-outline-variant bg-surface-container-lowest text-[14px] placeholder:text-outline"
           />
           <span className="kbd absolute right-2 top-1/2 -translate-y-1/2 text-outline pointer-events-none hidden sm:inline-flex">/</span>
         </label>
@@ -497,13 +484,13 @@ export default function ReviewQueuePage({ onRefreshStats, initialClaimId, onSele
             ["Source", kindFilter, setKindFilter, [["all", "Any source"], ["derived", "Calculated by code"], ["interpreted", "Extracted by AI"], ["rule", "Keyword rule"], ["debrief", "Debrief"]]],
             ["Type", typeFilter, setTypeFilter, [["all", "Any type"], ...typeOptions.map((t) => [t, humanize(t)])]],
           ].map(([label, value, set, opts]) => (
-            <label key={label} className="relative">
+            <label key={label} className="relative min-w-0 flex-1 basis-28 sm:flex-none sm:basis-auto">
               <span className="sr-only">{label}</span>
               <select
                 value={value}
                 onChange={(e) => set(e.target.value)}
-                className={`appearance-none h-9 pl-2.5 pr-8 rounded-[3px] border text-[13px] font-semibold cursor-pointer focus:outline-2 focus:outline-primary ${
-                  value !== "all" ? "border-secondary bg-secondary-fixed text-on-secondary-fixed" : "border-outline-variant bg-surface-container-lowest"
+                className={`appearance-none w-full h-9 min-h-9 pl-2.5 pr-8 rounded-[3px] border text-[13px] font-semibold cursor-pointer ${
+                  value !== "all" ? "border-outline bg-surface-container text-on-surface" : "border-outline-variant bg-surface-container-lowest"
                 }`}
               >
                 {opts.map(([v, l]) => <option key={v} value={v}>{label === "Review" && v === "all" ? "Any review state" : l}</option>)}
@@ -554,7 +541,7 @@ export default function ReviewQueuePage({ onRefreshStats, initialClaimId, onSele
                           <ReviewMark state={claim.review_state} />
                         </span>
                         <span className={`text-[14px] leading-5 line-clamp-2 break-words ${claim.review_state === "pending" || sel ? "text-on-surface" : ""}`}>
-                          {claim.withheld ? `Withheld: needs ${claim.access_level} access` : claim.text}
+                          {claim.withheld ? `Locked: needs ${claim.access_level} access` : claim.text}
                         </span>
                         <span className="text-[12px] text-on-surface-variant flex items-center gap-1.5 flex-wrap">
                           <span>{humanize(claim.type)}</span>
@@ -595,15 +582,16 @@ export default function ReviewQueuePage({ onRefreshStats, initialClaimId, onSele
                       {copied === "link" ? <Check size={14} aria-hidden="true" /> : <Link2 size={14} aria-hidden="true" />}
                       {copied === "link" ? "Copied" : "Link"}
                     </Button>
+                    <span role="status" className="sr-only">{copied === "link" ? "Link copied" : ""}</span>
                   </div>
                 </div>
                 <div className="grid grid-cols-1 xl:grid-cols-[1fr_auto] gap-4 items-start">
                 <h2 id="inspect-claim-header" tabIndex={-1} className="text-[19px] sm:text-[20px] leading-7 font-bold break-words scroll-mt-24">
-                  {selectedClaim.withheld ? `Withheld: needs ${selectedClaim.access_level} access` : selectedClaim.text}
+                  {selectedClaim.withheld ? `Locked: needs ${selectedClaim.access_level} access` : selectedClaim.text}
                 </h2>
                 {/* Collection label: typed, hairline, lower right of the specimen heading */}
                 <div className="flex xl:justify-end">
-                  <dl className="font-mono text-[12px] leading-[18px] text-on-surface border border-on-surface/70 rounded-[3px] px-3 py-2 grid grid-cols-[auto_1fr] gap-x-3 min-w-[230px] max-w-full">
+                  <dl className="font-mono text-[12px] leading-[18px] text-on-surface border-t border-on-surface/70 pt-2 grid grid-cols-[auto_1fr] gap-x-3 min-w-[230px] max-w-full">
                     <dt className="text-on-surface-variant">Claim</dt>
                     <dd className="tnum">#{selectedClaim.id} · v{selectedClaim.current_version}</dd>
                     <dt className="text-on-surface-variant">Type</dt>
@@ -687,6 +675,7 @@ export default function ReviewQueuePage({ onRefreshStats, initialClaimId, onSele
                       key={ctx.chunk_id ?? i}
                       label={selectedClaim.kind === "derived" ? "Evidence · the record code read" : "Evidence · exact quote in its source"}
                       aside={
+                        <>
                         <button
                           type="button"
                           onClick={() => copy(`q${i}`, ctx.quote || "")}
@@ -695,6 +684,8 @@ export default function ReviewQueuePage({ onRefreshStats, initialClaimId, onSele
                           {copied === `q${i}` ? <Check size={13} aria-hidden="true" /> : <Copy size={13} aria-hidden="true" />}
                           {copied === `q${i}` ? "Copied" : "Copy quote"}
                         </button>
+                        <span role="status" className="sr-only">{copied === `q${i}` ? "Quote copied" : ""}</span>
+                        </>
                       }
                     >
                       <p className="text-[12px] text-on-surface-variant mb-2 flex flex-wrap gap-x-3">
@@ -714,7 +705,7 @@ export default function ReviewQueuePage({ onRefreshStats, initialClaimId, onSele
                         : "Plain code counted commit authors per module in the git history. No AI and no quote check are involved."}
                     </p>
                     {(selectedClaim.evidence || []).map((ev, i) => ev.quote && (
-                      <p key={i} className="mt-2 font-mono text-[12.5px] bg-surface-container-low border border-outline-variant rounded-[2px] px-3 py-2 break-words">{ev.quote}</p>
+                      <p key={i} className="mt-2 font-mono text-[12.5px] border-t border-outline-variant pt-2 break-words">{ev.quote}</p>
                     ))}
                   </Field>
                 ) : (

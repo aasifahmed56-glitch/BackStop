@@ -50,4 +50,4 @@ An empty part counts as complete. 90 or more reads *Ready to hand over*, 50 or m
 
 - The question wording comes from fixed templates. It reads plainly but cannot adapt to the person the way an interviewer would.
 - The lead types the answer, so the quote is only as faithful as their notes.
-- Roles are simulated, as everywhere in Backstop.
+- Access follows the signed-in account: newcomers never see the debrief screen, and the server refuses any role the account may not act as.

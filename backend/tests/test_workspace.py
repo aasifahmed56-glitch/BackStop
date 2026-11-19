@@ -125,3 +125,33 @@ def test_full_loop_offline(client):
     assert client.delete(f"/api/projects/{pid}", params={"role": "incoming_pm"}).status_code == 403
     assert client.delete(f"/api/projects/{pid}", params={"role": "lead"}).status_code == 200
     assert client.get(f"/api/projects/{pid}").status_code == 404
+
+
+def _github_into_new_project(client, monkeypatch, tmp_path, before, name):
+    import subprocess
+    import app.githubimport as gi
+    from tests.test_realdata_export import _commit, _git
+
+    gi._hits.clear()
+    repo = tmp_path / "src"
+    repo.mkdir()
+    _git(repo, "init", "-q")
+    for i in range(before):
+        _commit(repo, "Lead Dev", "lead@x.example", f"2024-02-{10 + i:02d}T10:00:00+0000", "lib/a/f.js", f"work {i}")
+    _commit(repo, "Later", "later@x.example", "2025-08-01T10:00:00+0000", "lib/a/f.js", "after leaving")
+    monkeypatch.setattr(gi, "_clone", lambda url, dest, **kw: subprocess.run(["git", "clone", "-q", "--bare", str(repo), str(dest)], check=True))
+    pid = client.post("/api/projects", json={"role": "lead", "name": name, "leaver_name": "Someone", "departure_date": "2025-04-01"}).json()["id"]
+    return client.post(f"/api/projects/{pid}/sources/github", json={"role": "lead", "url": "https://github.com/o/r"})
+
+
+def test_github_import_with_two_commits_runs_with_low_confidence_note(client, monkeypatch, tmp_path):
+    r = _github_into_new_project(client, monkeypatch, tmp_path, 2, "Few Commits")
+    assert r.status_code == 201, r.text
+    body = r.json()
+    assert body["commit_count"] == 2 and body["low_confidence"] is True
+    assert "Only 2 commits" in body["note"]
+
+
+def test_github_import_with_no_commits_before_departure_is_empty(client, monkeypatch, tmp_path):
+    r = _github_into_new_project(client, monkeypatch, tmp_path, 0, "No Commits")
+    assert r.status_code == 422 and "no commits before" in r.json()["detail"]

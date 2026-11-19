@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { ArrowRight, Check, Copy, FileText, GitBranch, Trash2, Upload } from "lucide-react";
 import { api, formatErrorMessage } from "../api";
 import { Button, Dialog, Skeleton, Slip, humanize } from "./ui";
+import RepoMap from "./RepoMap";
 
 const KINDS = [
   { id: "git", label: "Git history", hint: "Run this in the repository and paste the output. Emails are dropped and messages masked.", cmd: "git log --no-merges --name-status" },
@@ -75,6 +76,7 @@ export default function RecordsPage({ project, onChanged, setActiveTab, onNewPro
   const [built, setBuilt] = useState(null);
   const [confirmBuild, setConfirmBuild] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [grownAt, setGrownAt] = useState(0);
   const fileRef = useRef(null);
 
   const load = () =>
@@ -124,9 +126,10 @@ export default function RecordsPage({ project, onChanged, setActiveTab, onNewPro
     setFlash(null);
     try {
       const r = await api.githubSource({ projectId: project.id, url: gh.url.trim(), leaver: gh.leaver.trim() });
-      setFlash({ tone: "ok", text: `Imported ${r.commit_count.toLocaleString()} commits from ${r.contributor_count} contributors. ${r.note}` });
+      setFlash({ tone: r.low_confidence ? "warn" : "ok", text: `Imported ${r.commit_count.toLocaleString()} commits from ${r.contributor_count} contributors. ${r.note}` });
       setGh({ url: "", leaver: "" });
       await load();
+      setGrownAt(Date.now());
       onChanged?.();
     } catch (err) {
       setFlash({ tone: "error", text: formatErrorMessage(err) });
@@ -188,7 +191,7 @@ export default function RecordsPage({ project, onChanged, setActiveTab, onNewPro
     <div className="flex flex-col gap-8">
       <header className="flex flex-col gap-2 max-w-[66ch]">
         <h1 className="text-[32px] sm:text-[40px] leading-[1.05] font-bold tracking-[-0.03em]">Records</h1>
-        <p className="text-[15px] leading-6 text-on-surface-variant">
+        <p className="text-[15px] leading-6 text-on-surface-variant max-w-[65ch]">
           What Backstop reads about {project?.leaver_name || "the person leaving"}'s work: commits, notes, issues, tasks and chat. Every claim it builds quotes one of these word for word.
         </p>
       </header>
@@ -210,43 +213,39 @@ export default function RecordsPage({ project, onChanged, setActiveTab, onNewPro
           <section aria-labelledby="add-h" className="bg-surface-container-lowest rounded-[12px] border border-outline-variant p-5 sm:p-7 flex flex-col gap-5 min-w-0">
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <h2 id="add-h" className="text-[20px] font-bold tracking-[-0.01em]">Add a record</h2>
-              <div role="tablist" aria-label="How to add" className="inline-flex p-0.5 rounded-full bg-surface-container text-[13px] font-semibold">
+              <fieldset className="inline-flex p-0.5 rounded-full bg-surface-container text-[13px] font-semibold">
+                <legend className="sr-only">How to add</legend>
                 {[
                   ["paste", "Paste or upload"],
                   ["github", "From GitHub"],
                 ].map(([id, label]) => (
-                  <button
+                  <label
                     key={id}
-                    type="button"
-                    role="tab"
-                    aria-selected={mode === id}
-                    onClick={() => setMode(id)}
-                    className={`h-8 px-3.5 rounded-full cursor-pointer transition-colors ${mode === id ? "bg-surface-container-lowest text-on-surface shadow-[0_1px_2px_rgb(29_32_31/0.12)]" : "text-on-surface-variant hover:text-on-surface"}`}
+                    className={`h-8 px-3.5 inline-flex items-center rounded-full cursor-pointer transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-stamp ${mode === id ? "bg-surface-container-lowest text-on-surface shadow-[0_1px_2px_rgb(29_32_31/0.12)]" : "text-on-surface-variant hover:text-on-surface"}`}
                   >
+                    <input type="radio" name="add-mode" value={id} checked={mode === id} onChange={() => setMode(id)} className="sr-only" />
                     {label}
-                  </button>
+                  </label>
                 ))}
-              </div>
+              </fieldset>
             </div>
 
             {mode === "paste" ? (
               <form onSubmit={addPaste} className="flex flex-col gap-4">
-                <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Type of record">
+                <fieldset className="flex flex-wrap gap-1.5">
+                  <legend className="sr-only">Type of record</legend>
                   {KINDS.map((x) => (
-                    <button
+                    <label
                       key={x.id}
-                      type="button"
-                      role="radio"
-                      aria-checked={kind === x.id}
-                      onClick={() => setKind(x.id)}
-                      className={`h-8 px-3 rounded-full border text-[13px] font-medium cursor-pointer transition-colors ${
+                      className={`h-8 px-3 inline-flex items-center rounded-full border text-[13px] font-medium cursor-pointer transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-stamp ${
                         kind === x.id ? "border-on-surface bg-on-surface text-surface-container-lowest" : "border-outline-variant text-on-surface-variant hover:border-outline hover:text-on-surface"
                       }`}
                     >
+                      <input type="radio" name="record-kind" value={x.id} checked={kind === x.id} onChange={() => setKind(x.id)} className="sr-only" />
                       {x.label}
-                    </button>
+                    </label>
                   ))}
-                </div>
+                </fieldset>
                 <div className="text-[12.5px] leading-5 text-on-surface-variant flex flex-col gap-2">
                   <p>{k.hint}</p>
                   {k.cmd && (
@@ -261,9 +260,11 @@ export default function RecordsPage({ project, onChanged, setActiveTab, onNewPro
                       className="self-start inline-flex items-center gap-2 h-8 px-3 rounded-[6px] bg-surface-container font-mono text-[12.5px] text-on-surface cursor-pointer hover:bg-surface-container-high"
                     >
                       {k.cmd}
-                      {copied ? <Check size={14} aria-label="Copied" /> : <Copy size={14} aria-label="Copy command" />}
+                      {copied ? <Check size={14} aria-hidden="true" /> : <Copy size={14} aria-hidden="true" />}
+                      <span className="sr-only">Copy command</span>
                     </button>
                   )}
+                  <span role="status" aria-live="polite" className="text-[12.5px] text-on-surface-variant min-h-5">{copied ? "Copied" : ""}</span>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <label className="flex flex-col gap-1.5">
@@ -309,7 +310,7 @@ export default function RecordsPage({ project, onChanged, setActiveTab, onNewPro
               </form>
             ) : (
               <form onSubmit={addGithub} className="flex flex-col gap-4">
-                <p className="text-[13px] leading-5 text-on-surface-variant">
+                <p className="text-[13px] leading-5 text-on-surface-variant max-w-[65ch]">
                   Backstop downloads the commit history of a public repository up to {project?.leaver_name || "the person"}'s last day (no file contents), replaces every author with a pseudonym, and keeps it as one record.
                   Up to 3 imports an hour.
                 </p>
@@ -369,7 +370,7 @@ export default function RecordsPage({ project, onChanged, setActiveTab, onNewPro
           {data && sources.length === 0 && (
             <div className="rounded-[12px] border border-dashed border-outline-variant px-5 py-8 text-center">
               <FileText size={22} aria-hidden="true" className="mx-auto text-outline" />
-              <p className="mt-2 text-[14px] text-on-surface-variant">No records yet. A git history gives ownership and risk; notes and issues give decisions and warnings.</p>
+              <p className="mt-2 max-w-[65ch] text-[14px] text-on-surface-variant">No records yet. A git history gives ownership and risk; notes and issues give decisions and warnings.</p>
             </div>
           )}
           <ul className={`grid gap-2 ${isSample ? "sm:grid-cols-2 lg:grid-cols-3" : ""}`}>
@@ -386,7 +387,7 @@ export default function RecordsPage({ project, onChanged, setActiveTab, onNewPro
                   </span>
                 </span>
                 {!isSample && (
-                  <button type="button" onClick={() => remove(s)} aria-label={`Remove ${s.name}`} className="p-2 rounded-[6px] text-outline hover:text-error hover:bg-error-container cursor-pointer">
+                  <button type="button" onClick={() => remove(s)} aria-label={`Remove ${s.name}`} className="w-9 h-9 inline-flex items-center justify-center shrink-0 rounded-[6px] text-outline hover:text-error hover:bg-error-container cursor-pointer">
                     <Trash2 size={15} aria-hidden="true" />
                   </button>
                 )}
@@ -397,7 +398,7 @@ export default function RecordsPage({ project, onChanged, setActiveTab, onNewPro
           {!isSample && (
             <div className="mt-2 flex flex-col gap-3 bg-ink text-on-ink rounded-[12px] p-5">
               <h3 className="text-[16px] font-bold">Build the claims</h3>
-              <p className="text-[13px] leading-5 text-on-ink-muted">
+              <p className="text-[13px] leading-5 text-on-ink-muted max-w-[65ch]">
                 Code rules rank who owns which module and what is stale or reverted. Notes, issues, tasks and chat are read by the AI extractor when one is set up, and otherwise by published keyword rules. Nothing is approved for you.
               </p>
               <Button variant="stamp" size="lg" disabled={!!busy || sources.length === 0} onClick={() => (reviewed ? setConfirmBuild(true) : build())}>
@@ -430,6 +431,15 @@ export default function RecordsPage({ project, onChanged, setActiveTab, onNewPro
         </aside>
       </div>
 
+      {project?.id && sources.some((s) => s.kind === "git") && (
+        <RepoMap
+          projectId={project.id}
+          refreshKey={`${sources.map((s) => s.id).join(",")}-${built ? built.project.claim_count : 0}-${grownAt}`}
+          grow={grownAt > 0}
+          setActiveTab={setActiveTab}
+        />
+      )}
+
       <Dialog
         open={confirmBuild}
         onClose={() => setConfirmBuild(false)}
@@ -442,7 +452,7 @@ export default function RecordsPage({ project, onChanged, setActiveTab, onNewPro
           </>
         }
       >
-        <p className="text-[14px] text-on-surface-variant">Only new keyword-rule claims are added; existing ones are left as they are.</p>
+        <p className="text-[14px] text-on-surface-variant max-w-[65ch]">Only new keyword-rule claims are added; existing ones are left as they are.</p>
       </Dialog>
     </div>
   );

@@ -73,6 +73,8 @@ class UserAccount(SQLModel, table=True):
     role: Role
     password_hash: str
     active: bool = True
+    # A manager is a lead-level account that oversees several teams (see app/org.py).
+    is_manager: bool = False
     created_at: datetime = Field(default_factory=datetime.utcnow)
     last_login_at: Optional[datetime] = None
 
@@ -132,10 +134,26 @@ def demo_mode() -> bool:
 
 DEMO_USERS = [
     ("admin", "Admin", Role.admin),
-    ("lead", "Team lead", Role.lead),
-    ("dev", "New developer", Role.incoming_dev),
-    ("pm", "New project manager", Role.incoming_pm),
+    ("manager", "Maya (manager)", Role.lead),
+    ("lead", "Priya (Platform lead)", Role.lead),
+    ("dev", "Dev (Platform developer)", Role.incoming_dev),
+    ("pm", "Pooja (Platform PM)", Role.incoming_pm),
+    ("lead2", "Karthik (Mobile lead)", Role.lead),
+    ("dev2", "Divya (Mobile developer)", Role.incoming_dev),
+    ("pm2", "Rahul (Mobile PM)", Role.incoming_pm),
 ]
+DEMO_MANAGERS = {"manager"}
+
+
+def _ensure_columns() -> None:
+    """Add columns introduced after a database was first created (SQLite only)."""
+    from sqlalchemy import inspect, text
+    insp = inspect(engine)
+    if "useraccount" in insp.get_table_names():
+        cols = {c["name"] for c in insp.get_columns("useraccount")}
+        if "is_manager" not in cols:
+            with engine.begin() as conn:
+                conn.execute(text("ALTER TABLE useraccount ADD COLUMN is_manager BOOLEAN NOT NULL DEFAULT 0"))
 
 
 def seed_accounts() -> None:
@@ -147,6 +165,7 @@ def seed_accounts() -> None:
       so a public demo can be tried at once.
     Accounts that already exist are left alone.
     """
+    _ensure_columns()
     with Session(engine) as session:
         existing = {u.username for u in session.exec(select(UserAccount)).all()}
         admin_user = os.getenv("ADMIN_USERNAME", "").strip()
@@ -161,6 +180,7 @@ def seed_accounts() -> None:
             for username, name, role in DEMO_USERS:
                 if username not in existing:
                     session.add(UserAccount(username=username, display_name=name, role=role,
+                                            is_manager=username in DEMO_MANAGERS,
                                             password_hash=hash_password(admin_demo_pw if role == Role.admin else pw)))
         session.commit()
 
@@ -183,8 +203,11 @@ def user_from_request(request: Request, session: Session) -> Optional[UserAccoun
 
 
 def _public_user(u: UserAccount) -> dict:
+    from app.org import rank_of
     return {
         "id": u.id,
+        "rank": rank_of(u),
+        "is_manager": bool(u.is_manager),
         "username": u.username,
         "display_name": u.display_name,
         "role": u.role.value,
@@ -212,17 +235,25 @@ async def role_guard(request: Request, call_next):
     if not path.startswith("/api/") or path in _PUBLIC_PATHS or auth_disabled() or request.method == "OPTIONS":
         return await call_next(request)
 
+    from app.org import check_project_access, record_activity
     with Session(engine) as session:
         user = user_from_request(request, session)
         if not user:
             return _deny(401, "Sign in required.")
         role = user.role
         username = user.username
-
-    if path.startswith("/api/admin/") and role != Role.admin:
-        return _deny(403, "Admins only.")
-    if any(p.match(path) for p in _EDITOR_PATHS) and role not in (Role.lead, Role.admin):
-        return _deny(403, "Only lead or admin accounts may change project data.")
+        request.state.user_id = user.id
+        request.state.username = username
+        if path.startswith("/api/admin/") and role != Role.admin:
+            return _deny(403, "Admins only.")
+        if path == "/api/claims/recompute-access" and role != Role.admin:
+            return _deny(403, "Admins only.")
+        if any(p.match(path) for p in _EDITOR_PATHS) and role not in (Role.lead, Role.admin):
+            return _deny(403, "Only lead or admin accounts may change project data.")
+        # Projects outside the account's teams and assignments do not exist for it.
+        refusal = check_project_access(request, session, user)
+        if refusal:
+            return _deny(404, refusal)
 
     requested: list[str] = request.query_params.getlist("role")
     if request.method in ("POST", "PUT", "PATCH", "DELETE") and "json" in request.headers.get("content-type", ""):
@@ -241,7 +272,12 @@ async def role_guard(request: Request, call_next):
             return _deny(403, f"Your account ({username}) cannot act as '{r}'.")
 
     request.state.user_role = role
-    return await call_next(request)
+    response = await call_next(request)
+    try:
+        record_activity(request, response.status_code)
+    except Exception:  # activity is a record, never a reason to fail a request
+        pass
+    return response
 
 
 # ---------------------------------------------------------------------------
@@ -332,6 +368,7 @@ def config():
     return {
         "demo_accounts": demo_mode(),
         "demo_users": [u for u, _, r in DEMO_USERS if r != Role.admin] if demo_mode() else [],
+        "demo_people": [{"username": u, "name": n} for u, n, r in DEMO_USERS if r != Role.admin] if demo_mode() else [],
         "demo_admin": "admin" if demo_mode() else None,
         "demo_password_hint": demo_mode() and not os.getenv("DEMO_PASSWORD"),
         "demo_admin_password_hint": demo_mode() and not os.getenv("DEMO_ADMIN_PASSWORD"),
@@ -345,11 +382,13 @@ class NewUser(BaseModel):
     display_name: str
     role: Role
     password: str
+    is_manager: bool = False
 
 
 class UpdateUser(BaseModel):
     display_name: Optional[str] = None
     role: Optional[Role] = None
+    is_manager: Optional[bool] = None
     active: Optional[bool] = None
     password: Optional[str] = None
 
@@ -388,8 +427,10 @@ def create_user(body: NewUser, request: Request, session: Session = Depends(get_
     _check_password(body.password)
     if session.exec(select(UserAccount).where(UserAccount.username == username)).first():
         raise HTTPException(409, "That username is taken.")
+    if body.is_manager and body.role != Role.lead:
+        raise HTTPException(422, "A manager account has the lead role.")
     user = UserAccount(username=username, display_name=body.display_name.strip()[:80], role=body.role,
-                       password_hash=hash_password(body.password))
+                       is_manager=body.is_manager, password_hash=hash_password(body.password))
     session.add(user)
     _audit(session, "user_created", admin, f"{admin.username} created {username} as {body.role.value}")
     session.commit()
@@ -417,6 +458,11 @@ def update_user(user_id: int, body: UpdateUser, request: Request, session: Sessi
     if body.role is not None and body.role != user.role:
         user.role = body.role
         changes.append(f"role={body.role.value}")
+    if body.is_manager is not None and body.is_manager != user.is_manager:
+        user.is_manager = body.is_manager
+        changes.append("role=manager" if body.is_manager else "role=not manager")
+    if user.is_manager and user.role != Role.lead:
+        user.is_manager = False
     if body.active is not None and body.active != user.active:
         user.active = body.active
         changes.append("enabled" if body.active else "disabled")
@@ -447,6 +493,8 @@ def delete_user(user_id: int, request: Request, session: Session = Depends(get_s
         raise HTTPException(409, "Keep at least one active admin.")
     for s in session.exec(select(LoginSession).where(LoginSession.user_id == user.id)).all():
         session.delete(s)
+    from app.org import forget_user
+    forget_user(session, user.id)
     session.delete(user)
     _audit(session, "user_deleted", admin, f"{admin.username} deleted {user.username}")
     session.commit()

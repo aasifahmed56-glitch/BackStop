@@ -27,6 +27,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.db import create_db_and_tables
 from app.auth import role_guard, seed_accounts
+from app.org import seed_org
 
 app = FastAPI(title="Backstop", version="0.1.0")
 
@@ -177,6 +178,7 @@ def on_startup() -> None:
     create_db_and_tables()
     seed_accounts()
     _seed_sample_if_needed()
+    seed_org()
 
 
 # ---------------------------------------------------------------------------
@@ -204,6 +206,7 @@ from app.review import router as review_router       # noqa: E402
 from app.views import router as views_router         # noqa: E402
 from app.backtest import router as backtest_router   # noqa: E402
 from app.githubimport import router as import_router  # noqa: E402
+from app.repomap import router as repomap_router  # noqa: E402
 from app.trust import router as trust_router         # noqa: E402
 from app.tripwires import router as tripwires_router  # noqa: E402
 from app.debrief import router as debrief_router
@@ -219,9 +222,12 @@ app.include_router(backtest_router, prefix="/api")
 app.include_router(import_router, prefix="/api")
 app.include_router(trust_router, prefix="/api")
 app.include_router(tripwires_router, prefix="/api")
+app.include_router(repomap_router, prefix="/api")
 app.include_router(debrief_router, prefix="/api")
 app.include_router(workspace_router, prefix="/api")
 app.include_router(auth_router, prefix="/api")
+from app.org import router as org_router              # noqa: E402
+app.include_router(org_router, prefix="/api")
 
 
 # ---------------------------------------------------------------------------

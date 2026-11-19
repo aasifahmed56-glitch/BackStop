@@ -19,6 +19,7 @@ from typing import Any, Optional
 from app.backtest import compute_precision_recall_at_k
 from app.derived import (
     _DEFAULT_STALE_DAYS,
+    compute_exposure_weighted_score,
     compute_knowledge_at_risk_score,
     compute_ownership,
     compute_stale_modules,
@@ -79,6 +80,7 @@ def rank_modules(commits: list[dict], leaver: str, cutoff: date) -> dict[str, li
     own = compute_ownership(pre, leaver, cutoff, module_fn=module_of)
     stale = compute_stale_modules(pre, cutoff, _DEFAULT_STALE_DAYS, module_fn=module_of)
     scores = compute_knowledge_at_risk_score(own, stale, leaver, _DEFAULT_STALE_DAYS)
+    v2 = compute_exposure_weighted_score(own)
     by = {o["module"]: o for o in own}
     mods = [o["module"] for o in own if o["leaver_count"] > 0]
 
@@ -86,6 +88,7 @@ def rank_modules(commits: list[dict], leaver: str, cutoff: date) -> dict[str, li
         return [{
             "module": m,
             "score": scores.get(m, 0.0),
+            "score_v2": v2.get(m, 0.0),
             "leaver_commits": by[m]["leaver_count"],
             "leaver_share": by[m]["leaver_share"],
             "total_commits": by[m]["total"],
@@ -94,6 +97,7 @@ def rank_modules(commits: list[dict], leaver: str, cutoff: date) -> dict[str, li
     tie = lambda m: (by[m]["total"], m)  # noqa: E731
     return {
         "backstop": rows(sorted(mods, key=lambda m: (scores.get(m, 0.0), *tie(m)), reverse=True)),
+        "backstop_v2": rows(sorted(mods, key=lambda m: (v2.get(m, 0.0), *tie(m)), reverse=True)),
         "commit_count": rows(sorted(mods, key=lambda m: (by[m]["leaver_count"], *tie(m)), reverse=True)),
         "commit_share": rows(sorted(mods, key=lambda m: (by[m]["leaver_share"], *tie(m)), reverse=True)),
     }
@@ -212,6 +216,7 @@ def evaluate_dataset(commits: list[dict], meta: dict[str, Any]) -> dict[str, Any
             "'fix' or 'revert' in a commit message is a rough signal of trouble.",
             "Modules are directories, which is coarse for a small project.",
             "The departure is inferred from public posts and the commit record.",
+            "Score v2 was chosen after seeing the mocha v1 result, so its mocha numbers are in-sample. It needs a second departure before it can be trusted.",
         ],
     }
 

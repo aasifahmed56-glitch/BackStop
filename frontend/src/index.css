@@ -42,7 +42,7 @@
   --color-on-secondary-fixed: #1d201f;
   --color-on-tertiary-fixed: #163a20;
   --color-inverse-on-surface: #eef3ec;
-  --color-outline: #767a77;
+  --color-outline: #686c69;
   --color-on-secondary-container: #eef3ec;
   --color-tertiary-container: #3a7d4c;
   --color-on-secondary: #ffffff;
@@ -196,7 +196,7 @@
   }
   .kbd {
     display: inline-flex; align-items: center; justify-content: center; min-width: 1.25rem; height: 1.25rem;
-    padding: 0 0.3rem; border-radius: 2px; border: 1px solid currentColor; opacity: 0.75;
+    padding: 0 0.3rem; border-radius: 2px; border: 1px solid color-mix(in oklab, currentColor 45%, transparent);
     font-family: "Courier Prime", ui-monospace, monospace; font-size: 11.5px; line-height: 1; font-weight: 700;
   }
   .stamp-in { animation: stamp-in 420ms cubic-bezier(0.16, 1, 0.3, 1) both; }
@@ -205,7 +205,7 @@
     to { opacity: 1; transform: none; filter: blur(0); }
   }
   /* Specimen stack: sheets glide between positions when filed to the back. */
-  .specimen { transition: transform 700ms cubic-bezier(0.16, 1, 0.3, 1), opacity 500ms ease, filter 500ms ease, box-shadow 500ms ease; will-change: transform; }
+  .specimen { transition: transform 700ms cubic-bezier(0.16, 1, 0.3, 1), opacity 500ms ease, filter 500ms ease, box-shadow 500ms ease; }
   /* Highlighter sweep: the quote is marked as the sheet comes forward. */
   .quote-mark {
     background-image: linear-gradient(var(--color-canary-container), var(--color-canary-container));
@@ -269,3 +269,33 @@
 }
 .pop-in { animation: pop-in 180ms cubic-bezier(0.16, 1, 0.3, 1); transform-origin: top; }
 @media (prefers-reduced-motion: reduce) { .pop-in { animation: none; } }
+
+/* Repository map: stems, buds and the replay. */
+@layer components {
+  .rm-frame { background:
+      radial-gradient(circle at 1px 1px, color-mix(in oklab, var(--color-outline-variant) 70%, transparent) 1px, transparent 0) 0 0 / 22px 22px,
+      var(--color-surface-container-lowest); }
+  .rm-svg path { transition: stroke 200ms ease, stroke-width 200ms ease; }
+  .rm-label { font-family: "Courier Prime", ui-monospace, monospace; font-size: 12px; fill: var(--color-on-surface); letter-spacing: 0; }
+  .rm-label-dir { font-weight: 700; }
+  .rm-count { fill: var(--color-on-surface-variant); font-weight: 400; }
+  .rm-mark-count { font-family: "Courier Prime", ui-monospace, monospace; font-size: 11.5px; font-weight: 700; }
+  .rm-hit { fill: transparent; }
+  .rm-sel { fill: none; stroke: var(--color-ink); stroke-width: 1.5; stroke-dasharray: 2.5 2.5; }
+  .rm-bud { transition: fill 260ms ease, stroke 260ms ease, r 260ms cubic-bezier(0.16, 1, 0.3, 1); }
+  .rm-node:hover .rm-bud { stroke: var(--color-ink); stroke-width: 2.25; }
+  .rm-node:hover .rm-label { text-decoration: underline; text-underline-offset: 3px; }
+  .rm-node:focus-visible .rm-hit { stroke: var(--color-stamp); stroke-width: 2; }
+  .rm-pulse { fill: none; stroke-width: 2; transform-box: fill-box; transform-origin: center; animation: rm-pulse 850ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+  @keyframes rm-pulse { from { opacity: 0.9; transform: scale(0.6); } to { opacity: 0; transform: scale(2.6); } }
+  .rm-grow { transition: width 420ms cubic-bezier(0.16, 1, 0.3, 1); }
+  .rm-range { appearance: none; -webkit-appearance: none; height: 16px; background: transparent; cursor: pointer; }
+  .rm-range::-webkit-slider-runnable-track { height: 4px; border-radius: 999px; background: linear-gradient(90deg, var(--color-ink) var(--k), var(--color-surface-container-high) var(--k)); }
+  .rm-range::-moz-range-track { height: 4px; border-radius: 999px; background: linear-gradient(90deg, var(--color-ink) var(--k), var(--color-surface-container-high) var(--k)); }
+  .rm-range::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; margin-top: -5px; border-radius: 50%; background: var(--color-surface-container-lowest); border: 2px solid var(--color-ink); }
+  .rm-range::-moz-range-thumb { width: 12px; height: 12px; border-radius: 50%; background: var(--color-surface-container-lowest); border: 2px solid var(--color-ink); }
+  @media (prefers-reduced-motion: reduce) { .rm-pulse { display: none; } }
+}
+
+/* Page headings take focus after a change of screen; the heading itself is the cue, not a ring. */
+h1[tabindex="-1"]:focus { outline: none; }

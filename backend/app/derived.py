@@ -551,6 +551,27 @@ def compute_knowledge_at_risk_score(
     return dict(sorted(scores.items(), key=lambda kv: kv[1], reverse=True))
 
 
+def compute_exposure_weighted_score(ownership: list[dict]) -> dict[str, float]:
+    """
+    Candidate v2 score, measured in the real-project backtest only:
+
+        score_v2 = leaver_share × sqrt(leaver_commits)
+
+    v1 divides by the number of other contributors, so it ranks small folders
+    the leaver touched alone above the busy modules they mostly wrote. v2 keeps
+    concentration (share) but also rewards how much of the module's history
+    the leaver actually carries. Not used for claims until it is checked on a
+    second departure.
+
+    Returns dict: module → score (rounded to 4 dp), highest first.
+    """
+    scores = {
+        item["module"]: round(item["leaver_share"] * (item["leaver_count"] ** 0.5), 4)
+        for item in ownership
+    }
+    return dict(sorted(scores.items(), key=lambda kv: kv[1], reverse=True))
+
+
 # ---------------------------------------------------------------------------
 # Task chunk helpers
 # ---------------------------------------------------------------------------

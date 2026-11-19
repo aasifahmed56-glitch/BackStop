@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { api } from "../api";
+import { api, canReview } from "../api";
 import { ArrowRight, Check, FileText } from "lucide-react";
 import { Button, Skeleton, STATUS, REVIEW, humanize } from "./ui.jsx";
 import Readiness from "./Readiness";
@@ -52,7 +52,7 @@ function FeatureRow({ title, body, action, visual, flip = false }) {
       <div className={`min-w-0 ${flip ? "lg:order-2" : ""}`}>{visual}</div>
       <div className={`flex flex-col gap-4 max-w-[460px] ${flip ? "lg:order-1" : ""}`}>
         <h2 className="text-[30px] sm:text-[38px] leading-[1.08] font-bold tracking-[-0.03em] text-on-surface text-balance">{title}</h2>
-        <p className="text-[15.5px] leading-7 text-on-surface-variant">{body}</p>
+        <p className="text-[15.5px] leading-7 text-on-surface-variant max-w-[65ch]">{body}</p>
         {action && (
           <button type="button" onClick={action[1]} className="self-start inline-flex items-center gap-1 text-[14px] font-semibold text-primary hover:underline cursor-pointer">
             {action[0]} <ArrowRight size={15} aria-hidden="true" />
@@ -137,7 +137,7 @@ function FirstRun({ project, sourceCount, setActiveTab }) {
           );
         })}
       </ol>
-      <p className="text-[13px] text-on-surface-variant border-t border-outline-variant pt-5">
+      <p className="text-[13px] text-on-surface-variant max-w-[65ch] border-t border-outline-variant pt-5">
         Want to see a finished handover first?{" "}
         <a href="#/projects" className="font-semibold text-primary hover:underline underline-offset-2">Open the synthetic sample</a> from the project list.
       </p>
@@ -157,6 +157,7 @@ export default function HomePage({
   actionStatus,
 }) {
   const isSample = !project || project.name === "Campus Event App";
+  const isReviewer = canReview();
   // Real claims for the specimen stack: a spread of kinds and statuses.
   const [specimens, setSpecimens] = useState([]);
   const [allClaims, setAllClaims] = useState([]);
@@ -264,15 +265,23 @@ export default function HomePage({
             and the newcomer receives only what their role allows.
           </p>
           <div className="flex flex-wrap items-center gap-3">
-            <Button id="btn-try-demo" variant="primary" size="lg" onClick={handleStart} disabled={isLoading}>
-              {isLoading ? "Loading…" : "Check the claims"}
-              {!isLoading && <ArrowRight size={18} aria-hidden="true" />}
-            </Button>
-            <Button variant="outline" size="lg" onClick={() => setActiveTab("debrief")}>
-              See the debrief questions
-            </Button>
+            {isReviewer ? (
+              <>
+                <Button id="btn-try-demo" variant="primary" size="lg" onClick={handleStart} disabled={isLoading}>
+                  {isLoading ? "Loading…" : "Check the claims"}
+                  {!isLoading && <ArrowRight size={18} aria-hidden="true" />}
+                </Button>
+                <Button variant="outline" size="lg" onClick={() => setActiveTab("debrief")}>
+                  See the debrief questions
+                </Button>
+              </>
+            ) : (
+              <Button id="btn-try-demo" variant="primary" size="lg" onClick={() => setActiveTab("handover")}>
+                Open my handover <ArrowRight size={18} aria-hidden="true" />
+              </Button>
+            )}
           </div>
-          <p className="text-[13px] text-on-surface-variant" role="status">
+          <p className="text-[13px] text-on-surface-variant max-w-[65ch]" role="status">
             {actionStatus?.text || actionStatus || (isSample ? "Runs on synthetic sample data. " : "") + "Automated checks assist; a person decides."}
           </p>
         </div>
@@ -297,13 +306,13 @@ export default function HomePage({
           <div className="flex items-baseline justify-between gap-3 flex-wrap">
             <h2 id="index-h" className="text-[15px] font-semibold text-on-surface">Sheet index</h2>
             {hasStats && (
-              <p className="text-[13px] text-on-surface-variant">
+              <p className="text-[13px] text-on-surface-variant max-w-[65ch]">
                 <span className="font-mono tnum text-on-surface font-bold">{decided}</span> of <span className="font-mono tnum">{shown}</span> claims stamped by a person
               </p>
             )}
           </div>
           {hasStats && shown > 0 ? (
-            <div className="grid gap-[3px]" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(14px, 1fr))" }} aria-label={`${decided} of ${shown} claims checked by a person. Each mark opens its claim.`}>
+            <div role="group" className="grid gap-[3px]" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(16px, 1fr))" }} aria-label={`${decided} of ${shown} claims checked by a person. Each mark opens its claim; the same claims are listed on Check the claims.`}>
               {(allClaims.length ? allClaims : ticks.map((cls, i) => ({ id: `t${i}`, cls }))).map((c, i) => {
                 const cls = c.cls || REVIEW[c.review_state]?.tick || REVIEW.pending.tick;
                 const flag = !c.cls && c.review_state === "pending" && ["conflicting", "missing", "inferred"].includes(c.status);
@@ -316,6 +325,7 @@ export default function HomePage({
                     type="button"
                     title={label}
                     aria-label={label}
+                    tabIndex={-1}
                     onClick={() => setActiveTab("review", c.id)}
                     className={`tick tick-in relative aspect-[3/4] rounded-[2px] cursor-pointer ${cls}`}
                     style={{ animationDelay: `${Math.min(i * 7, 700)}ms` }}
@@ -326,7 +336,7 @@ export default function HomePage({
               })}
             </div>
           ) : hasStats ? (
-            <p className="text-[13px] text-on-surface-variant">No claims yet. Add records and build claims to start.</p>
+            <p className="text-[13px] text-on-surface-variant max-w-[65ch]">No claims yet. Add records and build claims to start.</p>
           ) : (
             <Skeleton className="h-16 w-full" />
           )}
@@ -341,7 +351,7 @@ export default function HomePage({
         </div>
         <div className="lg:col-span-5">
           {readiness ? <Readiness readiness={readiness} compact /> : <Skeleton className="h-16 w-full" />}
-          {readiness && (
+          {readiness && isReviewer && (
             <button
               type="button"
               onClick={() => setActiveTab("debrief")}
@@ -358,7 +368,7 @@ export default function HomePage({
       <FeatureRow
         title="Every claim shows its proof."
         body="Automated checks compare each claim with its source word for word, and sort it into one of four states. The state tells the reviewer how much to read before stamping."
-        action={["Check the claims", () => setActiveTab("review")]}
+        action={isReviewer ? ["Check the claims", () => setActiveTab("review")] : null}
         visual={
           <div className="grid grid-cols-2 gap-3 sm:gap-4 max-w-[420px]">
             {["verified", "inferred", "conflicting", "missing"].map((k, i) => (
@@ -385,7 +395,7 @@ export default function HomePage({
         flip
         title="Gaps become questions, while there is still time."
         body={`What the records could not settle turns into a question for ${project?.leaver_name || "the person leaving"}. Type their answer in and it becomes a claim with its own quote, checked like any other.`}
-        action={["See the debrief questions", () => setActiveTab("debrief")]}
+        action={isReviewer ? ["See the debrief questions", () => setActiveTab("debrief")] : null}
         visual={
           <div className="relative h-[300px] max-w-[460px]">
             {(topQuestions.length ? topQuestions : [null, null, null]).map((q, i) => (
@@ -473,7 +483,7 @@ export default function HomePage({
       {isSample && <GithubImportPanel title="Try it on a real repository" />}
 
       {/* Behind the scenes */}
-      {isSample && <section className="border-t border-outline-variant pt-5 flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
+      {isSample && isReviewer && <section className="border-t border-outline-variant pt-5 flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
         <p className="text-[13px] text-on-surface-variant max-w-[60ch]">
           Behind the scenes: re-run extraction to rebuild the claims from the sources, or the derivations to
           recompute the figures from code.

@@ -23,7 +23,7 @@ Not a summariser. Each statement carries proof: a verbatim substring of the sour
 
 ## Operating Context
 
-Journey: Overview → Check the claims (review queue) → Handover dossier (role switch, Day 1 / Week 1 / Month 1 plan, acknowledge, print) → Backtest (precision@k / recall@k against post-departure ground truth). Roles are simulated, no sign-in. Sample data is synthetic (Campus Event App, leaver Riya).
+Journey: Overview → Check the claims (review queue) → Handover dossier (role switch, Day 1 / Week 1 / Month 1 plan, acknowledge, print) → Backtest (precision@k / recall@k against post-departure ground truth). Everyone signs in; newcomer accounts see only the screens and claims their role allows. Sample data is synthetic (Campus Event App, leaver Riya).
 
 ## Capabilities and Constraints
 

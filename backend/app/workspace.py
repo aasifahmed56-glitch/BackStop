@@ -11,8 +11,8 @@ Workspaces: real handover projects beyond the sample (plain code, no AI).
                                                the extractor where a model or cache answers,
                                                and keyword rules for everything else
 
-Roles are simulated, as everywhere in Backstop: the role in the request is
-trusted for routing and checked against a fixed list, not authenticated.
+The role in the request is checked against a fixed list, and the sign-in
+layer has already refused any role the account may not act as.
 The sample project is read-only here so the demo stays reproducible.
 """
 from __future__ import annotations
@@ -20,8 +20,6 @@ from __future__ import annotations
 import json
 import re
 import shutil
-import subprocess
-import tempfile
 from collections import defaultdict
 from datetime import date, datetime, timedelta
 from pathlib import Path
@@ -223,15 +221,17 @@ class ProjectIn(BaseModel):
 
 
 @router.get("/projects", summary="List projects with their counts")
-def list_projects(session: Session = Depends(get_session)):
-    projects = session.exec(select(Project)).all()
+def list_projects(request: Request, session: Session = Depends(get_session)):
+    from app.org import allowed_projects_for
+    allowed = allowed_projects_for(request)
+    projects = [p for p in session.exec(select(Project)).all() if allowed is None or p.id in allowed]
     rows = [_counts(session, p) for p in projects]
     rows.sort(key=lambda r: (not r["is_sample"], -r["id"]))
     return rows
 
 
 @router.post("/projects", summary="Create a handover project (lead only)", status_code=201)
-def create_project(body: ProjectIn, session: Session = Depends(get_session)):
+def create_project(body: ProjectIn, request: Request, session: Session = Depends(get_session)):
     _require_editor(body.role)
     name, leaver = _clean_name(body.name), _clean_name(body.leaver_name)
     if not name or not leaver:
@@ -247,6 +247,8 @@ def create_project(body: ProjectIn, session: Session = Depends(get_session)):
     session.add(AuditLog(project_id=project.id, action="project_created", actor_role="lead",
                          detail=f"Project created for {leaver}, leaving {project.departure_date.isoformat()}"))
     session.commit()
+    from app.org import attach_new_project
+    attach_new_project(session, request, project.id)
     return _counts(session, project)
 
 
@@ -265,6 +267,8 @@ def delete_project(project_id: int, role: Role = Query(LOWEST_ROLE), session: Se
     for c in claims:
         session.delete(c)
     session.flush()
+    from app.org import forget_project
+    forget_project(session, project_id)
     for src in session.exec(select(Source).where(Source.project_id == project_id)).all():
         for ch in session.exec(select(Chunk).where(Chunk.source_id == src.id)).all():
             session.delete(ch)
@@ -343,7 +347,7 @@ class GithubIn(BaseModel):
 @router.post("/projects/{project_id}/sources/github", summary="Add a public repository's commit history (lead only)", status_code=201)
 def github_source(project_id: int, body: GithubIn, request: Request, session: Session = Depends(get_session)):
     from app import githubimport as gi
-    from app.realdata import format_git_log, pseudonymise, read_git_history
+    from app.realdata import format_git_log, pseudonymise
 
     project = _editable(session, project_id, body.role)
     owner, repo = gi.validate_url(body.url)
@@ -355,21 +359,13 @@ def github_source(project_id: int, body: GithubIn, request: Request, session: Se
         raise HTTPException(429, "You have run 3 imports in the last hour. Please wait, or paste a git log instead.")
     if not gi._lock.acquire(blocking=False):
         raise HTTPException(429, "Another import is running. Try again in a minute.")
-    tmp = Path(tempfile.mkdtemp(prefix="backstop-ws-"))
     try:
-        try:
-            gi._clone(f"https://github.com/{owner}/{repo}.git", tmp / "repo.git")
-            raw = read_git_history(tmp / "repo.git", until=project.departure_date,
-                                   max_commits=gi.MAX_COMMITS, timeout=30)
-        except subprocess.TimeoutExpired:
-            raise HTTPException(504, "The repository took too long to read. Try a smaller one.")
-        except subprocess.CalledProcessError:
-            raise HTTPException(404, "That repository could not be downloaded. Check that it exists and is public.")
+        raw, info = gi.fetch_history(owner, repo, project.departure_date - gi.PROJECT_HISTORY, project.departure_date)
     finally:
-        shutil.rmtree(tmp, ignore_errors=True)
         gi._lock.release()
-    if len(raw) < 5:
-        raise HTTPException(422, "There are fewer than 5 commits before the departure date, which is too few to read.")
+    if not raw:
+        raise HTTPException(422, "There are no commits before the departure date, so there is nothing to read yet.")
+    low_confidence = len(raw) < gi.LOW_CONFIDENCE_COMMITS
 
     names = pseudonymise(raw, None)
     if body.leaver and body.leaver.strip():
@@ -395,9 +391,12 @@ def github_source(project_id: int, body: GithubIn, request: Request, session: Se
     session.commit()
     return {
         "source_id": src.id, "name": src.name, "kind": src.kind, "chunk_count": parts,
-        "commit_count": len(raw), "commit_limit_reached": len(raw) >= gi.MAX_COMMITS,
+        "commit_count": len(raw), "commit_limit_reached": info["limit_reached"],
         "contributor_count": len(set(names.values())), "leaver": leaver_label, "leaver_chosen": chosen,
-        "note": f"Contributors are pseudonymised. The person leaving is now {leaver_label} (was {previous}).",
+        "low_confidence": low_confidence,
+        "note": f"Contributors are pseudonymised. The person leaving is now {leaver_label} (was {previous})."
+                + (f" {gi.trimmed_note(info)}" if gi.trimmed_note(info) else "")
+                + (f" {gi.low_confidence_note(len(raw))}" if low_confidence else ""),
     }
 
 

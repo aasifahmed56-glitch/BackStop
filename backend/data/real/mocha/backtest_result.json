@@ -142,6 +142,7 @@
         {
           "module": "test/unit",
           "score": 30.4333,
+          "score_v2": 8.4261,
           "leaver_commits": 71,
           "leaver_share": 1.0,
           "total_commits": 71,
@@ -150,6 +151,7 @@
         {
           "module": "test/interfaces",
           "score": 8.6566,
+          "score_v2": 1.7406,
           "leaver_commits": 8,
           "leaver_share": 0.6154,
           "total_commits": 13,
@@ -158,6 +160,7 @@
         {
           "module": "test/jsapi",
           "score": 6.98,
+          "score_v2": 1.0392,
           "leaver_commits": 3,
           "leaver_share": 0.6,
           "total_commits": 5,
@@ -166,6 +169,7 @@
         {
           "module": "test/misc",
           "score": 6.2512,
+          "score_v2": 0.8888,
           "leaver_commits": 4,
           "leaver_share": 0.4444,
           "total_commits": 9,
@@ -174,6 +178,7 @@
         {
           "module": "editors",
           "score": 2.9378,
+          "score_v2": 1.3433,
           "leaver_commits": 14,
           "leaver_share": 0.359,
           "total_commits": 39,
@@ -182,6 +187,7 @@
         {
           "module": "lib/browser",
           "score": 1.7536,
+          "score_v2": 2.7569,
           "leaver_commits": 14,
           "leaver_share": 0.7368,
           "total_commits": 19,
@@ -190,6 +196,7 @@
         {
           "module": "example",
           "score": 1.5917,
+          "score_v2": 1.5,
           "leaver_commits": 9,
           "leaver_share": 0.5,
           "total_commits": 18,
@@ -198,6 +205,7 @@
         {
           "module": "images",
           "score": 1.0162,
+          "score_v2": 1.2362,
           "leaver_commits": 19,
           "leaver_share": 0.2836,
           "total_commits": 67,
@@ -206,6 +214,7 @@
         {
           "module": "test/browser",
           "score": 0.7839,
+          "score_v2": 5.611,
           "leaver_commits": 62,
           "leaver_share": 0.7126,
           "total_commits": 87,
@@ -214,6 +223,7 @@
         {
           "module": "lib/interfaces",
           "score": 0.0777,
+          "score_v2": 3.8333,
           "leaver_commits": 40,
           "leaver_share": 0.6061,
           "total_commits": 66,
@@ -222,6 +232,7 @@
         {
           "module": "test",
           "score": 0.0656,
+          "score_v2": 6.1182,
           "leaver_commits": 99,
           "leaver_share": 0.6149,
           "total_commits": 161,
@@ -230,6 +241,7 @@
         {
           "module": "support",
           "score": 0.0234,
+          "score_v2": 3.8049,
           "leaver_commits": 46,
           "leaver_share": 0.561,
           "total_commits": 82,
@@ -238,6 +250,7 @@
         {
           "module": "bin",
           "score": 0.0144,
+          "score_v2": 6.211,
           "leaver_commits": 100,
           "leaver_share": 0.6211,
           "total_commits": 161,
@@ -246,6 +259,7 @@
         {
           "module": "lib",
           "score": 0.0121,
+          "score_v2": 10.8774,
           "leaver_commits": 258,
           "leaver_share": 0.6772,
           "total_commits": 381,
@@ -254,6 +268,7 @@
         {
           "module": "lib/reporters",
           "score": 0.0098,
+          "score_v2": 9.922,
           "leaver_commits": 228,
           "leaver_share": 0.6571,
           "total_commits": 347,
@@ -262,6 +277,7 @@
         {
           "module": "test/acceptance",
           "score": 0.0098,
+          "score_v2": 0.5068,
           "leaver_commits": 12,
           "leaver_share": 0.1463,
           "total_commits": 82,
@@ -270,16 +286,18 @@
         {
           "module": "root",
           "score": 0.0086,
+          "score_v2": 17.9288,
           "leaver_commits": 640,
           "leaver_share": 0.7087,
           "total_commits": 903,
           "is_positive": true
         }
       ],
-      "commit_count": [
+      "backstop_v2": [
         {
           "module": "root",
           "score": 0.0086,
+          "score_v2": 17.9288,
           "leaver_commits": 640,
           "leaver_share": 0.7087,
           "total_commits": 903,
@@ -288,6 +306,7 @@
         {
           "module": "lib",
           "score": 0.0121,
+          "score_v2": 10.8774,
           "leaver_commits": 258,
           "leaver_share": 0.6772,
           "total_commits": 381,
@@ -296,14 +315,25 @@
         {
           "module": "lib/reporters",
           "score": 0.0098,
+          "score_v2": 9.922,
           "leaver_commits": 228,
           "leaver_share": 0.6571,
           "total_commits": 347,
           "is_positive": true
         },
         {
+          "module": "test/unit",
+          "score": 30.4333,
+          "score_v2": 8.4261,
+          "leaver_commits": 71,
+          "leaver_share": 1.0,
+          "total_commits": 71,
+          "is_positive": false
+        },
+        {
           "module": "bin",
           "score": 0.0144,
+          "score_v2": 6.211,
           "leaver_commits": 100,
           "leaver_share": 0.6211,
           "total_commits": 161,
@@ -312,6 +342,153 @@
         {
           "module": "test",
           "score": 0.0656,
+          "score_v2": 6.1182,
+          "leaver_commits": 99,
+          "leaver_share": 0.6149,
+          "total_commits": 161,
+          "is_positive": true
+        },
+        {
+          "module": "test/browser",
+          "score": 0.7839,
+          "score_v2": 5.611,
+          "leaver_commits": 62,
+          "leaver_share": 0.7126,
+          "total_commits": 87,
+          "is_positive": false
+        },
+        {
+          "module": "lib/interfaces",
+          "score": 0.0777,
+          "score_v2": 3.8333,
+          "leaver_commits": 40,
+          "leaver_share": 0.6061,
+          "total_commits": 66,
+          "is_positive": true
+        },
+        {
+          "module": "support",
+          "score": 0.0234,
+          "score_v2": 3.8049,
+          "leaver_commits": 46,
+          "leaver_share": 0.561,
+          "total_commits": 82,
+          "is_positive": true
+        },
+        {
+          "module": "lib/browser",
+          "score": 1.7536,
+          "score_v2": 2.7569,
+          "leaver_commits": 14,
+          "leaver_share": 0.7368,
+          "total_commits": 19,
+          "is_positive": false
+        },
+        {
+          "module": "test/interfaces",
+          "score": 8.6566,
+          "score_v2": 1.7406,
+          "leaver_commits": 8,
+          "leaver_share": 0.6154,
+          "total_commits": 13,
+          "is_positive": false
+        },
+        {
+          "module": "example",
+          "score": 1.5917,
+          "score_v2": 1.5,
+          "leaver_commits": 9,
+          "leaver_share": 0.5,
+          "total_commits": 18,
+          "is_positive": false
+        },
+        {
+          "module": "editors",
+          "score": 2.9378,
+          "score_v2": 1.3433,
+          "leaver_commits": 14,
+          "leaver_share": 0.359,
+          "total_commits": 39,
+          "is_positive": false
+        },
+        {
+          "module": "images",
+          "score": 1.0162,
+          "score_v2": 1.2362,
+          "leaver_commits": 19,
+          "leaver_share": 0.2836,
+          "total_commits": 67,
+          "is_positive": false
+        },
+        {
+          "module": "test/jsapi",
+          "score": 6.98,
+          "score_v2": 1.0392,
+          "leaver_commits": 3,
+          "leaver_share": 0.6,
+          "total_commits": 5,
+          "is_positive": false
+        },
+        {
+          "module": "test/misc",
+          "score": 6.2512,
+          "score_v2": 0.8888,
+          "leaver_commits": 4,
+          "leaver_share": 0.4444,
+          "total_commits": 9,
+          "is_positive": false
+        },
+        {
+          "module": "test/acceptance",
+          "score": 0.0098,
+          "score_v2": 0.5068,
+          "leaver_commits": 12,
+          "leaver_share": 0.1463,
+          "total_commits": 82,
+          "is_positive": true
+        }
+      ],
+      "commit_count": [
+        {
+          "module": "root",
+          "score": 0.0086,
+          "score_v2": 17.9288,
+          "leaver_commits": 640,
+          "leaver_share": 0.7087,
+          "total_commits": 903,
+          "is_positive": true
+        },
+        {
+          "module": "lib",
+          "score": 0.0121,
+          "score_v2": 10.8774,
+          "leaver_commits": 258,
+          "leaver_share": 0.6772,
+          "total_commits": 381,
+          "is_positive": true
+        },
+        {
+          "module": "lib/reporters",
+          "score": 0.0098,
+          "score_v2": 9.922,
+          "leaver_commits": 228,
+          "leaver_share": 0.6571,
+          "total_commits": 347,
+          "is_positive": true
+        },
+        {
+          "module": "bin",
+          "score": 0.0144,
+          "score_v2": 6.211,
+          "leaver_commits": 100,
+          "leaver_share": 0.6211,
+          "total_commits": 161,
+          "is_positive": true
+        },
+        {
+          "module": "test",
+          "score": 0.0656,
+          "score_v2": 6.1182,
           "leaver_commits": 99,
           "leaver_share": 0.6149,
           "total_commits": 161,
@@ -320,6 +497,7 @@
         {
           "module": "test/unit",
           "score": 30.4333,
+          "score_v2": 8.4261,
           "leaver_commits": 71,
           "leaver_share": 1.0,
           "total_commits": 71,
@@ -328,6 +506,7 @@
         {
           "module": "test/browser",
           "score": 0.7839,
+          "score_v2": 5.611,
           "leaver_commits": 62,
           "leaver_share": 0.7126,
           "total_commits": 87,
@@ -336,6 +515,7 @@
         {
           "module": "support",
           "score": 0.0234,
+          "score_v2": 3.8049,
           "leaver_commits": 46,
           "leaver_share": 0.561,
           "total_commits": 82,
@@ -344,6 +524,7 @@
         {
           "module": "lib/interfaces",
           "score": 0.0777,
+          "score_v2": 3.8333,
           "leaver_commits": 40,
           "leaver_share": 0.6061,
           "total_commits": 66,
@@ -352,6 +533,7 @@
         {
           "module": "images",
           "score": 1.0162,
+          "score_v2": 1.2362,
           "leaver_commits": 19,
           "leaver_share": 0.2836,
           "total_commits": 67,
@@ -360,6 +542,7 @@
         {
           "module": "editors",
           "score": 2.9378,
+          "score_v2": 1.3433,
           "leaver_commits": 14,
           "leaver_share": 0.359,
           "total_commits": 39,
@@ -368,6 +551,7 @@
         {
           "module": "lib/browser",
           "score": 1.7536,
+          "score_v2": 2.7569,
           "leaver_commits": 14,
           "leaver_share": 0.7368,
           "total_commits": 19,
@@ -376,6 +560,7 @@
         {
           "module": "test/acceptance",
           "score": 0.0098,
+          "score_v2": 0.5068,
           "leaver_commits": 12,
           "leaver_share": 0.1463,
           "total_commits": 82,
@@ -384,6 +569,7 @@
         {
           "module": "example",
           "score": 1.5917,
+          "score_v2": 1.5,
           "leaver_commits": 9,
           "leaver_share": 0.5,
           "total_commits": 18,
@@ -392,6 +578,7 @@
         {
           "module": "test/interfaces",
           "score": 8.6566,
+          "score_v2": 1.7406,
           "leaver_commits": 8,
           "leaver_share": 0.6154,
           "total_commits": 13,
@@ -400,6 +587,7 @@
         {
           "module": "test/misc",
           "score": 6.2512,
+          "score_v2": 0.8888,
           "leaver_commits": 4,
           "leaver_share": 0.4444,
           "total_commits": 9,
@@ -408,6 +596,7 @@
         {
           "module": "test/jsapi",
           "score": 6.98,
+          "score_v2": 1.0392,
           "leaver_commits": 3,
           "leaver_share": 0.6,
           "total_commits": 5,
@@ -418,6 +607,7 @@
         {
           "module": "test/unit",
           "score": 30.4333,
+          "score_v2": 8.4261,
           "leaver_commits": 71,
           "leaver_share": 1.0,
           "total_commits": 71,
@@ -426,6 +616,7 @@
         {
           "module": "lib/browser",
           "score": 1.7536,
+          "score_v2": 2.7569,
           "leaver_commits": 14,
           "leaver_share": 0.7368,
           "total_commits": 19,
@@ -434,6 +625,7 @@
         {
           "module": "test/browser",
           "score": 0.7839,
+          "score_v2": 5.611,
           "leaver_commits": 62,
           "leaver_share": 0.7126,
           "total_commits": 87,
@@ -442,6 +634,7 @@
         {
           "module": "root",
           "score": 0.0086,
+          "score_v2": 17.9288,
           "leaver_commits": 640,
           "leaver_share": 0.7087,
           "total_commits": 903,
@@ -450,6 +643,7 @@
         {
           "module": "lib",
           "score": 0.0121,
+          "score_v2": 10.8774,
           "leaver_commits": 258,
           "leaver_share": 0.6772,
           "total_commits": 381,
@@ -458,6 +652,7 @@
         {
           "module": "lib/reporters",
           "score": 0.0098,
+          "score_v2": 9.922,
           "leaver_commits": 228,
           "leaver_share": 0.6571,
           "total_commits": 347,
@@ -466,6 +661,7 @@
         {
           "module": "bin",
           "score": 0.0144,
+          "score_v2": 6.211,
           "leaver_commits": 100,
           "leaver_share": 0.6211,
           "total_commits": 161,
@@ -474,6 +670,7 @@
         {
           "module": "test/interfaces",
           "score": 8.6566,
+          "score_v2": 1.7406,
           "leaver_commits": 8,
           "leaver_share": 0.6154,
           "total_commits": 13,
@@ -482,6 +679,7 @@
         {
           "module": "test",
           "score": 0.0656,
+          "score_v2": 6.1182,
           "leaver_commits": 99,
           "leaver_share": 0.6149,
           "total_commits": 161,
@@ -490,6 +688,7 @@
         {
           "module": "lib/interfaces",
           "score": 0.0777,
+          "score_v2": 3.8333,
           "leaver_commits": 40,
           "leaver_share": 0.6061,
           "total_commits": 66,
@@ -498,6 +697,7 @@
         {
           "module": "test/jsapi",
           "score": 6.98,
+          "score_v2": 1.0392,
           "leaver_commits": 3,
           "leaver_share": 0.6,
           "total_commits": 5,
@@ -506,6 +706,7 @@
         {
           "module": "support",
           "score": 0.0234,
+          "score_v2": 3.8049,
           "leaver_commits": 46,
           "leaver_share": 0.561,
           "total_commits": 82,
@@ -514,6 +715,7 @@
         {
           "module": "example",
           "score": 1.5917,
+          "score_v2": 1.5,
           "leaver_commits": 9,
           "leaver_share": 0.5,
           "total_commits": 18,
@@ -522,6 +724,7 @@
         {
           "module": "test/misc",
           "score": 6.2512,
+          "score_v2": 0.8888,
           "leaver_commits": 4,
           "leaver_share": 0.4444,
           "total_commits": 9,
@@ -530,6 +733,7 @@
         {
           "module": "editors",
           "score": 2.9378,
+          "score_v2": 1.3433,
           "leaver_commits": 14,
           "leaver_share": 0.359,
           "total_commits": 39,
@@ -538,6 +742,7 @@
         {
           "module": "images",
           "score": 1.0162,
+          "score_v2": 1.2362,
           "leaver_commits": 19,
           "leaver_share": 0.2836,
           "total_commits": 67,
@@ -546,6 +751,7 @@
         {
           "module": "test/acceptance",
           "score": 0.0098,
+          "score_v2": 0.5068,
           "leaver_commits": 12,
           "leaver_share": 0.1463,
           "total_commits": 82,
@@ -668,6 +874,128 @@
             "test/acceptance"
           ],
           "hit_count": 0,
+          "relevant_count": 8
+        }
+      ],
+      "backstop_v2": [
+        {
+          "k": 1,
+          "precision": 1.0,
+          "recall": 0.125,
+          "top_k": [
+            "root"
+          ],
+          "hits": [
+            "root"
+          ],
+          "misses": [
+            "bin",
+            "lib",
+            "lib/interfaces",
+            "lib/reporters",
+            "support",
+            "test",
+            "test/acceptance"
+          ],
+          "hit_count": 1,
+          "relevant_count": 8
+        },
+        {
+          "k": 2,
+          "precision": 1.0,
+          "recall": 0.25,
+          "top_k": [
+            "root",
+            "lib"
+          ],
+          "hits": [
+            "root",
+            "lib"
+          ],
+          "misses": [
+            "bin",
+            "lib/interfaces",
+            "lib/reporters",
+            "support",
+            "test",
+            "test/acceptance"
+          ],
+          "hit_count": 2,
+          "relevant_count": 8
+        },
+        {
+          "k": 3,
+          "precision": 1.0,
+          "recall": 0.375,
+          "top_k": [
+            "root",
+            "lib",
+            "lib/reporters"
+          ],
+          "hits": [
+            "root",
+            "lib",
+            "lib/reporters"
+          ],
+          "misses": [
+            "bin",
+            "lib/interfaces",
+            "support",
+            "test",
+            "test/acceptance"
+          ],
+          "hit_count": 3,
+          "relevant_count": 8
+        },
+        {
+          "k": 4,
+          "precision": 0.75,
+          "recall": 0.375,
+          "top_k": [
+            "root",
+            "lib",
+            "lib/reporters",
+            "test/unit"
+          ],
+          "hits": [
+            "root",
+            "lib",
+            "lib/reporters"
+          ],
+          "misses": [
+            "bin",
+            "lib/interfaces",
+            "support",
+            "test",
+            "test/acceptance"
+          ],
+          "hit_count": 3,
+          "relevant_count": 8
+        },
+        {
+          "k": 5,
+          "precision": 0.8,
+          "recall": 0.5,
+          "top_k": [
+            "root",
+            "lib",
+            "lib/reporters",
+            "test/unit",
+            "bin"
+          ],
+          "hits": [
+            "root",
+            "lib",
+            "lib/reporters",
+            "bin"
+          ],
+          "misses": [
+            "lib/interfaces",
+            "support",
+            "test",
+            "test/acceptance"
+          ],
+          "hit_count": 4,
           "relevant_count": 8
         }
       ],
@@ -1037,6 +1365,123 @@
             "relevant_count": 7
           }
         ],
+        "backstop_v2": [
+          {
+            "k": 1,
+            "precision": 1.0,
+            "recall": 0.143,
+            "top_k": [
+              "root"
+            ],
+            "hits": [
+              "root"
+            ],
+            "misses": [
+              "bin",
+              "example",
+              "lib",
+              "lib/reporters",
+              "support",
+              "test"
+            ],
+            "hit_count": 1,
+            "relevant_count": 7
+          },
+          {
+            "k": 2,
+            "precision": 1.0,
+            "recall": 0.286,
+            "top_k": [
+              "root",
+              "lib"
+            ],
+            "hits": [
+              "root",
+              "lib"
+            ],
+            "misses": [
+              "bin",
+              "example",
+              "lib/reporters",
+              "support",
+              "test"
+            ],
+            "hit_count": 2,
+            "relevant_count": 7
+          },
+          {
+            "k": 3,
+            "precision": 1.0,
+            "recall": 0.429,
+            "top_k": [
+              "root",
+              "lib",
+              "lib/reporters"
+            ],
+            "hits": [
+              "root",
+              "lib",
+              "lib/reporters"
+            ],
+            "misses": [
+              "bin",
+              "example",
+              "support",
+              "test"
+            ],
+            "hit_count": 3,
+            "relevant_count": 7
+          },
+          {
+            "k": 4,
+            "precision": 0.75,
+            "recall": 0.429,
+            "top_k": [
+              "root",
+              "lib",
+              "lib/reporters",
+              "test/unit"
+            ],
+            "hits": [
+              "root",
+              "lib",
+              "lib/reporters"
+            ],
+            "misses": [
+              "bin",
+              "example",
+              "support",
+              "test"
+            ],
+            "hit_count": 3,
+            "relevant_count": 7
+          },
+          {
+            "k": 5,
+            "precision": 0.8,
+            "recall": 0.571,
+            "top_k": [
+              "root",
+              "lib",
+              "lib/reporters",
+              "test/unit",
+              "bin"
+            ],
+            "hits": [
+              "root",
+              "lib",
+              "lib/reporters",
+              "bin"
+            ],
+            "misses": [
+              "example",
+              "support",
+              "test"
+            ],
+            "hit_count": 4,
+            "relevant_count": 7
+          }
+        ],
         "commit_count": [
           {
             "k": 1,
@@ -1394,6 +1839,128 @@
               "test/acceptance"
             ],
             "hit_count": 1,
+            "relevant_count": 8
+          }
+        ],
+        "backstop_v2": [
+          {
+            "k": 1,
+            "precision": 1.0,
+            "recall": 0.125,
+            "top_k": [
+              "root"
+            ],
+            "hits": [
+              "root"
+            ],
+            "misses": [
+              "bin",
+              "lib",
+              "lib/browser",
+              "lib/reporters",
+              "support",
+              "test",
+              "test/acceptance"
+            ],
+            "hit_count": 1,
+            "relevant_count": 8
+          },
+          {
+            "k": 2,
+            "precision": 1.0,
+            "recall": 0.25,
+            "top_k": [
+              "root",
+              "lib"
+            ],
+            "hits": [
+              "root",
+              "lib"
+            ],
+            "misses": [
+              "bin",
+              "lib/browser",
+              "lib/reporters",
+              "support",
+              "test",
+              "test/acceptance"
+            ],
+            "hit_count": 2,
+            "relevant_count": 8
+          },
+          {
+            "k": 3,
+            "precision": 1.0,
+            "recall": 0.375,
+            "top_k": [
+              "root",
+              "lib",
+              "lib/reporters"
+            ],
+            "hits": [
+              "root",
+              "lib",
+              "lib/reporters"
+            ],
+            "misses": [
+              "bin",
+              "lib/browser",
+              "support",
+              "test",
+              "test/acceptance"
+            ],
+            "hit_count": 3,
+            "relevant_count": 8
+          },
+          {
+            "k": 4,
+            "precision": 0.75,
+            "recall": 0.375,
+            "top_k": [
+              "root",
+              "lib",
+              "lib/reporters",
+              "test/unit"
+            ],
+            "hits": [
+              "root",
+              "lib",
+              "lib/reporters"
+            ],
+            "misses": [
+              "bin",
+              "lib/browser",
+              "support",
+              "test",
+              "test/acceptance"
+            ],
+            "hit_count": 3,
+            "relevant_count": 8
+          },
+          {
+            "k": 5,
+            "precision": 0.8,
+            "recall": 0.5,
+            "top_k": [
+              "root",
+              "lib",
+              "lib/reporters",
+              "test/unit",
+              "bin"
+            ],
+            "hits": [
+              "root",
+              "lib",
+              "lib/reporters",
+              "bin"
+            ],
+            "misses": [
+              "lib/browser",
+              "support",
+              "test",
+              "test/acceptance"
+            ],
+            "hit_count": 4,
             "relevant_count": 8
           }
         ],
@@ -1768,6 +2335,133 @@
             "relevant_count": 9
           }
         ],
+        "backstop_v2": [
+          {
+            "k": 1,
+            "precision": 1.0,
+            "recall": 0.111,
+            "top_k": [
+              "root"
+            ],
+            "hits": [
+              "root"
+            ],
+            "misses": [
+              "bin",
+              "lib",
+              "lib/interfaces",
+              "lib/reporters",
+              "support",
+              "test",
+              "test/acceptance",
+              "test/browser"
+            ],
+            "hit_count": 1,
+            "relevant_count": 9
+          },
+          {
+            "k": 2,
+            "precision": 1.0,
+            "recall": 0.222,
+            "top_k": [
+              "root",
+              "lib"
+            ],
+            "hits": [
+              "root",
+              "lib"
+            ],
+            "misses": [
+              "bin",
+              "lib/interfaces",
+              "lib/reporters",
+              "support",
+              "test",
+              "test/acceptance",
+              "test/browser"
+            ],
+            "hit_count": 2,
+            "relevant_count": 9
+          },
+          {
+            "k": 3,
+            "precision": 1.0,
+            "recall": 0.333,
+            "top_k": [
+              "root",
+              "lib",
+              "lib/reporters"
+            ],
+            "hits": [
+              "root",
+              "lib",
+              "lib/reporters"
+            ],
+            "misses": [
+              "bin",
+              "lib/interfaces",
+              "support",
+              "test",
+              "test/acceptance",
+              "test/browser"
+            ],
+            "hit_count": 3,
+            "relevant_count": 9
+          },
+          {
+            "k": 4,
+            "precision": 0.75,
+            "recall": 0.333,
+            "top_k": [
+              "root",
+              "lib",
+              "lib/reporters",
+              "test/unit"
+            ],
+            "hits": [
+              "root",
+              "lib",
+              "lib/reporters"
+            ],
+            "misses": [
+              "bin",
+              "lib/interfaces",
+              "support",
+              "test",
+              "test/acceptance",
+              "test/browser"
+            ],
+            "hit_count": 3,
+            "relevant_count": 9
+          },
+          {
+            "k": 5,
+            "precision": 0.8,
+            "recall": 0.444,
+            "top_k": [
+              "root",
+              "lib",
+              "lib/reporters",
+              "test/unit",
+              "test"
+            ],
+            "hits": [
+              "root",
+              "lib",
+              "lib/reporters",
+              "test"
+            ],
+            "misses": [
+              "bin",
+              "lib/interfaces",
+              "support",
+              "test/acceptance",
+              "test/browser"
+            ],
+            "hit_count": 4,
+            "relevant_count": 9
+          }
+        ],
         "commit_count": [
           {
             "k": 1,
@@ -2025,6 +2719,7 @@
     "One real project and one departure: a case study, not a statistical result.",
     "'fix' or 'revert' in a commit message is a rough signal of trouble.",
     "Modules are directories, which is coarse for a small project.",
-    "The departure is inferred from public posts and the commit record."
+    "The departure is inferred from public posts and the commit record.",
+    "Score v2 was chosen after seeing the mocha v1 result, so its mocha numbers are in-sample. It needs a second departure before it can be trusted."
   ]
 }

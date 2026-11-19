@@ -1,26 +1,31 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { flushSync } from "react-dom";
 import { X } from "lucide-react";
-import Navbar, { NAV_ITEMS } from "./components/Navbar";
+import Navbar, { NAV_ITEMS, REVIEWER_ONLY } from "./components/Navbar";
 import HomePage from "./components/HomePage";
 import ReviewQueuePage from "./components/ReviewQueuePage";
 import HandoverPage from "./components/HandoverPage";
-import BacktestPage from "./components/BacktestPage";
-import TrustReportPage from "./components/TrustReportPage";
-import CheckChangePage from "./components/CheckChangePage";
 import DebriefPage from "./components/DebriefPage";
 import CommandPalette from "./components/CommandPalette";
 import ProjectsPage from "./components/ProjectsPage";
-import RecordsPage from "./components/RecordsPage";
-import AccountsPage from "./components/AccountsPage";
 import { Button, Dialog } from "./components/ui";
+
+// Report and admin screens load on first visit, so the first page arrives sooner.
+const BacktestPage = React.lazy(() => import("./components/BacktestPage"));
+const TrustReportPage = React.lazy(() => import("./components/TrustReportPage"));
+const CheckChangePage = React.lazy(() => import("./components/CheckChangePage"));
+const RecordsPage = React.lazy(() => import("./components/RecordsPage"));
+const AccountsPage = React.lazy(() => import("./components/AccountsPage"));
+const TeamPage = React.lazy(() => import("./components/TeamPage"));
 import { api, formatErrorMessage, getCurrentProject, setCurrentProject, clampRole, canReview } from "./api";
 
 const TABS = NAV_ITEMS.map((n) => n.id);
 // Screens reached from a page rather than the step bar.
-const ROUTES = [...TABS, "check", "projects", "accounts"];
-// Screens that change claims or records: lead and admin accounts only.
-const REVIEWER_ONLY = ["projects", "records", "review", "debrief"];
+const ROUTES = [...TABS, "check", "projects", "accounts", "team"];
+const lockedName = (tab) => {
+  const item = NAV_ITEMS.find((n) => n.id === tab);
+  return item ? item.long || item.label : tab === "projects" ? "Projects" : "This screen";
+};
 const LEGACY = { home: "overview" };
 
 // Route lives in the hash so refresh, back/forward and shared links all land on the same screen.
@@ -52,6 +57,10 @@ export default function App() {
   const [projectId, setProjectId] = useState(getCurrentProject);
   const [stats, setStats] = useState(null);
   const [loadError, setLoadError] = useState(null);
+  const [noProjects, setNoProjects] = useState(false);
+  // Pages wait until the saved project is confirmed as one this account can open,
+  // so they never ask the server for a project it will refuse.
+  const [projectChecked, setProjectChecked] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [actionStatus, setActionStatus] = useState(null);
   const [confirmReset, setConfirmReset] = useState(false);
@@ -89,6 +98,27 @@ export default function App() {
     return () => window.removeEventListener("hashchange", onHash);
   }, []);
 
+  // Name each screen in the tab title, and move focus to its heading after a change of screen
+  // so keyboard and screen reader users land on the new page instead of the old link.
+  const firstScreen = useRef(true);
+  useEffect(() => {
+    const extra = { check: "Check a change", projects: "Projects", accounts: "Accounts", team: "Team", locked: "For leads only" };
+    const item = NAV_ITEMS.find((n) => n.id === activeTab);
+    document.title = `${extra[activeTab] || item?.long || item?.label || "Overview"} · Backstop`;
+    if (firstScreen.current) {
+      firstScreen.current = false;
+      return undefined;
+    }
+    const t = window.setTimeout(() => {
+      const h = document.querySelector("#main h1");
+      if (h && !h.contains(document.activeElement)) {
+        h.setAttribute("tabindex", "-1");
+        h.focus({ preventScroll: true });
+      }
+    }, 60);
+    return () => window.clearTimeout(t);
+  }, [activeTab]);
+
   const navigate = useCallback((tab, claimId) => {
     const next = `#/${tab}${claimId ? `/${claimId}` : ""}`;
     if (window.location.hash !== next) window.location.hash = next;
@@ -108,13 +138,41 @@ export default function App() {
   }, []);
 
   const loadInitialData = useCallback(async () => {
+    const mine = await api.listProjects().catch(() => null);
+    if (Array.isArray(mine)) {
+      if (mine.length && !mine.some((p) => p.id === getCurrentProject())) {
+        setCurrentProject(mine[0].id);
+        setProjectId(mine[0].id);
+        setProjectChecked(true);
+        return;
+      }
+      if (!mine.length) {
+        setProject(null);
+        setStats(null);
+        setLoadError(null);
+        setNoProjects(true);
+        setProjectChecked(true);
+        return;
+      }
+    }
+    setProjectChecked(true);
     const [projRes, statsRes] = await Promise.allSettled([api.getProject(), api.getClaimStats({ role: "lead" })]);
-    // The saved project was deleted elsewhere: fall back to the sample.
-    if (projRes.status === "rejected" && /not found/i.test(String(projRes.reason?.message)) && getCurrentProject() !== 1) {
-      setCurrentProject(1);
-      setProjectId(1);
+    // The saved project is gone or not one this account works on: open the first one it can reach.
+    if (projRes.status === "rejected" && /not found/i.test(String(projRes.reason?.message))) {
+      const mine = await api.listProjects().catch(() => []);
+      const next = (Array.isArray(mine) ? mine : []).find((p) => p.id !== getCurrentProject());
+      if (next) {
+        setCurrentProject(next.id);
+        setProjectId(next.id);
+        return;
+      }
+      setProject(null);
+      setStats(null);
+      setLoadError(null);
+      setNoProjects(true);
       return;
     }
+    setNoProjects(false);
     setProject(projRes.status === "fulfilled" ? projRes.value : null);
     setStats(statsRes.status === "fulfilled" ? statsRes.value : null);
     setLoadError(
@@ -155,7 +213,8 @@ export default function App() {
         e.preventDefault();
         setShowShortcuts(true);
       } else if (/^[1-9]$/.test(e.key) && Number(e.key) <= TABS.length) {
-        navigate(TABS[Number(e.key) - 1]);
+        const tabs = canReview() ? TABS : TABS.filter((t) => !REVIEWER_ONLY.includes(t));
+        if (tabs[Number(e.key) - 1]) navigate(tabs[Number(e.key) - 1]);
       }
     };
     window.addEventListener("keydown", onKey);
@@ -270,17 +329,30 @@ export default function App() {
             </div>
           )}
 
+          {!projectChecked ? (
+            <p role="status" className="text-[14px] text-on-surface-variant">Loading…</p>
+          ) : (
+          <React.Suspense fallback={<p role="status" className="text-[14px] text-on-surface-variant">Loading…</p>}>
           {activeTab === "locked" && (
-            <div className="panel px-5 py-5 max-w-[60ch]">
-              <h1 className="text-[20px] font-bold">This screen is for leads</h1>
-              <p className="mt-1.5 text-[14.5px] leading-6 text-on-surface-variant">
-                Your account reads the handover for your role. Checking claims and editing records needs a lead or admin account.
+            <div className="max-w-[60ch]">
+              <h1 className="text-[32px] sm:text-[40px] leading-[1.05] font-bold tracking-[-0.03em] text-balance">
+                {lockedName(route.tab)} is for leads
+              </h1>
+              <p className="mt-3 text-[15px] leading-6 text-on-surface-variant">
+                Your account reads the handover for your role. Ask a lead or admin if you need access to this screen.
               </p>
-              <Button className="mt-4" variant="primary" onClick={() => navigate("handover")}>Open my handover</Button>
+              <Button className="mt-5" variant="primary" size="lg" onClick={() => navigate("handover")}>Open my handover</Button>
             </div>
           )}
 
           {activeTab === "accounts" && <AccountsPage />}
+          {activeTab === "team" && <TeamPage onOpenProject={(id) => switchProject(id, "handover")} />}
+          {noProjects && activeTab !== "team" && activeTab !== "accounts" && (
+            <div role="status" className="mb-6 panel px-5 py-4 max-w-[60ch]">
+              <h2 className="text-[17px] font-bold">No projects assigned to you yet</h2>
+              <p className="mt-1 text-[14px] leading-6 text-on-surface-variant">Ask your lead or admin to add you to a project. It appears here as soon as they do.</p>
+            </div>
+          )}
 
           {activeTab === "projects" && (
             <ProjectsPage
@@ -350,6 +422,8 @@ export default function App() {
           {activeTab === "trust" && <TrustReportPage />}
 
           {activeTab === "check" && <CheckChangePage role={role} setRole={setRole} setActiveTab={navigate} />}
+          </React.Suspense>
+          )}
         </div>
       </main>
 
@@ -390,7 +464,7 @@ export default function App() {
       <Dialog open={showShortcuts} onClose={() => setShowShortcuts(false)} title="Keyboard shortcuts" width="max-w-sm">
         <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2.5 text-[14px]">
           {[
-            [`1 – ${TABS.length}`, "Go to a step"],
+            [`1 – ${canReview() ? TABS.length : TABS.filter((t) => !REVIEWER_ONLY.includes(t)).length}`, "Go to a step"],
             ["J / K", "Next / previous claim"],
             ["A", "Approve the open claim"],
             ["E", "Correct the open claim"],

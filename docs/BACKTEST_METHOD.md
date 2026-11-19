@@ -29,6 +29,8 @@ The cutoff is the date of the leaver's last commit, not the announcement, so the
 
 Ties are broken by total commits, then module name.
 
+**Added later: candidate score v2.** After the first mocha result (Backstop 0 of 5 in the top 5), a fourth ranking was added: leaver share × √(leaver commits), with the same tie rule. It drops the division by other contributors, which pushed small single-owner folders to the top. Because it was chosen after seeing mocha, its mocha numbers are in-sample and do not count as evidence. The rules above, the ground truth and the control dates were not changed. v2 is not used for claims in the product until it holds on a second departure.
+
 **Ground truth (post-cutoff only).** A module is a *positive* (it caused trouble after the handover) when, within **180 days** after the cutoff, both of these are true:
 
 - at least **2 commits** to it were made by authors who had **zero commits to that module before the cutoff** (someone new had to pick it up), and

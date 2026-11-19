@@ -16,12 +16,14 @@ What counts as a leak
     claim, for a role that may not review that claim. A missing, empty or
     unknown role must get the LOWEST access, never a reviewer's.
 
-Roles are simulated: the server trusts the role value it is sent. This harness
-tests the access rules, not authentication.
+The harness runs with sign-in turned off (AUTH_DISABLED=1) so it tests the
+access rules on their own, as if every role value could reach them. With
+sign-in on, the server also refuses any role the signed-in account may not act
+as; tests/test_auth.py covers that.
 
 Run it on its own to write the report:
-    cd backend && python -m tests.trust.leak_harness            # writes data/trust/leak_report.json
-    cd backend && python -m tests.trust.leak_harness --out other.json
+    cd backend && AUTH_DISABLED=1 python -m tests.trust.leak_harness            # writes data/trust/leak_report.json
+    cd backend && AUTH_DISABLED=1 python -m tests.trust.leak_harness --out other.json
 """
 from __future__ import annotations
 
@@ -313,6 +315,10 @@ class LeakHarness:
             for v in ROLE_VARIANTS:
                 r = self._get("/api/projects/1/tripwires", v)
                 self._record("tripwire list", "/api/projects/{project_id}/tripwires", "GET", "/api/projects/1/tripwires", v, r)
+        if self._has_route("GET", "/api/projects/{project_id}/repo-map"):
+            for v in ROLE_VARIANTS:
+                r = self._get("/api/projects/1/repo-map", v)
+                self._record("repository map", "/api/projects/{project_id}/repo-map", "GET", "/api/projects/1/repo-map", v, r)
         if self._has_route("POST", "/api/projects/{project_id}/tripwires/check"):
             probes = [
                 {"description": "Change the FictionalCloud contract hosting and vendor budget", "files": ["notes/budget-confidential.md"]},
@@ -482,10 +488,16 @@ class LeakHarness:
              {"username": "harness", "display_name": "H", "role": "admin", "password": "harness-pass"}),
             ("change account", "PUT", "/api/admin/users/{user_id}", "/api/admin/users/1", {"role": "admin"}),
             ("delete account", "DELETE", "/api/admin/users/{user_id}", "/api/admin/users/1", None),
+            ("team overview", "GET", "/api/org/overview", "/api/org/overview", None),
+            ("assign a member", "PUT", "/api/org/teams/{team_id}/assignments", "/api/org/teams/1/assignments",
+             {"user_id": 1, "project_ids": [1]}),
+            ("create team", "POST", "/api/admin/teams", "/api/admin/teams", {"name": "Harness"}),
+            ("change team", "PUT", "/api/admin/teams/{team_id}", "/api/admin/teams/1", {"name": "Harness"}),
+            ("delete team", "DELETE", "/api/admin/teams/{team_id}", "/api/admin/teams/1", None),
         ):
             r = self.client.request(method, url, json=body)
             fail = ""
-            if path.startswith("/api/admin/") and r.status_code < 400:
+            if path.startswith(("/api/admin/", "/api/org/")) and r.status_code < 400:
                 fail = f"account route accepted without an admin session (HTTP {r.status_code})"
             self._record(attack, path, method, url, lowest, r, fail)
 
@@ -509,8 +521,8 @@ class LeakHarness:
         return {
             "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
             "llm_provider": os.getenv("LLM_PROVIDER", "none"),
-            "note": "Roles are simulated: the server trusts the role value it is sent. "
-                    "These are tested cases of the access rules, not a test of authentication.",
+            "note": "Run with sign-in turned off, so every role value reaches the access rules. "
+                    "These are tested cases of the access rules; sign-in itself is covered by tests/test_auth.py.",
             "summary": {
                 "attacks_run": len(self.results),
                 "blocked": len(self.results) - len(failed),

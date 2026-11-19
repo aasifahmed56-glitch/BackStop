@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Lock, ShieldCheck } from "lucide-react";
 import { Mark } from "./Navbar";
 import { Button, TextInput } from "./ui";
@@ -12,6 +12,7 @@ export default function LoginPage({ admin = false, onSignedIn }) {
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
   const [config, setConfig] = useState(null);
+  const submitRef = useRef(null);
 
   useEffect(() => {
     document.title = admin ? "Admin sign-in · Backstop" : "Sign in · Backstop";
@@ -32,6 +33,14 @@ export default function LoginPage({ admin = false, onSignedIn }) {
     }
   };
 
+  const demoPassword = admin ? (config?.demo_admin_password_hint ? "admin" : "") : config?.demo_password_hint ? "backstop-demo" : "";
+  const fillDemo = (name) => {
+    setUsername(name);
+    setPassword(demoPassword);
+    setError(null);
+    if (demoPassword) requestAnimationFrame(() => submitRef.current?.focus());
+  };
+
   const demoNames = admin ? (config?.demo_admin ? [config.demo_admin] : []) : config?.demo_users || [];
 
   return (
@@ -43,11 +52,10 @@ export default function LoginPage({ admin = false, onSignedIn }) {
         </div>
 
         <div className={`panel px-6 py-6 ${admin ? "border-stamp/50" : ""}`}>
-          <p className="flex items-center gap-1.5 text-[12px] font-semibold uppercase tracking-[0.08em] text-on-surface-variant">
-            {admin ? <ShieldCheck size={14} aria-hidden="true" className="text-stamp" /> : <Lock size={14} aria-hidden="true" />}
-            {admin ? "Administrators" : "Team members"}
-          </p>
-          <h1 className="mt-1.5 text-[22px] leading-7 font-bold">{admin ? "Admin sign-in" : "Sign in"}</h1>
+          <h1 className="flex items-center gap-2 text-[22px] leading-7 font-bold">
+            {admin ? <ShieldCheck size={20} aria-hidden="true" className="text-stamp" /> : <Lock size={20} aria-hidden="true" className="text-on-surface-variant" />}
+            {admin ? "Admin sign-in" : "Team sign-in"}
+          </h1>
           <p className="mt-1 text-[14px] leading-5 text-on-surface-variant">
             {admin
               ? "Manage accounts and see every access level."
@@ -64,6 +72,8 @@ export default function LoginPage({ admin = false, onSignedIn }) {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
+              aria-invalid={error ? true : undefined}
+              aria-describedby={error ? "login-error" : undefined}
               autoFocus
             />
             <TextInput
@@ -74,13 +84,15 @@ export default function LoginPage({ admin = false, onSignedIn }) {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              aria-invalid={error ? true : undefined}
+              aria-describedby={error ? "login-error" : undefined}
             />
             {error && (
-              <p role="alert" className="text-[13.5px] leading-5 text-error">
+              <p id="login-error" role="alert" className="text-[13.5px] leading-5 text-error">
                 {error}
               </p>
             )}
-            <Button type="submit" variant={admin ? "stamp" : "primary"} size="lg" disabled={busy || !username || !password}>
+            <Button ref={submitRef} type="submit" variant={admin ? "stamp" : "primary"} size="lg" disabled={busy || !username || !password}>
               {busy ? "Signing in…" : "Sign in"}
             </Button>
           </form>
@@ -91,7 +103,8 @@ export default function LoginPage({ admin = false, onSignedIn }) {
             Demo accounts: {demoNames.map((n, i) => (
               <React.Fragment key={n}>
                 {i > 0 && ", "}
-                <button type="button" className="font-mono underline underline-offset-2 hover:text-on-surface cursor-pointer" onClick={() => setUsername(n)}>
+                <button type="button" className="font-mono underline underline-offset-2 hover:text-on-surface cursor-pointer inline-block py-1.5 px-1"
+                  onClick={() => fillDemo(n)}>
                   {n}
                 </button>
               </React.Fragment>

@@ -66,7 +66,7 @@ function Question({ q, n, onAnswered, setActiveTab }) {
     <li className="grid grid-cols-[2.25rem_1fr] gap-x-3 py-5 border-t border-outline-variant first:border-t-0">
       <span className="font-mono tnum text-[13px] text-outline pt-0.5">{n}.</span>
       <div className="flex flex-col gap-2 min-w-0">
-        <p className={`text-[16px] leading-6 font-semibold text-balance ${q.answered || saved ? "text-on-surface-variant" : "text-on-surface"}`}>{q.question}</p>
+        <p className={`text-[16px] leading-6 font-semibold text-balance max-w-[65ch] ${q.answered || saved ? "text-on-surface-variant" : "text-on-surface"}`}>{q.question}</p>
         <p className="text-[13px] text-on-surface-variant flex flex-wrap items-center gap-x-2 gap-y-1">
           <span>{q.reason}</span>
           <span aria-hidden="true">·</span>
@@ -117,7 +117,7 @@ function Question({ q, n, onAnswered, setActiveTab }) {
               value={text}
               maxLength={2000}
               onChange={(e) => setText(e.target.value)}
-              className="w-full min-h-24 p-3 rounded-[6px] border border-outline-variant bg-surface-container-lowest text-[14px] leading-[22px] focus:outline-2 focus:outline-stamp focus:border-stamp"
+              className="w-full min-h-24 p-3 rounded-[6px] border border-outline-variant bg-surface-container-lowest text-[14px] leading-[22px] focus:border-stamp"
               placeholder="Their words, as close to verbatim as you can. This becomes the quote."
             />
             {err && <p role="alert" className="text-[13px] text-error">{err}</p>}
@@ -135,7 +135,7 @@ function Question({ q, n, onAnswered, setActiveTab }) {
           <button
             type="button"
             onClick={() => setOpen(true)}
-            className="no-print self-start mt-1 inline-flex items-center gap-1.5 text-[13px] font-semibold text-stamp hover:underline cursor-pointer"
+            className="no-print self-start mt-1 inline-flex items-center gap-1.5 min-h-9 -ml-1 px-1 text-[13px] font-semibold text-stamp hover:underline cursor-pointer"
           >
             <MessageSquarePlus size={15} aria-hidden="true" />
             Record their answer
@@ -204,7 +204,7 @@ export default function DebriefPage({ setActiveTab, onChanged }) {
   const p = data?.project;
   return (
     <div className="flex flex-col gap-10 pb-10">
-      <header className="flex flex-col gap-3 max-w-[72ch]">
+      <header className="flex flex-col gap-3 max-w-[65ch]">
         <h1 className="text-[30px] sm:text-[36px] leading-[1.1] font-bold tracking-[-0.02em]">Debrief questions</h1>
         {p ? (
           <p className="text-[16px] leading-7 text-on-surface-variant">
@@ -231,7 +231,7 @@ export default function DebriefPage({ setActiveTab, onChanged }) {
             )}
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <div role="radiogroup" aria-label="Show" className="inline-flex p-0.5 rounded-[7px] bg-surface-container">
+            <div role="group" aria-label="Show" className="inline-flex p-0.5 rounded-[7px] bg-surface-container">
               {[
                 ["open", "Open"],
                 ["answered", "Answered"],
@@ -240,8 +240,7 @@ export default function DebriefPage({ setActiveTab, onChanged }) {
                 <button
                   key={k}
                   type="button"
-                  role="radio"
-                  aria-checked={filter === k}
+                  aria-pressed={filter === k}
                   onClick={() => setFilter(k)}
                   className={`h-8 px-3 rounded-[6px] text-[13px] font-semibold cursor-pointer ${
                     filter === k ? "bg-surface-container-lowest text-on-surface ring-1 ring-outline-variant" : "text-on-surface-variant hover:text-on-surface"
@@ -290,7 +289,7 @@ export default function DebriefPage({ setActiveTab, onChanged }) {
                 ? "Open a question and record what the person leaving said. The answer is checked like any other claim."
                 : "Check the new answers on the review queue, then the handover is ready to sign."}
             </p>
-            <Button variant="primary" size="sm" onClick={() => setActiveTab(filter === "answered" ? "debrief" : "review")}>
+            <Button variant="primary" size="sm" onClick={() => (filter === "answered" ? setFilter("open") : setActiveTab("review"))}>
               {filter === "answered" ? "Show open questions" : "Check the claims"} <ArrowRight size={14} aria-hidden="true" />
             </Button>
           </div>
