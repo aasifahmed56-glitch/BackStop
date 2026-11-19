@@ -313,6 +313,10 @@ class LeakHarness:
             for v in ROLE_VARIANTS:
                 r = self._get("/api/projects/1/tripwires", v)
                 self._record("tripwire list", "/api/projects/{project_id}/tripwires", "GET", "/api/projects/1/tripwires", v, r)
+        if self._has_route("GET", "/api/projects/{project_id}/repo-map"):
+            for v in ROLE_VARIANTS:
+                r = self._get("/api/projects/1/repo-map", v)
+                self._record("repository map", "/api/projects/{project_id}/repo-map", "GET", "/api/projects/1/repo-map", v, r)
         if self._has_route("POST", "/api/projects/{project_id}/tripwires/check"):
             probes = [
                 {"description": "Change the FictionalCloud contract hosting and vendor budget", "files": ["notes/budget-confidential.md"]},

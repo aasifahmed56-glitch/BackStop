@@ -174,6 +174,8 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ role: "lead", url, leaver: leaver || null }),
     }),
+  repoMap: (projectId = cur(), role = "lead") =>
+    request(`/projects/${projectId}/repo-map?role=${encodeURIComponent(role)}`, { cache: "no-store" }),
   deleteSource: (sourceId, projectId = cur()) => request(`/projects/${projectId}/sources/${sourceId}?role=lead`, { method: "DELETE" }),
   analyseProject: (projectId = cur()) =>
     request(`/projects/${projectId}/analyse`, { method: "POST", body: JSON.stringify({ role: "lead" }) }),

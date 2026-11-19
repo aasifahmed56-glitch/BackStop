@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { ArrowRight, Check, Copy, FileText, GitBranch, Trash2, Upload } from "lucide-react";
 import { api, formatErrorMessage } from "../api";
 import { Button, Dialog, Skeleton, Slip, humanize } from "./ui";
+import RepoMap from "./RepoMap";
 
 const KINDS = [
   { id: "git", label: "Git history", hint: "Run this in the repository and paste the output. Emails are dropped and messages masked.", cmd: "git log --no-merges --name-status" },
@@ -75,6 +76,7 @@ export default function RecordsPage({ project, onChanged, setActiveTab, onNewPro
   const [built, setBuilt] = useState(null);
   const [confirmBuild, setConfirmBuild] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [grownAt, setGrownAt] = useState(0);
   const fileRef = useRef(null);
 
   const load = () =>
@@ -127,6 +129,7 @@ export default function RecordsPage({ project, onChanged, setActiveTab, onNewPro
       setFlash({ tone: "ok", text: `Imported ${r.commit_count.toLocaleString()} commits from ${r.contributor_count} contributors. ${r.note}` });
       setGh({ url: "", leaver: "" });
       await load();
+      setGrownAt(Date.now());
       onChanged?.();
     } catch (err) {
       setFlash({ tone: "error", text: formatErrorMessage(err) });
@@ -429,6 +432,15 @@ export default function RecordsPage({ project, onChanged, setActiveTab, onNewPro
           )}
         </aside>
       </div>
+
+      {project?.id && sources.some((s) => s.kind === "git") && (
+        <RepoMap
+          projectId={project.id}
+          refreshKey={`${sources.map((s) => s.id).join(",")}-${built ? built.project.claim_count : 0}-${grownAt}`}
+          grow={grownAt > 0}
+          setActiveTab={setActiveTab}
+        />
+      )}
 
       <Dialog
         open={confirmBuild}
