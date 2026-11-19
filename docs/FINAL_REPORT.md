@@ -4,7 +4,7 @@
 
 | | |
 |---|---|
-| **Live app** | https://backstop-redesign.onrender.com (team accounts `lead`, `dev`, `pm` / `backstop-demo` at `/login`; `admin` / `admin` at `/admin/login`) |
+| **Live app** | https://backstop-atsu.onrender.com (team accounts `lead`, `dev`, `pm` / `backstop-demo` at `/login`; `admin` / `admin` at `/admin/login`) |
 | **Repository** | https://github.com/itzz-inbathamizhanS/BackStop |
 | **One line** | Every claim shows its source quote and a status. A human approves before handover. |
 

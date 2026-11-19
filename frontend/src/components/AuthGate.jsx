@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import LoginPage from "./LoginPage";
-import { Mark } from "./Navbar";
+import { Logo } from "./Navbar";
 import { api, setCurrentUser, SIGNED_OUT_EVENT } from "../api";
 
 const isAdminPath = () => window.location.pathname.replace(/\/+$/, "") === "/admin/login";
@@ -16,9 +16,8 @@ function Checking() {
   return (
     <div className="min-h-screen bg-background text-on-surface flex items-center justify-center px-4 antialiased" aria-busy="true">
       <div role="status" className="flex flex-col items-center gap-3 text-center">
-        <div className="flex items-center gap-2">
-          <Mark size={28} />
-          <span className="text-[18px] font-bold tracking-[-0.01em]">Backstop</span>
+        <div className="flex items-center" role="img" aria-label="Backstop">
+          <Logo size={28} />
         </div>
         <p className="text-[14px] text-on-surface-variant">Checking your session…</p>
         {slow && <p className="text-[13px] text-on-surface-variant max-w-[32ch]">The server may be waking up. This can take up to a minute.</p>}

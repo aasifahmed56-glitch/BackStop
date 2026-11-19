@@ -23,15 +23,31 @@ export const NAV_ITEMS = [
 // Screens that change claims or records: lead and admin accounts only.
 export const REVIEWER_ONLY = ["projects", "records", "review", "debrief"];
 
-/* A specimen sheet: board, one pressed stem, the collection label in the corner. */
+/* The bStop mark: a purple rounded square with a "b". */
 export function Mark({ size = 26 }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 26 26" aria-hidden="true" className="shrink-0">
-      <rect x="2" y="1" width="22" height="24" rx="2.5" fill="var(--color-ink)" />
-      <path d="M9 19.5c0-5 1.6-9.5 5.5-13" fill="none" stroke="#f1f2f1" strokeWidth="1.6" strokeLinecap="round" />
-      <path d="M10.2 13.6c-2.6-.4-3.9-2-4-4.3 2.4.1 3.8 1.6 4 4.3zM12.2 9.6c.2-2.5 1.8-3.9 4.2-4.1-.1 2.4-1.6 3.9-4.2 4.1z" fill="#f1f2f1" />
-      <rect x="14.5" y="18" width="7" height="4.5" rx="0.8" fill="var(--color-stamp)" />
+    <svg width={size} height={size} viewBox="0 0 100 100" aria-hidden="true" className="shrink-0">
+      <rect width="100" height="100" rx="13.7" fill="#423c92" />
+      <path d="M25.2 16.5h13.7v64H25.2z" fill="#20221d" />
+      <ellipse cx="53.5" cy="58.8" rx="21.7" ry="24" fill="#20221d" />
+      <ellipse cx="50.4" cy="58.4" rx="11.2" ry="12.8" fill="#423c92" />
     </svg>
+  );
+}
+
+/* The full logo: the mark, then "Stop" set beside it. */
+export function Logo({ size = 26, wordClassName = "" }) {
+  return (
+    <span className="inline-flex items-center shrink-0" style={{ gap: Math.round(size * 0.16) }}>
+      <Mark size={size} />
+      <span
+        aria-hidden="true"
+        className={`font-bold leading-none tracking-[-0.02em] ${wordClassName}`}
+        style={{ fontSize: Math.round(size * 1.12) }}
+      >
+        Stop
+      </span>
+    </span>
   );
 }
 
@@ -269,8 +285,7 @@ export default function Navbar({
           className="flex items-center gap-2 shrink-0 rounded-[6px]"
           aria-label="Backstop, overview"
         >
-          <Mark size={24} />
-          <span className="hidden sm:inline text-[16px] font-bold tracking-[-0.01em]">Backstop</span>
+          <Logo size={24} wordClassName="hidden sm:inline" />
         </a>
         <span aria-hidden="true" className="hidden sm:block w-px h-5 bg-outline-variant" />
         <ProjectSwitcher project={project} projectId={projectId} onSwitchProject={onSwitchProject} onNavigate={onNavigate} dataVersion={dataVersion} />

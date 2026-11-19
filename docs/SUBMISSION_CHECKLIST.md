@@ -62,7 +62,7 @@ Sign-in, Admin sign-in, Overview, Projects, Team, Records, Check the claims, Deb
 
 | Item | Where |
 |---|---|
-| Live link | https://backstop-redesign.onrender.com |
+| Live link | https://backstop-atsu.onrender.com |
 | Repository | https://github.com/itzz-inbathamizhanS/BackStop |
 | Final report source | [FINAL_REPORT.md](FINAL_REPORT.md) |
 | Demo script | [DEMO_SCRIPT.md](DEMO_SCRIPT.md) |
