@@ -223,15 +223,17 @@ class ProjectIn(BaseModel):
 
 
 @router.get("/projects", summary="List projects with their counts")
-def list_projects(session: Session = Depends(get_session)):
-    projects = session.exec(select(Project)).all()
+def list_projects(request: Request, session: Session = Depends(get_session)):
+    from app.org import allowed_projects_for
+    allowed = allowed_projects_for(request)
+    projects = [p for p in session.exec(select(Project)).all() if allowed is None or p.id in allowed]
     rows = [_counts(session, p) for p in projects]
     rows.sort(key=lambda r: (not r["is_sample"], -r["id"]))
     return rows
 
 
 @router.post("/projects", summary="Create a handover project (lead only)", status_code=201)
-def create_project(body: ProjectIn, session: Session = Depends(get_session)):
+def create_project(body: ProjectIn, request: Request, session: Session = Depends(get_session)):
     _require_editor(body.role)
     name, leaver = _clean_name(body.name), _clean_name(body.leaver_name)
     if not name or not leaver:
@@ -247,6 +249,8 @@ def create_project(body: ProjectIn, session: Session = Depends(get_session)):
     session.add(AuditLog(project_id=project.id, action="project_created", actor_role="lead",
                          detail=f"Project created for {leaver}, leaving {project.departure_date.isoformat()}"))
     session.commit()
+    from app.org import attach_new_project
+    attach_new_project(session, request, project.id)
     return _counts(session, project)
 
 
@@ -265,6 +269,8 @@ def delete_project(project_id: int, role: Role = Query(LOWEST_ROLE), session: Se
     for c in claims:
         session.delete(c)
     session.flush()
+    from app.org import forget_project
+    forget_project(session, project_id)
     for src in session.exec(select(Source).where(Source.project_id == project_id)).all():
         for ch in session.exec(select(Chunk).where(Chunk.source_id == src.id)).all():
             session.delete(ch)

@@ -488,10 +488,16 @@ class LeakHarness:
              {"username": "harness", "display_name": "H", "role": "admin", "password": "harness-pass"}),
             ("change account", "PUT", "/api/admin/users/{user_id}", "/api/admin/users/1", {"role": "admin"}),
             ("delete account", "DELETE", "/api/admin/users/{user_id}", "/api/admin/users/1", None),
+            ("team overview", "GET", "/api/org/overview", "/api/org/overview", None),
+            ("assign a member", "PUT", "/api/org/teams/{team_id}/assignments", "/api/org/teams/1/assignments",
+             {"user_id": 1, "project_ids": [1]}),
+            ("create team", "POST", "/api/admin/teams", "/api/admin/teams", {"name": "Harness"}),
+            ("change team", "PUT", "/api/admin/teams/{team_id}", "/api/admin/teams/1", {"name": "Harness"}),
+            ("delete team", "DELETE", "/api/admin/teams/{team_id}", "/api/admin/teams/1", None),
         ):
             r = self.client.request(method, url, json=body)
             fail = ""
-            if path.startswith("/api/admin/") and r.status_code < 400:
+            if path.startswith(("/api/admin/", "/api/org/")) and r.status_code < 400:
                 fail = f"account route accepted without an admin session (HTTP {r.status_code})"
             self._record(attack, path, method, url, lowest, r, fail)
 
