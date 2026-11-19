@@ -77,7 +77,7 @@ One FastAPI service serves the API and the React app; SQLite stores sources, chu
 
 ## 7. Reliability
 
-- **217 automated tests** pass, covering access control, redaction, derived metrics, verification, review, handover, debrief, workspaces, GitHub import, both backtests, tripwires and the trust harness. CI runs them on every push.
+- **233 automated tests** pass, covering access control, redaction, derived metrics, verification, review, handover, debrief, workspaces, GitHub import, both backtests, tripwires and the trust harness. CI runs them on every push.
 - Every feature works with `LLM_PROVIDER=none` and no key.
 - Upload limits, rate limits, security headers, a health check, and automatic seeding on a cold start.
 

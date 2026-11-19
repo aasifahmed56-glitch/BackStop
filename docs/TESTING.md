@@ -6,12 +6,13 @@ This document summarizes the automated test suite and provides a detailed manual
 
 ## 1. Automated Test Suite (pytest)
 
-Backstop has **217 automated unit and integration tests**. All pass.
+Backstop has **233 automated unit and integration tests**. All pass.
 
 ```bash
 cd backend
 python -m pytest -q            # whole suite, about 30 seconds
 python -m pytest tests/trust   # trust harness only
+AUTH_DISABLED=1 python -m tests.trust.leak_harness   # rewrite data/trust/leak_report.json
 ```
 
 The frontend is checked with its linter and a production build:
@@ -22,6 +23,12 @@ npm --prefix frontend run build
 ```
 
 GitHub Actions runs all three on every push and pull request (`.github/workflows/ci.yml`).
+
+The suite runs with sign-in turned off (`AUTH_DISABLED=1` in `tests/conftest.py`) so each test can call the API directly; `test_auth.py` turns it back on.
+
+### Page check
+
+`frontend/scripts/page-check.cjs` signs in as every demo account, opens every page at desktop and phone width, and fails on console errors, server errors or sideways scrolling. With `--shots` it also refreshes `docs/screenshots/`. See [SUBMISSION_CHECKLIST.md](SUBMISSION_CHECKLIST.md).
 
 | Test file | Tests | Covers |
 |---|---|---|
@@ -40,7 +47,9 @@ GitHub Actions runs all three on every push and pull request (`.github/workflows
 | `test_github_import.py` | 26 | URL validation, limits, pseudonymisation, timeouts, errors |
 | `test_realdata_export.py` | 2 | Real-history exporter pseudonymises authors and respects the cutoff |
 | `test_backtest.py` | 2 | Precision@k and recall@k on a hand-checked example |
-| `test_real_backtest.py` | 6 | No post-cutoff leakage into the ranking; mocha result reproducible |
+| `test_real_backtest.py` | 9 | No post-cutoff leakage into the ranking; mocha result reproducible |
+| `test_auth.py` | 10 | Password hashing, sign-in required, separate team and admin pages, HttpOnly cookie, refused roles, sign-out, account management, last admin protected |
+| `test_repomap.py` | 3 | Repository map shape, role filtering, unknown project |
 | `test_tripwires.py` | 22 | Tripwire building, path and keyword matching, access ceilings, no echo of restricted text |
 | `trust/test_leak_harness.py` | 5 | Every route × every role × tampered role values: zero leaks |
 | `trust/test_detail_check.py` | 15 | Numbers, dates and names in a claim must appear in its quote |
