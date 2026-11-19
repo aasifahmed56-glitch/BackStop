@@ -6,7 +6,7 @@ This document summarizes the automated test suite and provides a detailed manual
 
 ## 1. Automated Test Suite (pytest)
 
-Backstop has **242 automated unit and integration tests**. All pass.
+Backstop has **251 automated unit and integration tests**. All pass.
 
 ```bash
 cd backend
@@ -43,8 +43,8 @@ The suite runs with sign-in turned off (`AUTH_DISABLED=1` in `tests/conftest.py`
 | `test_cache_stability.py` | 4 | Cache keys stable across line endings and models; offline reads; idempotent sample load and reset |
 | `test_banned_strings.py` | 1 | Banned placeholder strings never appear in the frontend |
 | `test_debrief.py` | 6 | Debrief questions, recorded answers, readiness score |
-| `test_workspace.py` | 4 | Keyword rules, git log cleaning, lead-only writes, full offline project loop |
-| `test_github_import.py` | 26 | URL validation, limits, pseudonymisation, timeouts, errors |
+| `test_workspace.py` | 6 | Keyword rules, git log cleaning, lead-only writes, full offline project loop |
+| `test_github_import.py` | 33 | URL validation, limits, pseudonymisation, timeouts, errors |
 | `test_realdata_export.py` | 2 | Real-history exporter pseudonymises authors and respects the cutoff |
 | `test_backtest.py` | 2 | Precision@k and recall@k on a hand-checked example |
 | `test_real_backtest.py` | 9 | No post-cutoff leakage into the ranking; mocha result reproducible |

@@ -110,7 +110,7 @@ More detail: [ARCHITECTURE.md](ARCHITECTURE.md) and [API.md](API.md).
 
 ## 7. Reliability
 
-- **242 automated tests** pass, covering access control, redaction, derived metrics, verification, review, handover, debrief, workspaces, GitHub import, both backtests, tripwires and the trust harness. CI runs them on every push.
+- **251 automated tests** pass, covering access control, redaction, derived metrics, verification, review, handover, debrief, workspaces, GitHub import, both backtests, tripwires and the trust harness. CI runs them on every push.
 - Every feature works with `LLM_PROVIDER=none` and no key.
 - Upload limits, rate limits, security headers, a health check, and automatic seeding on a cold start.
 
@@ -152,7 +152,7 @@ Backstop was started in Rounds 1 and 2 by the original team. Round 3 was built b
 | Backend | FastAPI, Uvicorn, SQLModel on SQLite, python-dotenv, python-multipart |
 | Frontend | React 19, Vite, Tailwind CSS v4, Lucide icons, Hanken Grotesk and Courier Prime fonts via Fontsource |
 | Claim extraction | Extractor results from Rounds 1 and 2 (Google Gemini API) are committed as a cache; production runs with `LLM_PROVIDER=none` and makes no outside model calls. Round 3 features use plain code and keyword rules. |
-| Testing and quality | pytest and httpx (233 tests), Oxlint, Playwright for the page check and screenshots, our own leak harness and support-check evaluation |
+| Testing and quality | pytest and httpx (251 tests), Oxlint, Playwright for the page check and screenshots, our own leak harness and support-check evaluation |
 | Source control and CI | Git, GitHub (repository, pull requests, issue and PR templates), GitHub Actions running tests, lint and build on every push |
 | Hosting | Render (free web service, built from `render.yaml`), Docker (multi-stage Dockerfile for local or other hosts) |
 | Data | Synthetic sample project made for the demo; public history of mocha (MIT licence), pseudonymised with emails removed; any public GitHub repository through the import, cloned with git |

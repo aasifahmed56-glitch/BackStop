@@ -363,7 +363,7 @@ The real-project numbers are weak, and we report them as they are. One project a
 
 ```bash
 cd backend
-python -m pytest -q          # 242 tests
+python -m pytest -q          # 251 tests
 cd ../frontend
 npm run lint && npm run build
 ```
