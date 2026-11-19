@@ -211,7 +211,7 @@ function SampleBacktest() {
             </div>
             <span className="font-label-sm text-label-sm text-outline mt-1">Audit cutoff date</span>
           </div>
-          <div className="pt-space-sm bg-surface-container-low -mx-space-lg -mb-space-lg p-space-md rounded-b-xl border-t border-surface-container/60">
+          <div className="pt-space-md border-t border-outline-variant">
             <span className="font-body-sm text-body-sm text-on-surface-variant">
               Evaluated strictly prior to cutoff
             </span>
@@ -246,7 +246,7 @@ function SampleBacktest() {
               ))}
             </div>
           </div>
-          <div className="pt-space-sm bg-surface-container-low -mx-space-lg -mb-space-lg p-space-md rounded-b-xl border-t border-surface-container/60">
+          <div className="pt-space-md border-t border-outline-variant">
             <span className="font-body-sm text-body-sm text-on-surface-variant">
               Post-departure troubled modules in ground truth
             </span>
@@ -274,7 +274,7 @@ function SampleBacktest() {
               Mean of F1 over {kRange || "the cutoffs"}{typeof f1Base === "number" ? `; commit-count baseline ${f1Base.toFixed(3)}` : ""}
             </span>
           </div>
-          <div className="pt-space-sm bg-surface-container-low -mx-space-lg -mb-space-lg p-space-md rounded-b-xl border-t border-surface-container/60">
+          <div className="pt-space-md border-t border-outline-variant">
             <span className="font-body-sm text-body-sm text-on-surface-variant">
               {allTied ? "Same as the baseline: the sample cannot separate them" : "Compare with the baseline in the table below"}
             </span>
@@ -289,7 +289,7 @@ function SampleBacktest() {
             <h2 className="font-headline-md text-headline-md text-on-surface font-semibold">
               Backtest metric matrix
             </h2>
-            <p className="font-body-sm text-body-sm text-on-surface-variant mt-0.5 max-w-[72ch]">
+            <p className="font-body-sm text-body-sm text-on-surface-variant mt-0.5 max-w-[65ch]">
               Backstop vs the raw commit count. {tieText}
             </p>
           </div>
@@ -383,7 +383,7 @@ function SampleBacktest() {
               <Calculator size={20} aria-hidden="true" className="shrink-0 text-secondary" />
               Ranking criteria: Knowledge-at-Risk scoring
             </h3>
-            <p className="font-body-sm text-body-sm text-on-surface-variant max-w-[72ch]">
+            <p className="font-body-sm text-body-sm text-on-surface-variant max-w-[65ch]">
               Raw commit volume reflects past churn rather than institutional risk. Backstop weights contributor concentration and recent activity:
             </p>
             <ul className="space-y-2 font-body-sm text-body-sm text-on-surface-variant pt-1">
@@ -419,14 +419,14 @@ function SampleBacktest() {
                 Different ranking mechanisms can produce different priorities:
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-space-sm pt-1">
-                <div className="bg-surface-container-low p-space-sm rounded-lg border border-outline-variant/60">
+                <div className="border-t border-outline-variant pt-space-sm">
                   <span className="font-label-sm text-label-sm text-on-surface-variant block">Raw commits rank #1</span>
                   <span className="font-headline-md text-headline-md text-on-surface font-bold">{baseTop.module}</span>
                   <p className="font-body-sm text-body-sm text-on-surface-variant mt-1 tabular-nums">
                     {fmtN(baseTop.leaver_commits)} of {fmtN(baseTop.total_commits)} commits by the leaver{share(baseTop) ? ` (${share(baseTop)})` : ""}
                   </p>
                 </div>
-                <div className="bg-surface-container-low p-space-sm rounded-lg border border-outline-variant/60">
+                <div className="border-t border-outline-variant pt-space-sm">
                   <span className="font-label-sm text-label-sm text-on-surface-variant block">Backstop rank #1</span>
                   <span className="font-headline-md text-headline-md text-on-surface font-bold">{bTop.module}</span>
                   <p className="font-body-sm text-body-sm text-on-surface-variant mt-1 tabular-nums">
@@ -435,7 +435,7 @@ function SampleBacktest() {
                 </div>
               </div>
               {k1 && (
-                <p className="font-body-sm text-body-sm text-on-surface-variant pt-1 leading-relaxed max-w-[72ch]">
+                <p className="font-body-sm text-body-sm text-on-surface-variant pt-1 leading-relaxed max-w-[65ch]">
                   {bTop.is_troubled && baseTop.is_troubled
                     ? `Both modules are in the ground-truth troubled set, so precision at k=1 is ${k1.b.precision.toFixed(2)} for Backstop and ${k1.base.precision.toFixed(2)} for the baseline, but the ranking reflects different prioritization.`
                     : `At k=1, precision is ${k1.b.precision.toFixed(2)} for Backstop and ${k1.base.precision.toFixed(2)} for the baseline.`}

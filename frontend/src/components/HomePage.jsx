@@ -52,7 +52,7 @@ function FeatureRow({ title, body, action, visual, flip = false }) {
       <div className={`min-w-0 ${flip ? "lg:order-2" : ""}`}>{visual}</div>
       <div className={`flex flex-col gap-4 max-w-[460px] ${flip ? "lg:order-1" : ""}`}>
         <h2 className="text-[30px] sm:text-[38px] leading-[1.08] font-bold tracking-[-0.03em] text-on-surface text-balance">{title}</h2>
-        <p className="text-[15.5px] leading-7 text-on-surface-variant">{body}</p>
+        <p className="text-[15.5px] leading-7 text-on-surface-variant max-w-[65ch]">{body}</p>
         {action && (
           <button type="button" onClick={action[1]} className="self-start inline-flex items-center gap-1 text-[14px] font-semibold text-primary hover:underline cursor-pointer">
             {action[0]} <ArrowRight size={15} aria-hidden="true" />
@@ -137,7 +137,7 @@ function FirstRun({ project, sourceCount, setActiveTab }) {
           );
         })}
       </ol>
-      <p className="text-[13px] text-on-surface-variant border-t border-outline-variant pt-5">
+      <p className="text-[13px] text-on-surface-variant max-w-[65ch] border-t border-outline-variant pt-5">
         Want to see a finished handover first?{" "}
         <a href="#/projects" className="font-semibold text-primary hover:underline underline-offset-2">Open the synthetic sample</a> from the project list.
       </p>
@@ -281,7 +281,7 @@ export default function HomePage({
               </Button>
             )}
           </div>
-          <p className="text-[13px] text-on-surface-variant" role="status">
+          <p className="text-[13px] text-on-surface-variant max-w-[65ch]" role="status">
             {actionStatus?.text || actionStatus || (isSample ? "Runs on synthetic sample data. " : "") + "Automated checks assist; a person decides."}
           </p>
         </div>
@@ -306,7 +306,7 @@ export default function HomePage({
           <div className="flex items-baseline justify-between gap-3 flex-wrap">
             <h2 id="index-h" className="text-[15px] font-semibold text-on-surface">Sheet index</h2>
             {hasStats && (
-              <p className="text-[13px] text-on-surface-variant">
+              <p className="text-[13px] text-on-surface-variant max-w-[65ch]">
                 <span className="font-mono tnum text-on-surface font-bold">{decided}</span> of <span className="font-mono tnum">{shown}</span> claims stamped by a person
               </p>
             )}
@@ -336,7 +336,7 @@ export default function HomePage({
               })}
             </div>
           ) : hasStats ? (
-            <p className="text-[13px] text-on-surface-variant">No claims yet. Add records and build claims to start.</p>
+            <p className="text-[13px] text-on-surface-variant max-w-[65ch]">No claims yet. Add records and build claims to start.</p>
           ) : (
             <Skeleton className="h-16 w-full" />
           )}

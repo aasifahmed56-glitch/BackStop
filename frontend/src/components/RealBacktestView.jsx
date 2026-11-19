@@ -204,7 +204,7 @@ export default function RealBacktestView({ name, preloaded = null }) {
 
       <section className="rounded-xl p-space-lg bg-surface-container-low border border-surface-container">
         <h2 className="font-headline-md text-headline-md text-on-surface font-semibold">What happened</h2>
-        <p className="font-body-md text-body-md text-on-surface mt-2 max-w-3xl">
+        <p className="font-body-md text-body-md text-on-surface mt-2 max-w-[65ch]">
           {n(r.positive_count)} of the {n(r.modules_ranked)} modules the leaver worked on ran into trouble in the {method.window_days} days after the cutoff.
           {r.positive_count > 0 && (
             <>
@@ -214,12 +214,12 @@ export default function RealBacktestView({ name, preloaded = null }) {
           )}
         </p>
         {fewModules && (
-          <p className="font-body-md text-body-md text-on-surface mt-2 max-w-3xl">
+          <p className="font-body-md text-body-md text-on-surface mt-2 max-w-[65ch]">
             Only {n(r.modules_ranked)} {r.modules_ranked === 1 ? "module was" : "modules were"} ranked, so the top {topN} is every module and the rankings cannot be told apart. Read this result as a description, not a comparison.
           </p>
         )}
         {backstopWorse && (
-          <p className="font-body-md text-body-md text-on-surface mt-2 max-w-3xl">
+          <p className="font-body-md text-body-md text-on-surface mt-2 max-w-[65ch]">
             <strong>Backstop did worse than the simple baseline here.</strong> Its score favours small modules with few other
             contributors. In a busy open-source project, trouble showed up in the large, active modules instead, which the commit
             count ranks first. The control dates below show the same pattern, so this ground truth mostly tracks how busy a module is.
@@ -230,7 +230,7 @@ export default function RealBacktestView({ name, preloaded = null }) {
       <section className="bg-surface-container-lowest rounded-xl p-space-lg border border-surface-container flex flex-col gap-space-md">
         <div>
           <h2 className="font-headline-md text-headline-md text-on-surface font-semibold">Troubled modules found in the top {topN}</h2>
-          <p className="font-body-md text-body-md text-on-surface-variant mt-1 max-w-3xl">
+          <p className="font-body-md text-body-md text-on-surface-variant mt-1 max-w-[65ch]">
             The real departure and {controls.length === 1 ? "one earlier control date" : `${controls.length} earlier control dates`}. Score v2 weights the leaver&apos;s share by how many commits they made
             (share × √commits) instead of dividing by the number of other contributors. It was chosen after seeing this project&apos;s
             result, so these numbers are in-sample and v2 is not yet used for claims.
@@ -322,7 +322,7 @@ export default function RealBacktestView({ name, preloaded = null }) {
 
       <section className="rounded-xl p-space-lg bg-surface-container-low border border-surface-container font-body-sm text-body-sm text-on-surface-variant">
         <h2 className="font-headline-sm text-headline-sm text-on-surface font-semibold">How this was measured, and its limits</h2>
-        <p className="mt-2 max-w-3xl">
+        <p className="mt-2 max-w-[65ch]">
           A module counts as having trouble when, within {method.window_days} days after the cutoff, at least {method.min_new_author_commits} commits came from people
           new to it and at least one commit mentions a fix or revert. The rankings only see commits up to the cutoff. These rules were fixed before the result was computed.
         </p>

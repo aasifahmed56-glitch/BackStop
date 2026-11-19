@@ -66,7 +66,7 @@ function Question({ q, n, onAnswered, setActiveTab }) {
     <li className="grid grid-cols-[2.25rem_1fr] gap-x-3 py-5 border-t border-outline-variant first:border-t-0">
       <span className="font-mono tnum text-[13px] text-outline pt-0.5">{n}.</span>
       <div className="flex flex-col gap-2 min-w-0">
-        <p className={`text-[16px] leading-6 font-semibold text-balance ${q.answered || saved ? "text-on-surface-variant" : "text-on-surface"}`}>{q.question}</p>
+        <p className={`text-[16px] leading-6 font-semibold text-balance max-w-[65ch] ${q.answered || saved ? "text-on-surface-variant" : "text-on-surface"}`}>{q.question}</p>
         <p className="text-[13px] text-on-surface-variant flex flex-wrap items-center gap-x-2 gap-y-1">
           <span>{q.reason}</span>
           <span aria-hidden="true">·</span>
@@ -204,7 +204,7 @@ export default function DebriefPage({ setActiveTab, onChanged }) {
   const p = data?.project;
   return (
     <div className="flex flex-col gap-10 pb-10">
-      <header className="flex flex-col gap-3 max-w-[72ch]">
+      <header className="flex flex-col gap-3 max-w-[65ch]">
         <h1 className="text-[30px] sm:text-[36px] leading-[1.1] font-bold tracking-[-0.02em]">Debrief questions</h1>
         {p ? (
           <p className="text-[16px] leading-7 text-on-surface-variant">

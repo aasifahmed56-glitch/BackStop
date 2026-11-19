@@ -224,7 +224,7 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
           <h1 className="text-[26px] leading-[34px] font-bold tracking-[-0.015em] text-on-surface">
             Handover for {currentRoleObj.label.toLowerCase()}
           </h1>
-          <p className="text-[14px] leading-[22px] text-on-surface-variant mt-1 max-w-2xl">
+          <p className="text-[14px] leading-[22px] text-on-surface-variant mt-1 max-w-[65ch]">
             Compiled only from claims a person approved. Items above this role&apos;s access are hidden.
           </p>
         </div>
@@ -310,7 +310,7 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
           <h2 className="text-[20px] leading-7 font-bold text-on-surface">
             {role === "lead" ? "Nothing has been approved yet" : "Nothing your role can see has been approved yet"}
           </h2>
-          <p className="text-[14px] leading-[22px] text-on-surface-variant">
+          <p className="text-[14px] leading-[22px] text-on-surface-variant max-w-[65ch]">
             The handover is built only from claims a person has approved. Review the claims, approve the ones that hold up, and they will appear here for the new owner to read and sign for.
           </p>
           <Button variant="primary" size="lg" onClick={() => setActiveTab("review")} className="mt-3">

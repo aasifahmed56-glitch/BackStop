@@ -59,7 +59,7 @@ function ResultCard({ tw }) {
         <span className="field-label ml-auto">{tw.access_level} access</span>
       </div>
       <h3 className="text-[17px] leading-6 font-bold text-on-surface">{tw.title}</h3>
-      <p className="text-[14px] leading-[22px] text-on-surface max-w-[75ch]">{tw.warning}</p>
+      <p className="text-[14px] leading-[22px] text-on-surface max-w-[65ch]">{tw.warning}</p>
       <div>
         <h4 className="field-label">Why it matched</h4>
         <ul className="list-disc pl-5">
@@ -96,7 +96,7 @@ function ReplaySummary() {
   if (!data) return <p className="text-[13.5px] leading-[21px] text-on-surface-variant">Loading the replay result…</p>;
   return (
     <div className="flex flex-col gap-3">
-      <p className="text-[13.5px] leading-[21px] text-on-surface-variant max-w-[75ch]">
+      <p className="text-[13.5px] leading-[21px] text-on-surface-variant max-w-[65ch]">
         Tripwires were built from history before a cutoff, then every later commit was checked as if it were a proposed change.
         A commit counts as later problematic if it was reverted or a fix touched the same files within {data.rules.fix_days} days.
         Only git-based tripwires can be replayed. No AI is used.
@@ -111,7 +111,7 @@ function ReplaySummary() {
         return (
           <div key={ds.dataset.name} className="flex flex-col gap-2">
             <h3 className="text-[17px] leading-6 font-bold text-on-surface">{ds.dataset.label}</h3>
-            <p className="text-[13.5px] leading-[21px] text-on-surface-variant max-w-[75ch]">
+            <p className="text-[13.5px] leading-[21px] text-on-surface-variant max-w-[65ch]">
               Cutoff {ds.cutoff}, {ds.proposed_changes} later commits checked, {ds.tripwires_built} tripwires, {r.problematic} later problematic (base rate {pct(r.base_rate)}).
               {" "}{ds.dataset.note}
             </p>
@@ -147,7 +147,7 @@ function ReplaySummary() {
           </div>
         );
       })}
-      <p className="text-[13.5px] leading-[21px] text-on-surface max-w-[75ch]">
+      <p className="text-[13.5px] leading-[21px] text-on-surface max-w-[65ch]">
         <strong>What this means:</strong> on mocha, tripwires are only slightly better than chance and flag most commits, so treat a warning as a
         prompt to ask, not as proof of risk. On the synthetic sample every commit has its own invented file name, so the replay cannot measure anything there.
         Method and limits: docs/TRIPWIRES.md in the repository.
@@ -227,11 +227,11 @@ export default function CheckChangePage({ role, setRole, setActiveTab }) {
           <ArrowLeft size={14} aria-hidden="true" /> Back to the handover
         </button>
         <h1 className="text-[26px] leading-[34px] font-bold tracking-[-0.015em] text-on-surface">Check a change</h1>
-        <p className="text-[14px] leading-[22px] text-on-surface-variant max-w-[75ch]">
+        <p className="text-[14px] leading-[22px] text-on-surface-variant max-w-[65ch]">
           Before changing code you inherited, check it against what the handover already knows: reverted work, recorded decisions,
           code only the leaver understood, stale modules and unresolved conflicts. Plain rules, no AI.
         </p>
-        <p className="text-[14px] leading-[22px] text-on-surface-variant max-w-[75ch]">
+        <p className="text-[14px] leading-[22px] text-on-surface-variant max-w-[65ch]">
           <strong className="font-semibold text-on-surface">A tripwire</strong> is a past event — reverted work, a recorded decision, code only one person knew — that should make you pause before changing a file.
         </p>
       </section>
@@ -318,7 +318,7 @@ export default function CheckChangePage({ role, setRole, setActiveTab }) {
                 ? `${result.triggered.length} tripwire${result.triggered.length === 1 ? "" : "s"} matched`
                 : "No tripwires matched"}
             </h2>
-            <p className="text-[13.5px] leading-[21px] text-on-surface-variant max-w-[75ch]">
+            <p className="text-[13.5px] leading-[21px] text-on-surface-variant max-w-[65ch]">
               Checked {result.files.length} file{result.files.length === 1 ? "" : "s"} against {result.tripwires_checked} tripwires visible to this role.
               {result.claims_withheld > 0 && ` ${result.claims_withheld} claims above this role's access level were not used.`}
               {result.decisions_waiting_for_review > 0 &&

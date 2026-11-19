@@ -522,7 +522,7 @@ export default function RepoMap({ projectId, refreshKey = 0, grow = false, setAc
             <h2 id="map-h" className="text-[22px] sm:text-[26px] leading-[1.1] font-bold tracking-[-0.02em]">
               Repository map
             </h2>
-            <p className="text-[13.5px] leading-[21px] text-on-surface-variant mt-1.5">
+            <p className="text-[13.5px] leading-[21px] text-on-surface-variant mt-1.5 max-w-[65ch]">
               {map.file_count.toLocaleString()} files across {map.commit_count.toLocaleString()} commits, up to {fmtDate(map.end_date)}. A bud's size is how often the file was edited. Diamonds are tripwires and squares are claims. Select a folder to open it, or replay the history to watch it grow.
               {map.files_truncated && ` Only the ${map.files.length.toLocaleString()} most edited files are drawn.`}
             </p>

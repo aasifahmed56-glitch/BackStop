@@ -20,7 +20,7 @@ const pct = (x) => (x === null || x === undefined ? "n/a" : `${Math.round(x * 10
 const card = "panel p-4 sm:p-5 flex flex-col gap-4 min-w-0";
 const h2 = "text-[22px] leading-[28px] font-bold text-on-surface";
 const h3 = "text-[17px] leading-6 font-bold text-on-surface";
-const body = "text-[14px] leading-[22px] text-on-surface-variant max-w-[72ch]";
+const body = "text-[14px] leading-[22px] text-on-surface-variant max-w-[65ch]";
 const th = "py-2 px-3 font-semibold text-left text-on-surface sticky left-0 bg-surface-container-lowest";
 const thHead = "py-2 px-3 text-left field-label";
 const thHeadFirst = `${thHead} sticky left-0 bg-surface-container-low`;
@@ -28,7 +28,7 @@ const td = "py-2 px-3 align-top tnum text-on-surface";
 
 function Stat({ label, value, note }) {
   return (
-    <div className="border border-outline-variant rounded-[3px] bg-surface-container-lowest px-3 pt-2 pb-3">
+    <div className="border-t border-outline-variant pt-2 pb-1">
       <p className="field-label">{label}</p>
       <p className="tnum text-[26px] leading-[34px] font-bold text-on-surface mt-1">{value}</p>
       {note && <p className="text-[12.5px] leading-5 text-on-surface-variant">{note}</p>}
@@ -38,7 +38,7 @@ function Stat({ label, value, note }) {
 
 function Table({ caption, children }) {
   return (
-    <div className="overflow-x-auto border border-outline-variant rounded-[3px]">
+    <div className="overflow-x-auto border-y border-outline-variant">
       <table className="w-full text-left text-[13.5px] leading-5">
         <caption className="sr-only">{caption}</caption>
         {children}
@@ -247,7 +247,7 @@ export default function TrustReportPage() {
               </div>
             )}
             {leak.still_leaking?.length > 0 && (
-              <div role="alert" className="rounded-[3px] border border-error bg-error-container text-on-error-container p-3">
+              <div role="alert" className="border-t-2 border-error pt-3 text-error font-semibold">
                 Still leaking: {leak.still_leaking.map((f) => `${f.endpoint} (${f.count})`).join(", ")}
               </div>
             )}
@@ -258,7 +258,7 @@ export default function TrustReportPage() {
       {/* Support evaluation */}
       <section className={card} aria-labelledby="support-heading">
         {se.available && !se.after?.ai_check_ran && (
-          <p role="note" className="max-w-[72ch] rounded-[3px] border border-goldenrod bg-goldenrod-container text-on-goldenrod p-3 text-[13.5px] leading-[21px]">
+          <p role="note" className="max-w-[65ch] border-t-2 border-goldenrod pt-3 text-on-surface text-[13.5px] leading-[21px]">
             The AI support check has not been run on these pairs yet: no API key was available, so every AI verdict is
             "unchecked". In the app an unchecked claim is never shown as Verified. The numbers below for the detail
             check are real; the AI numbers still need a run with a key.
@@ -343,7 +343,7 @@ export default function TrustReportPage() {
 
       <section className={card} aria-labelledby="limits-heading">
         <h2 id="limits-heading" className={h2}>Limitations</h2>
-        <ul className="list-disc pl-5 flex flex-col gap-1 text-[14px] leading-[22px] text-on-surface max-w-[72ch]">
+        <ul className="list-disc pl-5 flex flex-col gap-1 text-[14px] leading-[22px] text-on-surface max-w-[65ch]">
           {(data?.limitations || []).map((l) => (
             <li key={l}>{l}</li>
           ))}

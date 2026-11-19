@@ -38,7 +38,7 @@ function SourceExcerpt({ text, quote, lineStart }) {
   const idx = quote ? text.indexOf(quote) : -1;
   const starts = lines.reduce((acc, l, i) => (i === 0 ? [0] : [...acc, acc[i - 1] + lines[i - 1].length + 1]), []);
   return (
-    <div className="font-mono text-[12.5px] leading-[20px] bg-surface-container-low border border-outline-variant rounded-[2px] max-h-56 overflow-auto">
+    <div className="font-mono text-[12.5px] leading-[20px] bg-surface-container-low border-y border-outline-variant py-2 pr-3 max-h-56 overflow-auto">
       <table className="w-full border-collapse">
         <tbody>
           {lines.map((line, i) => {
@@ -591,7 +591,7 @@ export default function ReviewQueuePage({ onRefreshStats, initialClaimId, onSele
                 </h2>
                 {/* Collection label: typed, hairline, lower right of the specimen heading */}
                 <div className="flex xl:justify-end">
-                  <dl className="font-mono text-[12px] leading-[18px] text-on-surface border border-on-surface/70 rounded-[3px] px-3 py-2 grid grid-cols-[auto_1fr] gap-x-3 min-w-[230px] max-w-full">
+                  <dl className="font-mono text-[12px] leading-[18px] text-on-surface border-t border-on-surface/70 pt-2 grid grid-cols-[auto_1fr] gap-x-3 min-w-[230px] max-w-full">
                     <dt className="text-on-surface-variant">Claim</dt>
                     <dd className="tnum">#{selectedClaim.id} · v{selectedClaim.current_version}</dd>
                     <dt className="text-on-surface-variant">Type</dt>
@@ -705,7 +705,7 @@ export default function ReviewQueuePage({ onRefreshStats, initialClaimId, onSele
                         : "Plain code counted commit authors per module in the git history. No AI and no quote check are involved."}
                     </p>
                     {(selectedClaim.evidence || []).map((ev, i) => ev.quote && (
-                      <p key={i} className="mt-2 font-mono text-[12.5px] bg-surface-container-low border border-outline-variant rounded-[2px] px-3 py-2 break-words">{ev.quote}</p>
+                      <p key={i} className="mt-2 font-mono text-[12.5px] border-t border-outline-variant pt-2 break-words">{ev.quote}</p>
                     ))}
                   </Field>
                 ) : (

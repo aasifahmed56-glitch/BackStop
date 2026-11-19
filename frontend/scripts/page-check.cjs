@@ -30,11 +30,17 @@ const VIEWPORTS = [
   { name: "phone", width: 390, height: 844 },
 ];
 
-async function signIn(page, acct) {
+async function signIn(page, acct, attempt = 1) {
   await page.goto(BASE + acct.login, { waitUntil: "networkidle" });
   await page.getByLabel("Username").fill(acct.user);
   await page.getByLabel("Password").fill(acct.password);
+  const answer = page.waitForResponse((r) => r.url().includes("/api/auth/") && r.request().method() === "POST");
   await page.locator('button[type="submit"]').click();
+  // Sign-in allows 10 attempts a minute per address; wait the minute out once if a run trips it.
+  if ((await answer).status() === 429 && attempt === 1) {
+    await page.waitForTimeout(61000);
+    return signIn(page, acct, 2);
+  }
   await page.waitForFunction(() => !["/login", "/admin/login"].includes(location.pathname), null, { timeout: 15000 });
 }
 
@@ -47,16 +53,16 @@ async function signIn(page, acct) {
   for (const vp of VIEWPORTS) {
     // Sign-in pages, signed out.
     for (const p of ["/login", "/admin/login"]) {
-      const ctx = await browser.newContext({ viewport: vp, deviceScaleFactor: SHOTS ? 2 : 1 });
+      const ctx = await browser.newContext({ viewport: vp, deviceScaleFactor: 1 });
       const page = await ctx.newPage();
       await page.goto(BASE + p, { waitUntil: "networkidle" });
       checked++;
-      if (SHOTS) await page.screenshot({ path: path.join(OUT, `${vp.name}-${p.replace(/\//g, "_").slice(1)}.png`) });
+      if (SHOTS) await page.screenshot({ path: path.join(OUT, `${vp.name}-${p.replace(/\//g, "-").slice(1)}.jpg`), type: "jpeg", quality: 82 });
       await ctx.close();
     }
 
     for (const acct of ACCOUNTS) {
-      const ctx = await browser.newContext({ viewport: vp, deviceScaleFactor: SHOTS ? 2 : 1 });
+      const ctx = await browser.newContext({ viewport: vp, deviceScaleFactor: 1 });
       const page = await ctx.newPage();
       let errors = [];
       page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
@@ -76,7 +82,18 @@ async function signIn(page, acct) {
         const label = `${vp.name} ${acct.user} #/${tab}`;
         checked++;
         if (errors.length) problems.push({ page: label, errors: [...new Set(errors)] });
-        if (SHOTS) await page.screenshot({ path: path.join(OUT, `${vp.name}-${acct.user}-${tab}.png`), fullPage: vp.name === "desktop" });
+        if (SHOTS && vp.name === "desktop") {
+          // Walk down the page so sections that reveal on scroll are drawn in the full-page shot.
+          await page.evaluate(async () => {
+            for (let y = 0; y < document.body.scrollHeight; y += 400) {
+              window.scrollTo(0, y);
+              await new Promise((r) => setTimeout(r, 120));
+            }
+            window.scrollTo(0, 0);
+          });
+          await page.waitForTimeout(1500);
+        }
+        if (SHOTS) await page.screenshot({ path: path.join(OUT, `${vp.name}-${acct.user}-${tab}.jpg`), type: "jpeg", quality: 82, fullPage: vp.name === "desktop" });
       }
       await ctx.close();
     }

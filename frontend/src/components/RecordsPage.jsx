@@ -191,7 +191,7 @@ export default function RecordsPage({ project, onChanged, setActiveTab, onNewPro
     <div className="flex flex-col gap-8">
       <header className="flex flex-col gap-2 max-w-[66ch]">
         <h1 className="text-[32px] sm:text-[40px] leading-[1.05] font-bold tracking-[-0.03em]">Records</h1>
-        <p className="text-[15px] leading-6 text-on-surface-variant">
+        <p className="text-[15px] leading-6 text-on-surface-variant max-w-[65ch]">
           What Backstop reads about {project?.leaver_name || "the person leaving"}'s work: commits, notes, issues, tasks and chat. Every claim it builds quotes one of these word for word.
         </p>
       </header>
@@ -310,7 +310,7 @@ export default function RecordsPage({ project, onChanged, setActiveTab, onNewPro
               </form>
             ) : (
               <form onSubmit={addGithub} className="flex flex-col gap-4">
-                <p className="text-[13px] leading-5 text-on-surface-variant">
+                <p className="text-[13px] leading-5 text-on-surface-variant max-w-[65ch]">
                   Backstop downloads the commit history of a public repository up to {project?.leaver_name || "the person"}'s last day (no file contents), replaces every author with a pseudonym, and keeps it as one record.
                   Up to 3 imports an hour.
                 </p>
@@ -370,7 +370,7 @@ export default function RecordsPage({ project, onChanged, setActiveTab, onNewPro
           {data && sources.length === 0 && (
             <div className="rounded-[12px] border border-dashed border-outline-variant px-5 py-8 text-center">
               <FileText size={22} aria-hidden="true" className="mx-auto text-outline" />
-              <p className="mt-2 text-[14px] text-on-surface-variant">No records yet. A git history gives ownership and risk; notes and issues give decisions and warnings.</p>
+              <p className="mt-2 max-w-[65ch] text-[14px] text-on-surface-variant">No records yet. A git history gives ownership and risk; notes and issues give decisions and warnings.</p>
             </div>
           )}
           <ul className={`grid gap-2 ${isSample ? "sm:grid-cols-2 lg:grid-cols-3" : ""}`}>
@@ -398,7 +398,7 @@ export default function RecordsPage({ project, onChanged, setActiveTab, onNewPro
           {!isSample && (
             <div className="mt-2 flex flex-col gap-3 bg-ink text-on-ink rounded-[12px] p-5">
               <h3 className="text-[16px] font-bold">Build the claims</h3>
-              <p className="text-[13px] leading-5 text-on-ink-muted">
+              <p className="text-[13px] leading-5 text-on-ink-muted max-w-[65ch]">
                 Code rules rank who owns which module and what is stale or reverted. Notes, issues, tasks and chat are read by the AI extractor when one is set up, and otherwise by published keyword rules. Nothing is approved for you.
               </p>
               <Button variant="stamp" size="lg" disabled={!!busy || sources.length === 0} onClick={() => (reviewed ? setConfirmBuild(true) : build())}>
@@ -452,7 +452,7 @@ export default function RecordsPage({ project, onChanged, setActiveTab, onNewPro
           </>
         }
       >
-        <p className="text-[14px] text-on-surface-variant">Only new keyword-rule claims are added; existing ones are left as they are.</p>
+        <p className="text-[14px] text-on-surface-variant max-w-[65ch]">Only new keyword-rule claims are added; existing ones are left as they are.</p>
       </Dialog>
     </div>
   );
