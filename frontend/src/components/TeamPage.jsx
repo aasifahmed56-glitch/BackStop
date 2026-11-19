@@ -19,7 +19,7 @@ const ago = (iso) => {
 
 function Chip({ children, tone = "plain" }) {
   const c = tone === "stamp" ? "bg-stamp-container text-on-stamp-container border-stamp/30" : "bg-surface-container-low text-on-surface border-outline-variant";
-  return <span className={`inline-flex items-center gap-1 h-6 px-2 rounded-full border text-[12px] font-medium ${c}`}>{children}</span>;
+  return <span className={`inline-flex items-center gap-1 h-6 px-2 rounded-full border text-[12px] font-medium whitespace-nowrap ${c}`}>{children}</span>;
 }
 
 function LastSeen({ a }) {
@@ -34,14 +34,7 @@ function LastSeen({ a }) {
   );
 }
 
-function Stat({ label, value }) {
-  return (
-    <div className="panel px-4 py-3">
-      <div className="text-[12px] uppercase tracking-[0.06em] text-on-surface-variant">{label}</div>
-      <div className="text-[26px] font-bold tnum leading-8 mt-0.5">{value}</div>
-    </div>
-  );
-}
+const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 
 /* Who is under whom, what each person works on, and where. Admin also edits teams here. */
 export default function TeamPage({ onOpenProject }) {
@@ -49,6 +42,7 @@ export default function TeamPage({ onOpenProject }) {
   const [error, setError] = useState(null);
   const [note, setNote] = useState(null);
   const [editing, setEditing] = useState(null); // team object, or {} for a new team
+  const [showAllActivity, setShowAllActivity] = useState(false);
 
   const load = () =>
     api
@@ -75,8 +69,8 @@ export default function TeamPage({ onOpenProject }) {
 
   if (error && !data) {
     return (
-      <div role="alert" className="panel border-error/40 px-4 py-3 text-[14px]">
-        {error} <Button size="sm" className="ml-2" onClick={load}>Try again</Button>
+      <div role="alert" className="panel border-error/40 px-4 py-3 text-[14px] flex flex-wrap items-center gap-2">
+        <span>{error}</span> <Button size="sm" className="ml-2 min-h-9" onClick={load}>Try again</Button>
       </div>
     );
   }
@@ -104,12 +98,9 @@ export default function TeamPage({ onOpenProject }) {
         )}
       </header>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <Stat label="People" value={data.stats.people} />
-        <Stat label="Teams" value={data.stats.teams} />
-        <Stat label="Projects" value={data.stats.projects} />
-        <Stat label="Active today" value={data.stats.active_today} />
-      </div>
+      <p className="text-[14px] text-on-surface-variant tnum -mt-4">
+        {plural(data.stats.people, "person", "people")} in {plural(data.stats.teams, "team", "teams")} across {plural(data.stats.projects, "project", "projects")}. {data.stats.active_today} active today.
+      </p>
 
       {error && <p role="alert" className="text-[14px] text-error">{error}</p>}
       {note && <p role="status" className="text-[13.5px] text-tertiary">{note}</p>}
@@ -135,7 +126,7 @@ export default function TeamPage({ onOpenProject }) {
               <div className="flex flex-wrap gap-1.5 mt-2.5">
                 {team.projects.length === 0 && <span className="text-[13px] text-on-surface-variant">No projects yet</span>}
                 {team.projects.map((p) => (
-                  <button key={p.id} type="button" onClick={() => onOpenProject?.(p.id)} className="cursor-pointer" title={`Open ${p.name}`}>
+                  <button key={p.id} type="button" onClick={() => onOpenProject?.(p.id)} className="cursor-pointer min-h-9 sm:min-h-0 inline-flex items-center rounded-full" title={`Open ${p.name}`} aria-label={`Open ${p.name}`}>
                     <Chip tone="stamp"><FolderOpen size={12} aria-hidden="true" /> {p.name}</Chip>
                   </button>
                 ))}
@@ -143,7 +134,7 @@ export default function TeamPage({ onOpenProject }) {
             </div>
             {isAdmin && (
               <div className="flex gap-1">
-                <Button size="sm" variant="ghost" onClick={() => setEditing(team)}><Pencil size={15} aria-hidden="true" /> Edit</Button>
+                <Button size="sm" variant="ghost" className="min-h-9" onClick={() => setEditing(team)} aria-label={`Edit ${team.name}`}><Pencil size={15} aria-hidden="true" /> Edit</Button>
               </div>
             )}
           </header>
@@ -158,11 +149,11 @@ export default function TeamPage({ onOpenProject }) {
                     <div className="font-semibold text-[14.5px]">{m.display_name}</div>
                     <div className="font-mono text-[12.5px] text-on-surface-variant">{m.username}</div>
                   </div>
-                  <fieldset className="flex flex-wrap gap-x-3 gap-y-1.5">
+                  <fieldset className="flex flex-wrap gap-x-4 gap-y-0.5 sm:gap-y-1.5 min-w-0">
                     <legend className="sr-only">Projects {m.display_name} works on</legend>
                     {team.projects.length === 0 && <span className="text-[13px] text-on-surface-variant">No team projects</span>}
                     {team.projects.map((p) => (
-                      <label key={p.id} className="inline-flex items-center gap-1.5 text-[13.5px] cursor-pointer">
+                      <label key={p.id} className="inline-flex items-center gap-2 min-h-9 sm:min-h-0 text-[13.5px] cursor-pointer">
                         <input
                           type="checkbox"
                           className="w-4 h-4 accent-[var(--color-stamp)]"
@@ -174,7 +165,7 @@ export default function TeamPage({ onOpenProject }) {
                     ))}
                   </fieldset>
                   <div className="text-[13.5px] leading-5">
-                    <span className="md:hidden text-[12px] uppercase tracking-[0.06em] text-on-surface-variant block">Last activity</span>
+                    <span className="md:hidden text-[12.5px] font-medium text-on-surface-variant block">Last activity</span>
                     <LastSeen a={m.last_activity} />
                   </div>
                 </li>
@@ -185,39 +176,25 @@ export default function TeamPage({ onOpenProject }) {
       ))}
 
       <section aria-labelledby="people-h" className="flex flex-col gap-3">
-        <h2 id="people-h" className="text-[20px] font-bold">Everyone {isAdmin ? "" : "in view"}</h2>
-        <div className="panel overflow-x-auto">
-          <table className="w-full text-[14px]">
-            <thead>
-              <tr className="text-left text-[12px] uppercase tracking-[0.06em] text-on-surface-variant border-b border-outline-variant">
-                <th className="px-4 py-2.5 font-semibold">Person</th>
-                <th className="px-4 py-2.5 font-semibold">Position</th>
-                <th className="px-4 py-2.5 font-semibold hidden md:table-cell">Teams</th>
-                <th className="px-4 py-2.5 font-semibold">Works on</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.people.map((p) => (
-                <tr key={p.id} className={`border-b border-outline-variant last:border-0 align-top ${p.active ? "" : "opacity-60"}`}>
-                  <td className="px-4 py-3">
-                    <div className="font-semibold">{p.display_name}</div>
-                    <div className="text-[12.5px] text-on-surface-variant">{p.last_activity ? <LastSeen a={p.last_activity} /> : `Last sign-in: ${ago(p.last_login_at) || "never"}`}</div>
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    {RANK[p.rank]}
-                    {p.rank === "member" && <div className="text-[12.5px] text-on-surface-variant">{ROLE[p.role]}</div>}
-                  </td>
-                  <td className="px-4 py-3 hidden md:table-cell text-on-surface-variant">{p.teams.join(", ") || "—"}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex flex-wrap gap-1.5">
-                      {p.rank === "admin" ? <Chip>All projects</Chip> : p.projects.length ? p.projects.map((x) => <Chip key={x.id}>{x.name}</Chip>) : <span className="text-on-surface-variant">None</span>}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <h2 id="people-h" className="text-[20px] font-bold">{isAdmin ? "Everyone" : "Everyone you can see"}</h2>
+        <ul className="panel divide-y divide-outline-variant">
+          {data.people.map((p) => (
+            <li key={p.id} className={`px-5 py-3.5 grid gap-2 md:grid-cols-[minmax(200px,1.3fr)_minmax(140px,0.8fr)_minmax(200px,1.2fr)] md:items-start ${p.active ? "" : "opacity-60"}`}>
+              <div className="min-w-0">
+                <div className="font-semibold text-[14.5px]">{p.display_name}</div>
+                <div className="text-[12.5px] leading-5 text-on-surface-variant">{p.last_activity ? <LastSeen a={p.last_activity} /> : `Last sign-in: ${ago(p.last_login_at) || "never"}`}</div>
+              </div>
+              <div className="text-[13.5px] leading-5">
+                {RANK[p.rank]}
+                {p.rank === "member" && <span className="text-on-surface-variant"> · {ROLE[p.role]}</span>}
+                {p.teams.length > 0 && <div className="text-on-surface-variant">{p.teams.join(", ")}</div>}
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {p.rank === "admin" ? <Chip>All projects</Chip> : p.projects.length ? p.projects.map((x) => <Chip key={x.id}>{x.name}</Chip>) : <span className="text-[13.5px] text-on-surface-variant">No projects</span>}
+              </div>
+            </li>
+          ))}
+        </ul>
       </section>
 
       <section aria-labelledby="activity-h" className="flex flex-col gap-3">
@@ -228,7 +205,7 @@ export default function TeamPage({ onOpenProject }) {
           <p className="text-[14px] text-on-surface-variant">Nothing yet. Opening a handover, checking a claim or adding a record shows up here.</p>
         ) : (
           <ol className="panel divide-y divide-outline-variant">
-            {data.activity.slice(0, 30).map((a) => {
+            {data.activity.slice(0, showAllActivity ? 30 : 10).map((a) => {
               const who = data.people.find((p) => p.id === a.user_id);
               return (
                 <li key={a.id} className="px-4 py-2.5 text-[13.5px] leading-5">
@@ -237,6 +214,11 @@ export default function TeamPage({ onOpenProject }) {
               );
             })}
           </ol>
+        )}
+        {data.activity.length > 10 && (
+          <Button size="sm" className="self-start min-h-9" onClick={() => setShowAllActivity((v) => !v)}>
+            {showAllActivity ? "Show fewer" : "Show more"}
+          </Button>
         )}
       </section>
 
@@ -310,7 +292,7 @@ function TeamDialog({ team, people, projects, onClose, onSaved }) {
     }
   };
 
-  const sel = "w-full h-10 px-2.5 rounded-[6px] border border-outline-variant bg-surface-container-lowest text-[14px]";
+  const sel = "w-full h-10 px-2.5 rounded-[6px] border border-outline-variant bg-surface-container-lowest text-[14px] text-on-surface focus:outline-2 focus:outline-stamp focus:border-stamp";
   const box = "max-h-40 overflow-y-auto flex flex-col gap-1.5 p-2.5 rounded-[6px] border border-outline-variant";
 
   return (
@@ -336,7 +318,7 @@ function TeamDialog({ team, people, projects, onClose, onSaved }) {
     >
       <label className="flex flex-col gap-1.5">
         <span className="text-[13px] font-semibold">Team name</span>
-        <input className={sel} value={name} onChange={(e) => setName(e.target.value)} />
+        <input className={sel} autoComplete="off" value={name} onChange={(e) => setName(e.target.value)} />
       </label>
       <div className="grid sm:grid-cols-2 gap-3">
         <label className="flex flex-col gap-1.5">
@@ -359,7 +341,7 @@ function TeamDialog({ team, people, projects, onClose, onSaved }) {
         <div className={box}>
           {byRank.member.length === 0 && <span className="text-[13px] text-on-surface-variant">No developer or PM accounts yet.</span>}
           {byRank.member.map((p) => (
-            <label key={p.id} className="inline-flex items-center gap-2 text-[14px]">
+            <label key={p.id} className="inline-flex items-center gap-2 min-h-9 sm:min-h-0 text-[14px]">
               <input type="checkbox" className="w-4 h-4 accent-[var(--color-stamp)]" checked={members.has(p.id)} onChange={() => toggle(members, setMembers, p.id)} />
               {p.display_name} <span className="text-on-surface-variant text-[12.5px]">{ROLE[p.role]}</span>
             </label>
@@ -370,7 +352,7 @@ function TeamDialog({ team, people, projects, onClose, onSaved }) {
         <legend className="text-[13px] font-semibold mb-1.5">Projects</legend>
         <div className={box}>
           {projects.map((p) => (
-            <label key={p.id} className="inline-flex items-center gap-2 text-[14px]">
+            <label key={p.id} className="inline-flex items-center gap-2 min-h-9 sm:min-h-0 text-[14px]">
               <input type="checkbox" className="w-4 h-4 accent-[var(--color-stamp)]" checked={projectIds.has(p.id)} onChange={() => toggle(projectIds, setProjectIds, p.id)} />
               {p.name}
             </label>

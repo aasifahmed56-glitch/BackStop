@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-11-19T06:41:48+00:00",
+  "generated_at": "2026-11-19T07:19:52+00:00",
   "llm_provider": "none",
   "note": "Run with sign-in turned off, so every role value reaches the access rules. These are tested cases of the access rules; sign-in itself is covered by tests/test_auth.py.",
   "summary": {
-    "attacks_run": 1563,
-    "blocked": 1563,
+    "attacks_run": 1568,
+    "blocked": 1568,
     "leaked": 0,
-    "endpoints_covered": 49,
+    "endpoints_covered": 54,
     "role_variants": [
       "incoming_dev",
       "incoming_pm",
@@ -268,6 +268,31 @@
       "leaked": 0
     },
     "DELETE /api/admin/users/{user_id}": {
+      "run": 1,
+      "blocked": 1,
+      "leaked": 0
+    },
+    "GET /api/org/overview": {
+      "run": 1,
+      "blocked": 1,
+      "leaked": 0
+    },
+    "PUT /api/org/teams/{team_id}/assignments": {
+      "run": 1,
+      "blocked": 1,
+      "leaked": 0
+    },
+    "POST /api/admin/teams": {
+      "run": 1,
+      "blocked": 1,
+      "leaked": 0
+    },
+    "PUT /api/admin/teams/{team_id}": {
+      "run": 1,
+      "blocked": 1,
+      "leaked": 0
+    },
+    "DELETE /api/admin/teams/{team_id}": {
       "run": 1,
       "blocked": 1,
       "leaked": 0
@@ -17464,6 +17489,61 @@
       "url": "/api/admin/users/1",
       "role": "no role sent",
       "status": 403,
+      "passed": true,
+      "leaked": [],
+      "detail": "no restricted text in response"
+    },
+    {
+      "attack": "team overview",
+      "endpoint": "/api/org/overview",
+      "method": "GET",
+      "url": "/api/org/overview",
+      "role": "no role sent",
+      "status": 401,
+      "passed": true,
+      "leaked": [],
+      "detail": "no restricted text in response"
+    },
+    {
+      "attack": "assign a member",
+      "endpoint": "/api/org/teams/{team_id}/assignments",
+      "method": "PUT",
+      "url": "/api/org/teams/1/assignments",
+      "role": "no role sent",
+      "status": 401,
+      "passed": true,
+      "leaked": [],
+      "detail": "no restricted text in response"
+    },
+    {
+      "attack": "create team",
+      "endpoint": "/api/admin/teams",
+      "method": "POST",
+      "url": "/api/admin/teams",
+      "role": "no role sent",
+      "status": 401,
+      "passed": true,
+      "leaked": [],
+      "detail": "no restricted text in response"
+    },
+    {
+      "attack": "change team",
+      "endpoint": "/api/admin/teams/{team_id}",
+      "method": "PUT",
+      "url": "/api/admin/teams/1",
+      "role": "no role sent",
+      "status": 401,
+      "passed": true,
+      "leaked": [],
+      "detail": "no restricted text in response"
+    },
+    {
+      "attack": "delete team",
+      "endpoint": "/api/admin/teams/{team_id}",
+      "method": "DELETE",
+      "url": "/api/admin/teams/1",
+      "role": "no role sent",
+      "status": 401,
       "passed": true,
       "leaked": [],
       "detail": "no restricted text in response"

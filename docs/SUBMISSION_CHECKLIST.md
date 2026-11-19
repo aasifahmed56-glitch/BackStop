@@ -14,7 +14,7 @@ The checks run before the Round 3 submission, in order. Each one says how to run
 
 ## 2. Page check
 
-`frontend/scripts/page-check.cjs` signs in as `lead`, `dev`, `pm` and `admin`, opens every page at desktop (1440 px) and phone (390 px) width, and fails on console errors, server errors from the API, or a page that scrolls sideways.
+`frontend/scripts/page-check.cjs` signs in as `lead`, `dev`, `pm`, `admin`, `manager`, `lead2` and `dev2`, opens every page at desktop (1440 px) and phone (390 px) width, and fails on console errors, server errors from the API, or a page that scrolls sideways.
 
 ```bash
 # with the app running on port 8000 and DEMO_ACCOUNTS=1
@@ -28,7 +28,7 @@ It needs Playwright installed where Node can find it (`npm i -g playwright`, the
 
 Each page is reviewed for layout, hierarchy, copy, states (loading, empty, error, locked), keyboard use, focus, contrast and phone layout:
 
-Sign-in, Admin sign-in, Overview, Projects, Records, Check the claims, Debrief, Handover, Check a change, Backtest (sample and mocha), Trust report, Accounts, and the locked screen a newcomer sees on reviewer pages.
+Sign-in, Admin sign-in, Overview, Projects, Team, Records, Check the claims, Debrief, Handover, Check a change, Backtest (sample and mocha), Trust report, Accounts, and the locked screen a newcomer sees on reviewer pages.
 
 ## 4. Manual journeys
 
@@ -46,6 +46,8 @@ Sign-in, Admin sign-in, Overview, Projects, Records, Check the claims, Debrief, 
 | 10 | Import a small public GitHub repository | Records and claims are built; errors are clear for a bad link |
 | 11 | Record a debrief answer | Readiness changes and the answer waits for review |
 | 12 | Reset the sample | It asks first and does not touch other projects |
+| 13 | Sign in as `lead2` | Only Mobile Check-in App is listed; Campus Event App cannot be opened |
+| 14 | Sign in as `manager`, open Your teams | Both teams, their leads and members, and the activity log |
 
 ## 5. Live site
 

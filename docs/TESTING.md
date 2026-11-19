@@ -6,7 +6,7 @@ This document summarizes the automated test suite and provides a detailed manual
 
 ## 1. Automated Test Suite (pytest)
 
-Backstop has **233 automated unit and integration tests**. All pass.
+Backstop has **242 automated unit and integration tests**. All pass.
 
 ```bash
 cd backend
@@ -49,6 +49,7 @@ The suite runs with sign-in turned off (`AUTH_DISABLED=1` in `tests/conftest.py`
 | `test_backtest.py` | 2 | Precision@k and recall@k on a hand-checked example |
 | `test_real_backtest.py` | 9 | No post-cutoff leakage into the ranking; mocha result reproducible |
 | `test_auth.py` | 10 | Password hashing, sign-in required, separate team and admin pages, HttpOnly cookie, refused roles, sign-out, account management, last admin protected |
+| `test_org.py` | 9 | Teams, managers and per-project access: who sees which project, assignments, activity log |
 | `test_repomap.py` | 3 | Repository map shape, role filtering, unknown project |
 | `test_tripwires.py` | 22 | Tripwire building, path and keyword matching, access ceilings, no echo of restricted text |
 | `trust/test_leak_harness.py` | 5 | Every route × every role × tampered role values: zero leaks |

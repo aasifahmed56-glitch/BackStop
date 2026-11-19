@@ -3,7 +3,7 @@
 A five-minute walk through Backstop for judges or a recorded video. Every step works on the live site with the demo accounts and needs no setup.
 
 **Live site:** https://backstop-redesign.onrender.com
-**Accounts:** `lead`, `dev`, `pm` with password `backstop-demo` at `/login`; `admin` with password `admin` at `/admin/login`.
+**Accounts:** `manager`, `lead`, `dev`, `pm`, `lead2`, `dev2`, `pm2` with password `backstop-demo` at `/login`; `admin` with password `admin` at `/admin/login`.
 
 > The free Render instance sleeps when idle. Open the site a minute before you start so the first page loads at once.
 
@@ -51,13 +51,13 @@ A five-minute walk through Backstop for judges or a recorded video. Every step w
 
 1. Sign back in as **lead** and open **Backtest**. Switch to the real mocha history.
 2. Say the honest result: today's score found 0 of 8 troubled modules in its top 5, a plain commit count found 5 of 5, and candidate score v2 finds 4 of 5 but was chosen after seeing mocha.
-3. Open **Trust report**: 1,357 leak attacks, 0 leaks, after the first run found and fixed 126.
+3. Open **Trust report**: 1,568 leak attacks, 0 leaks, after the first run found and fixed 126.
 
 > "We report the weak numbers as they are. That is the same rule the product follows."
 
-## 4:45 Your own project (15 seconds)
+## 4:45 Teams and your own project (15 seconds)
 
-Open **Projects**, start a project and import a public GitHub repository, or paste records and build claims offline.
+Sign in as **manager** and open **Your teams** from the More menu (the ⋯ button): two teams, each lead sees only their own team's projects, and the activity log shows who works where. Then open **Projects** to start a project, import a public GitHub repository, or paste records and build claims offline.
 
 ## Close
 

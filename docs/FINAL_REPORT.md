@@ -89,7 +89,7 @@ More detail: [ARCHITECTURE.md](ARCHITECTURE.md) and [API.md](API.md).
 ### 5.2 Trust test suite
 
 - **What:** A leak harness attacks every API route as every role, including guessed ids and tampered role values. A set of 40 hand-labelled claim/quote pairs, some deliberately wrong, measures the proof check.
-- **Result:** The first run found **126 real leaks** in 1,290 attacks. All were fixed and each is guarded by a test. The latest run: **1,563 attacks across 49 endpoints, 0 leaks**. A new deterministic detail check caught **5 of 5** invented details and rejected **0** correct claims. It cannot catch right words with the wrong meaning, and the live support check was not measured because it needs a provider key.
+- **Result:** The first run found **126 real leaks** in 1,290 attacks. All were fixed and each is guarded by a test. The latest run: **1,568 attacks across 54 endpoints, 0 leaks**. A new deterministic detail check caught **5 of 5** invented details and rejected **0** correct claims. It cannot catch right words with the wrong meaning, and the live support check was not measured because it needs a provider key.
 
 ### 5.3 Tripwires
 
@@ -104,12 +104,13 @@ More detail: [ARCHITECTURE.md](ARCHITECTURE.md) and [API.md](API.md).
 - Real projects with records and GitHub import, working offline with keyword rules.
 - Review queue with conflict view, keyboard review, search, shareable claim links and a command palette.
 - Sign-in with separate team and admin pages, an Accounts page, and server-side role checks on every request.
+- Teams with managers and leads: each account sees only the projects of its teams or assignments, and an activity log shows who works where.
 - A repository map on the Records page: the git history as an animated file tree with risk, tripwires and claims on each folder and file.
 - A new visual design with a slim top navigation bar and a documented design system, followed by a full design and accessibility review of every page.
 
 ## 7. Reliability
 
-- **233 automated tests** pass, covering access control, redaction, derived metrics, verification, review, handover, debrief, workspaces, GitHub import, both backtests, tripwires and the trust harness. CI runs them on every push.
+- **242 automated tests** pass, covering access control, redaction, derived metrics, verification, review, handover, debrief, workspaces, GitHub import, both backtests, tripwires and the trust harness. CI runs them on every push.
 - Every feature works with `LLM_PROVIDER=none` and no key.
 - Upload limits, rate limits, security headers, a health check, and automatic seeding on a cold start.
 

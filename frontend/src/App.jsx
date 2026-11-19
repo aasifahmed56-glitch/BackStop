@@ -58,6 +58,9 @@ export default function App() {
   const [stats, setStats] = useState(null);
   const [loadError, setLoadError] = useState(null);
   const [noProjects, setNoProjects] = useState(false);
+  // Pages wait until the saved project is confirmed as one this account can open,
+  // so they never ask the server for a project it will refuse.
+  const [projectChecked, setProjectChecked] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [actionStatus, setActionStatus] = useState(null);
   const [confirmReset, setConfirmReset] = useState(false);
@@ -135,6 +138,24 @@ export default function App() {
   }, []);
 
   const loadInitialData = useCallback(async () => {
+    const mine = await api.listProjects().catch(() => null);
+    if (Array.isArray(mine)) {
+      if (mine.length && !mine.some((p) => p.id === getCurrentProject())) {
+        setCurrentProject(mine[0].id);
+        setProjectId(mine[0].id);
+        setProjectChecked(true);
+        return;
+      }
+      if (!mine.length) {
+        setProject(null);
+        setStats(null);
+        setLoadError(null);
+        setNoProjects(true);
+        setProjectChecked(true);
+        return;
+      }
+    }
+    setProjectChecked(true);
     const [projRes, statsRes] = await Promise.allSettled([api.getProject(), api.getClaimStats({ role: "lead" })]);
     // The saved project is gone or not one this account works on: open the first one it can reach.
     if (projRes.status === "rejected" && /not found/i.test(String(projRes.reason?.message))) {
@@ -308,6 +329,9 @@ export default function App() {
             </div>
           )}
 
+          {!projectChecked ? (
+            <p role="status" className="text-[14px] text-on-surface-variant">Loading…</p>
+          ) : (
           <React.Suspense fallback={<p role="status" className="text-[14px] text-on-surface-variant">Loading…</p>}>
           {activeTab === "locked" && (
             <div className="max-w-[60ch]">
@@ -399,6 +423,7 @@ export default function App() {
 
           {activeTab === "check" && <CheckChangePage role={role} setRole={setRole} setActiveTab={navigate} />}
           </React.Suspense>
+          )}
         </div>
       </main>
 

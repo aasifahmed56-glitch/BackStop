@@ -236,7 +236,7 @@ Scores the risk ranking against what really happened after the departure. On the
 
 ![Trust report](docs/screenshots/tour/19-trust-report.jpg)
 
-A leak harness called every API route as every role, plus tampered roles: 1,563 attacks, 1,563 blocked, 0 leaked. The table lists the leaks found in older code and how each was fixed.
+A leak harness called every API route as every role, plus tampered roles: 1,568 attacks, 1,568 blocked, 0 leaked. The table lists the leaks found in older code and how each was fixed.
 
 <table>
 <tr>
@@ -350,7 +350,7 @@ The full list is in [CHANGELOG.md](CHANGELOG.md).
 
 | Measure | Result |
 |---|---|
-| Leak attacks (every route × every role × tampered values) | Before fixes: 1,290 attacks, **126 leaks**. After: 1,563 attacks across 49 endpoints, **0 leaks** |
+| Leak attacks (every route × every role × tampered values) | Before fixes: 1,290 attacks, **126 leaks**. After: 1,568 attacks across 54 endpoints, **0 leaks** |
 | Detail check on 40 labelled claim/quote pairs | Caught **5 of 5** invented details, **0** correct claims rejected. Cannot catch right words with the wrong meaning |
 | Backtest, synthetic sample | Backstop's ranking finds the troubled modules (overall F1 0.76). The data is generated, so this is a demonstration, not evidence |
 | Backtest, real mocha history | Backstop's top 5 hit **0 of 8** troubled modules; a plain commit count got **5 of 5**. Backstop over-weights small test folders the leaver owned alone |
@@ -363,7 +363,7 @@ The real-project numbers are weak, and we report them as they are. One project a
 
 ```bash
 cd backend
-python -m pytest -q          # 233 tests
+python -m pytest -q          # 242 tests
 cd ../frontend
 npm run lint && npm run build
 ```

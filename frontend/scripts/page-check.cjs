@@ -20,10 +20,13 @@ const OUT = path.join(__dirname, "..", "..", "docs", "screenshots");
 
 const ACCOUNTS = [
   { user: "lead", login: "/login", password: PASSWORD,
-    pages: ["overview", "projects", "records", "review", "debrief", "handover", "check", "backtest", "trust"] },
+    pages: ["overview", "projects", "records", "review", "debrief", "handover", "check", "backtest", "trust", "team"] },
   { user: "dev", login: "/login", password: PASSWORD, pages: ["overview", "handover", "check", "review"] },
   { user: "pm", login: "/login", password: PASSWORD, pages: ["handover"] },
-  { user: "admin", login: "/admin/login", password: ADMIN_PASSWORD, pages: ["accounts", "overview"] },
+  { user: "admin", login: "/admin/login", password: ADMIN_PASSWORD, pages: ["accounts", "team", "overview"] },
+  { user: "manager", login: "/login", password: PASSWORD, pages: ["team", "projects", "overview"] },
+  { user: "lead2", login: "/login", password: PASSWORD, pages: ["projects", "overview", "review"] },
+  { user: "dev2", login: "/login", password: PASSWORD, pages: ["overview", "handover"] },
 ];
 const VIEWPORTS = [
   { name: "desktop", width: 1440, height: 900 },
