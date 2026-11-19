@@ -43,11 +43,10 @@ export default function LoginPage({ admin = false, onSignedIn }) {
         </div>
 
         <div className={`panel px-6 py-6 ${admin ? "border-stamp/50" : ""}`}>
-          <p className="flex items-center gap-1.5 text-[12px] font-semibold uppercase tracking-[0.08em] text-on-surface-variant">
-            {admin ? <ShieldCheck size={14} aria-hidden="true" className="text-stamp" /> : <Lock size={14} aria-hidden="true" />}
-            {admin ? "Administrators" : "Team members"}
-          </p>
-          <h1 className="mt-1.5 text-[22px] leading-7 font-bold">{admin ? "Admin sign-in" : "Sign in"}</h1>
+          <h1 className="flex items-center gap-2 text-[22px] leading-7 font-bold">
+            {admin ? <ShieldCheck size={20} aria-hidden="true" className="text-stamp" /> : <Lock size={20} aria-hidden="true" className="text-on-surface-variant" />}
+            {admin ? "Admin sign-in" : "Team sign-in"}
+          </h1>
           <p className="mt-1 text-[14px] leading-5 text-on-surface-variant">
             {admin
               ? "Manage accounts and see every access level."

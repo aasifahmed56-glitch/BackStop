@@ -134,7 +134,7 @@ export default function AccountsPage() {
       {!users ? (
         <Skeleton className="h-40" />
       ) : (
-        <div className="panel overflow-x-auto">
+        <div className="panel relative overflow-x-auto">
           <table className="w-full text-[14px]">
             <thead>
               <tr className="text-left text-[12px] uppercase tracking-[0.06em] text-on-surface-variant border-b border-outline-variant">
