@@ -116,3 +116,39 @@ def test_clone_uses_argument_list_without_shell(monkeypatch, tmp_path):
     assert isinstance(seen["args"], list) and not seen["kw"].get("shell")
     assert "--" in seen["args"] and seen["kw"]["timeout"] == gi.CLONE_TIMEOUT
     assert seen["kw"]["env"]["GIT_TERMINAL_PROMPT"] == "0"
+
+
+def _small_repo(tmp_path: Path, before: int) -> Path:
+    repo = tmp_path / "small"
+    repo.mkdir()
+    _git(repo, "init", "-q")
+    for i in range(before):
+        _commit(repo, "Lead Dev", "lead@x.example", f"2020-02-{10 + i:02d}T10:00:00+0000", f"lib/m{i % 2}/f.js", f"work {i}")
+    _commit(repo, "New Person", "new@x.example", "2020-08-01T10:00:00+0000", "lib/m0/f.js", "fix bug in m0")
+    _commit(repo, "New Person", "new@x.example", "2020-08-02T10:00:00+0000", "lib/m0/f.js", "more")
+    return repo
+
+
+@pytest.mark.parametrize("before", [1, 3])
+def test_few_commits_still_run_with_low_confidence_note(monkeypatch, tmp_path, before):
+    monkeypatch.setattr(gi, "_clone", _fake_clone_from(_small_repo(tmp_path, before)))
+    r = TestClient(app).post("/api/import/github", json={"url": "https://github.com/o/r", "departure_date": "2020-06-01"})
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert body["dataset"]["low_confidence"] is True
+    assert body["dataset"]["commits_before_date"] == before
+    assert body["limitations"][0].startswith(f"Only {before} commit")
+    assert body["result"]["modules_ranked"] >= 1
+
+
+def test_enough_commits_have_no_low_confidence_note(monkeypatch, local_repo):
+    monkeypatch.setattr(gi, "_clone", _fake_clone_from(local_repo))
+    body = gi.analyse_repository("https://github.com/o/r", date(2020, 6, 1))
+    assert body["dataset"]["low_confidence"] is False
+    assert not any(l.startswith("Only ") and "thin" in l for l in body["limitations"])
+
+
+def test_zero_commits_before_date_is_an_empty_state(monkeypatch, tmp_path):
+    monkeypatch.setattr(gi, "_clone", _fake_clone_from(_small_repo(tmp_path, 0)))
+    r = TestClient(app).post("/api/import/github", json={"url": "https://github.com/o/r", "departure_date": "2020-06-01"})
+    assert r.status_code == 422 and "no commits before" in r.json()["detail"]

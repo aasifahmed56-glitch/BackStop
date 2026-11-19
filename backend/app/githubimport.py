@@ -59,6 +59,16 @@ def validate_url(url: str) -> tuple[str, str]:
     return owner, repo
 
 
+# Below this many commits before the date the result is still shown, with a note.
+LOW_CONFIDENCE_COMMITS = 20
+
+
+def low_confidence_note(count: int) -> str:
+    noun = "commit" if count == 1 else "commits"
+    return (f"Only {count} {noun} before the date, so this reading is thin. "
+            "Treat the ranking as a starting point and check it with the team.")
+
+
 def _rate_limited(client: str) -> bool:
     now = time.monotonic()
     q = _hits[client]
@@ -103,8 +113,8 @@ def analyse_repository(url: str, departure: date, leaver: Optional[str] = None) 
 
     pre = [c for c in raw if c.when.date() <= departure]
     post = [c for c in raw if c.when.date() > departure]
-    if len(pre) < 20:
-        raise HTTPException(422, "There are fewer than 20 commits before that date, which is too few to rank modules.")
+    if not pre:
+        raise HTTPException(422, "There are no commits before that date, so there is nothing to rank yet.")
     if not post:
         raise HTTPException(422, "There are no commits after that date, so there is nothing to check the ranking against.")
 
@@ -132,6 +142,8 @@ def analyse_repository(url: str, departure: date, leaver: Optional[str] = None) 
         "leaver": leaver_label,
         "leaver_chosen": "given" if leaver else "most commits in the year before the date",
         "commit_count": len(raw),
+        "commits_before_date": len(pre),
+        "low_confidence": len(pre) < LOW_CONFIDENCE_COMMITS,
         "commit_limit_reached": len(raw) >= MAX_COMMITS,
         "contributor_count": len(set(names.values())),
         "privacy": "Analysed in memory and deleted; contributors pseudonymised.",
@@ -143,6 +155,8 @@ def analyse_repository(url: str, departure: date, leaver: Optional[str] = None) 
         if meta["commit_limit_reached"] else "All commits up to one year after the date were read.",
         *result["limitations"][1:],
     ]
+    if meta["low_confidence"]:
+        result["limitations"].insert(0, low_confidence_note(len(pre)))
     return result
 
 

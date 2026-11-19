@@ -126,7 +126,7 @@ export default function RecordsPage({ project, onChanged, setActiveTab, onNewPro
     setFlash(null);
     try {
       const r = await api.githubSource({ projectId: project.id, url: gh.url.trim(), leaver: gh.leaver.trim() });
-      setFlash({ tone: "ok", text: `Imported ${r.commit_count.toLocaleString()} commits from ${r.contributor_count} contributors. ${r.note}` });
+      setFlash({ tone: r.low_confidence ? "warn" : "ok", text: `Imported ${r.commit_count.toLocaleString()} commits from ${r.contributor_count} contributors. ${r.note}` });
       setGh({ url: "", leaver: "" });
       await load();
       setGrownAt(Date.now());

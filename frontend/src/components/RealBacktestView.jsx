@@ -200,6 +200,11 @@ export default function RealBacktestView({ name, preloaded = null }) {
             <dd className="text-on-surface tabular-nums">{n(ds.commit_count)} commits, {n(ds.contributor_count)} contributors (pseudonymised)</dd>
           </div>
         </dl>
+        {ds.low_confidence && (
+          <p role="note" className="rounded-[3px] border border-outline-variant bg-surface-container-low px-3 py-2 text-[13.5px] text-on-surface-variant max-w-[75ch]">
+            Low confidence: only {n(ds.commits_before_date)} commit{ds.commits_before_date === 1 ? "" : "s"} before the date. The result still runs, but read it as a starting point and check it with the team.
+          </p>
+        )}
       </section>
 
       <section className="rounded-xl p-space-lg bg-surface-container-low border border-surface-container">

@@ -374,8 +374,9 @@ def github_source(project_id: int, body: GithubIn, request: Request, session: Se
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
         gi._lock.release()
-    if len(raw) < 5:
-        raise HTTPException(422, "There are fewer than 5 commits before the departure date, which is too few to read.")
+    if not raw:
+        raise HTTPException(422, "There are no commits before the departure date, so there is nothing to read yet.")
+    low_confidence = len(raw) < gi.LOW_CONFIDENCE_COMMITS
 
     names = pseudonymise(raw, None)
     if body.leaver and body.leaver.strip():
@@ -403,7 +404,9 @@ def github_source(project_id: int, body: GithubIn, request: Request, session: Se
         "source_id": src.id, "name": src.name, "kind": src.kind, "chunk_count": parts,
         "commit_count": len(raw), "commit_limit_reached": len(raw) >= gi.MAX_COMMITS,
         "contributor_count": len(set(names.values())), "leaver": leaver_label, "leaver_chosen": chosen,
-        "note": f"Contributors are pseudonymised. The person leaving is now {leaver_label} (was {previous}).",
+        "low_confidence": low_confidence,
+        "note": f"Contributors are pseudonymised. The person leaving is now {leaver_label} (was {previous})."
+                + (f" {gi.low_confidence_note(len(raw))}" if low_confidence else ""),
     }
 
 
