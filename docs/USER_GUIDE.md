@@ -66,10 +66,12 @@ The live website has simple steps across the top:
 1. **Load the sample project.** One click loads a made-up student team's history (220 code changes, 40 bug reports, 10 meeting notes, 60 tasks, 120 chat messages). All people and data in it are fictional.
 2. **See the risk list.** BackStop shows which parts of the project are most at risk now that the person is leaving.
 3. **Review the claims.** A lead looks at each claim with its proof highlighted and clicks Approve, Edit or Reject.
-4. **Open the handover notebook.** Switch between roles (new developer, new project manager, lead, admin) and see that each one sees only what they should. It includes a simple "Day 1 / Week 1 / Month 1" plan. The newcomer can click "Acknowledge" to sign that they received it, and print it.
+4. **Open the handover notebook.** Sign in as a new developer or a new project manager, then as a lead, and see that each one sees only what they should. It includes a simple "Day 1 / Week 1 / Month 1" plan. The newcomer can click "Acknowledge" to sign that they received it, and print it.
 5. **"Did it work?"** Pages that test BackStop itself: the **Backtest**, the **Trust report**, and **Check a change** (all explained below).
 
-**About "roles":** there is no real login. A switcher at the top lets you pretend to be each kind of person. This is normal for a demo and the app says so openly.
+**About sign-in:** team members sign in at `/login`, and administrators sign in at `/admin/login`. Each page refuses the other kind of account. A new developer or a new project manager sees only the screens for their role. Lead-only screens are hidden from them, and the server refuses those requests too. A lead can preview the newcomer handovers. Administrators manage accounts on the Accounts page.
+
+**The repository map.** On the Records page, the project's git history is drawn as a tree of folders and files, and the tree animates as it opens. Each folder shows how many changes it has had and who made them. Folders with risky knowledge are flagged, and so are folders that a tripwire or a claim points to. You only see the tripwires and claims your role may see. A timeline of commits lets you replay how the project changed over time.
 
 ---
 
@@ -91,7 +93,7 @@ The live website has simple steps across the top:
 | **Interpreted claim** | A fact the AI pulled out, which must quote its proof exactly |
 | **Verified / Inferred / Conflicting / Missing** | Proof fully supports it / partly supports it / two sources disagree / no proof found, so it becomes a question for the leaver |
 | **Handover notebook (dossier)** | The final checked notebook for the newcomer |
-| **Role** | Who you are pretending to be: new developer, new project manager, lead, or admin |
+| **Role** | The kind of account you sign in with: new developer, new project manager, lead, or admin. It decides which screens you see |
 | **Leaver** | The person leaving the team |
 | **Module** | One part or folder of the project |
 | **Backtest** | Going back in time to check if BackStop's predictions came true |

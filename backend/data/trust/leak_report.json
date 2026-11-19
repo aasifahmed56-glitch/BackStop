@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-11-18T18:07:37+00:00",
+  "generated_at": "2026-11-19T06:41:48+00:00",
   "llm_provider": "none",
-  "note": "Roles are simulated: the server trusts the role value it is sent. These are tested cases of the access rules, not a test of authentication.",
+  "note": "Run with sign-in turned off, so every role value reaches the access rules. These are tested cases of the access rules; sign-in itself is covered by tests/test_auth.py.",
   "summary": {
-    "attacks_run": 1543,
-    "blocked": 1543,
+    "attacks_run": 1563,
+    "blocked": 1563,
     "leaked": 0,
-    "endpoints_covered": 39,
+    "endpoints_covered": 49,
     "role_variants": [
       "incoming_dev",
       "incoming_pm",
@@ -108,6 +108,11 @@
       "leaked": 0
     },
     "GET /api/projects/{project_id}/tripwires": {
+      "run": 11,
+      "blocked": 11,
+      "leaked": 0
+    },
+    "GET /api/projects/{project_id}/repo-map": {
       "run": 11,
       "blocked": 11,
       "leaked": 0
@@ -218,6 +223,51 @@
       "leaked": 0
     },
     "POST /api/sample/reset": {
+      "run": 1,
+      "blocked": 1,
+      "leaked": 0
+    },
+    "GET /api/auth/config": {
+      "run": 1,
+      "blocked": 1,
+      "leaked": 0
+    },
+    "GET /api/auth/me": {
+      "run": 1,
+      "blocked": 1,
+      "leaked": 0
+    },
+    "POST /api/auth/login": {
+      "run": 1,
+      "blocked": 1,
+      "leaked": 0
+    },
+    "POST /api/auth/admin/login": {
+      "run": 1,
+      "blocked": 1,
+      "leaked": 0
+    },
+    "POST /api/auth/logout": {
+      "run": 1,
+      "blocked": 1,
+      "leaked": 0
+    },
+    "GET /api/admin/users": {
+      "run": 1,
+      "blocked": 1,
+      "leaked": 0
+    },
+    "POST /api/admin/users": {
+      "run": 1,
+      "blocked": 1,
+      "leaked": 0
+    },
+    "PUT /api/admin/users/{user_id}": {
+      "run": 1,
+      "blocked": 1,
+      "leaked": 0
+    },
+    "DELETE /api/admin/users/{user_id}": {
       "run": 1,
       "blocked": 1,
       "leaked": 0
@@ -12084,6 +12134,127 @@
       "detail": "no restricted text in response"
     },
     {
+      "attack": "repository map",
+      "endpoint": "/api/projects/{project_id}/repo-map",
+      "method": "GET",
+      "url": "/api/projects/1/repo-map",
+      "role": "incoming_dev",
+      "status": 200,
+      "passed": true,
+      "leaked": [],
+      "detail": "no restricted text in response"
+    },
+    {
+      "attack": "repository map",
+      "endpoint": "/api/projects/{project_id}/repo-map",
+      "method": "GET",
+      "url": "/api/projects/1/repo-map",
+      "role": "incoming_pm",
+      "status": 200,
+      "passed": true,
+      "leaked": [],
+      "detail": "no restricted text in response"
+    },
+    {
+      "attack": "repository map",
+      "endpoint": "/api/projects/{project_id}/repo-map",
+      "method": "GET",
+      "url": "/api/projects/1/repo-map",
+      "role": "lead",
+      "status": 200,
+      "passed": true,
+      "leaked": [],
+      "detail": "no restricted text in response"
+    },
+    {
+      "attack": "repository map",
+      "endpoint": "/api/projects/{project_id}/repo-map",
+      "method": "GET",
+      "url": "/api/projects/1/repo-map",
+      "role": "admin (control)",
+      "status": 200,
+      "passed": true,
+      "leaked": [],
+      "detail": "no restricted text in response"
+    },
+    {
+      "attack": "repository map",
+      "endpoint": "/api/projects/{project_id}/repo-map",
+      "method": "GET",
+      "url": "/api/projects/1/repo-map",
+      "role": "unknown role 'intern'",
+      "status": 422,
+      "passed": true,
+      "leaked": [],
+      "detail": "no restricted text in response"
+    },
+    {
+      "attack": "repository map",
+      "endpoint": "/api/projects/{project_id}/repo-map",
+      "method": "GET",
+      "url": "/api/projects/1/repo-map",
+      "role": "empty role ''",
+      "status": 422,
+      "passed": true,
+      "leaked": [],
+      "detail": "no restricted text in response"
+    },
+    {
+      "attack": "repository map",
+      "endpoint": "/api/projects/{project_id}/repo-map",
+      "method": "GET",
+      "url": "/api/projects/1/repo-map",
+      "role": "no role sent",
+      "status": 200,
+      "passed": true,
+      "leaked": [],
+      "detail": "no restricted text in response"
+    },
+    {
+      "attack": "repository map",
+      "endpoint": "/api/projects/{project_id}/repo-map",
+      "method": "GET",
+      "url": "/api/projects/1/repo-map",
+      "role": "tampered 'LEAD'",
+      "status": 422,
+      "passed": true,
+      "leaked": [],
+      "detail": "no restricted text in response"
+    },
+    {
+      "attack": "repository map",
+      "endpoint": "/api/projects/{project_id}/repo-map",
+      "method": "GET",
+      "url": "/api/projects/1/repo-map",
+      "role": "tampered 'Admin'",
+      "status": 422,
+      "passed": true,
+      "leaked": [],
+      "detail": "no restricted text in response"
+    },
+    {
+      "attack": "repository map",
+      "endpoint": "/api/projects/{project_id}/repo-map",
+      "method": "GET",
+      "url": "/api/projects/1/repo-map",
+      "role": "tampered ' lead' (space)",
+      "status": 422,
+      "passed": true,
+      "leaked": [],
+      "detail": "no restricted text in response"
+    },
+    {
+      "attack": "repository map",
+      "endpoint": "/api/projects/{project_id}/repo-map",
+      "method": "GET",
+      "url": "/api/projects/1/repo-map",
+      "role": "tampered 'lead;admin'",
+      "status": 422,
+      "passed": true,
+      "leaked": [],
+      "detail": "no restricted text in response"
+    },
+    {
       "attack": "check a change with restricted words",
       "endpoint": "/api/projects/{project_id}/tripwires/check",
       "method": "POST",
@@ -17194,6 +17365,105 @@
       "url": "/api/sample/reset",
       "role": "no role sent",
       "status": 200,
+      "passed": true,
+      "leaked": [],
+      "detail": "no restricted text in response"
+    },
+    {
+      "attack": "sign-in config",
+      "endpoint": "/api/auth/config",
+      "method": "GET",
+      "url": "/api/auth/config",
+      "role": "no role sent",
+      "status": 200,
+      "passed": true,
+      "leaked": [],
+      "detail": "no restricted text in response"
+    },
+    {
+      "attack": "current account",
+      "endpoint": "/api/auth/me",
+      "method": "GET",
+      "url": "/api/auth/me",
+      "role": "no role sent",
+      "status": 200,
+      "passed": true,
+      "leaked": [],
+      "detail": "no restricted text in response"
+    },
+    {
+      "attack": "user sign-in, wrong password",
+      "endpoint": "/api/auth/login",
+      "method": "POST",
+      "url": "/api/auth/login",
+      "role": "no role sent",
+      "status": 401,
+      "passed": true,
+      "leaked": [],
+      "detail": "no restricted text in response"
+    },
+    {
+      "attack": "admin sign-in, wrong password",
+      "endpoint": "/api/auth/admin/login",
+      "method": "POST",
+      "url": "/api/auth/admin/login",
+      "role": "no role sent",
+      "status": 401,
+      "passed": true,
+      "leaked": [],
+      "detail": "no restricted text in response"
+    },
+    {
+      "attack": "sign out",
+      "endpoint": "/api/auth/logout",
+      "method": "POST",
+      "url": "/api/auth/logout",
+      "role": "no role sent",
+      "status": 200,
+      "passed": true,
+      "leaked": [],
+      "detail": "no restricted text in response"
+    },
+    {
+      "attack": "list accounts",
+      "endpoint": "/api/admin/users",
+      "method": "GET",
+      "url": "/api/admin/users",
+      "role": "no role sent",
+      "status": 403,
+      "passed": true,
+      "leaked": [],
+      "detail": "no restricted text in response"
+    },
+    {
+      "attack": "create account",
+      "endpoint": "/api/admin/users",
+      "method": "POST",
+      "url": "/api/admin/users",
+      "role": "no role sent",
+      "status": 403,
+      "passed": true,
+      "leaked": [],
+      "detail": "no restricted text in response"
+    },
+    {
+      "attack": "change account",
+      "endpoint": "/api/admin/users/{user_id}",
+      "method": "PUT",
+      "url": "/api/admin/users/1",
+      "role": "no role sent",
+      "status": 403,
+      "passed": true,
+      "leaked": [],
+      "detail": "no restricted text in response"
+    },
+    {
+      "attack": "delete account",
+      "endpoint": "/api/admin/users/{user_id}",
+      "method": "DELETE",
+      "url": "/api/admin/users/1",
+      "role": "no role sent",
+      "status": 403,
       "passed": true,
       "leaked": [],
       "detail": "no restricted text in response"

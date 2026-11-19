@@ -4,6 +4,8 @@
 
 Backstop turns a departing engineer's scattered activity (git log, issues, meeting notes, tasks and chat) into a checked, role-gated handover. Every statement it makes carries proof: either a deterministic calculation over the history, or an exact quote from a source record. A lead approves, corrects or rejects each claim before the successor sees it.
 
+**Live demo:** https://backstop-redesign.onrender.com · **Demo script:** [docs/DEMO_SCRIPT.md](docs/DEMO_SCRIPT.md)
+
 > **Demo notice.** Everyone signs in: team members at `/login`, admins at `/admin/login`. The demo deployment has ready-made accounts: `lead`, `dev` and `pm` with the password `backstop-demo`, and `admin` with the password `admin`. The sample project and everyone in it are fictional. The real-project backtest uses the public, MIT-licensed history of [mochajs/mocha](https://github.com/mochajs/mocha) with every contributor pseudonymised.
 
 ---
@@ -20,6 +22,7 @@ Backstop turns a departing engineer's scattered activity (git log, issues, meeti
 8. [Testing](#8-testing)
 9. [Deployment](#9-deployment)
 10. [Repository layout](#10-repository-layout)
+    - [Sign-in and roles](#10a-sign-in-and-roles)
 11. [Limitations](#11-limitations)
 12. [Roadmap](#12-roadmap)
 13. [Documentation index](#13-documentation-index)
@@ -46,6 +49,8 @@ Backstop gives the successor a handover they can trust, and gives the team a way
 | **Role-gated handover** | Each claim takes the strictest access level of its evidence. Lower roles get a locked placeholder with no text or quote. Rule-based Day 1 / Week 1 / Month 1 plan, receipt acknowledgement and print. | `backend/app/views.py`, `HandoverPage.jsx` |
 | **Debrief and readiness** | Turns gaps into questions for the person leaving. Answers come back as new claims awaiting review. A weighted readiness score shows what is left. | `backend/app/debrief.py` |
 | **Your own projects** | Create a project, paste or upload records, import a public GitHub history, and build claims. Works offline with keyword rules. | `backend/app/workspace.py`, `backend/app/rules.py` |
+| **Repository map** | Draws the project's git history as an animated file tree. Bud size is how often a file changed; colour is the leaver's share, edit count or top author; marks show tripwires and claims. *Replay history* grows the tree commit by commit. | `backend/app/repomap.py`, `RepoMap.jsx` |
+| **Sign-in and accounts** | Separate team and admin sign-in pages, server-side sessions, an Accounts page for admins. The server refuses any role the account may not act as. | `backend/app/auth.py`, `LoginPage.jsx`, `AccountsPage.jsx` |
 | **Backtest** | Scores the risk ranking against what happened after the departure, on the sample and on real mocha history, against two simple baselines. | `backend/app/backtest.py`, `backend/app/realbacktest.py` |
 | **Trust report** | A leak harness attacks every API route with every role and tampered role values; a 40-pair labelled set measures the support check. | `backend/tests/trust/`, `docs/TRUST_REPORT.md` |
 | **Tripwires** | *Check a change*: paste file paths or a diff and get evidence-linked warnings about reverted work, recorded decisions and sole-knowledge areas, within the caller's access level. | `backend/app/tripwires.py`, `CheckChangePage.jsx` |
@@ -55,7 +60,7 @@ Backstop gives the successor a handover they can trust, and gives the team a way
 **Requirements:** Python 3.11+, Node 20+, git.
 
 ```bash
-git clone https://github.com/aasifahmed56-glitch/BackStop.git
+git clone https://github.com/itzz-inbathamizhanS/BackStop.git
 cd BackStop
 
 # Backend
@@ -101,7 +106,9 @@ docker run -p 8000:8000 backstop
 3. **Debrief.** See the questions the person leaving should answer, record an answer, and watch handover readiness change.
 4. **Handover.** Switch roles. An incoming developer sees locked placeholders where an incoming project manager or lead sees text. Read the Day 1 / Week 1 / Month 1 plan, acknowledge receipt, print.
 5. **Did it work?** *Backtest* (sample and mocha), *Trust report*, and *Check a change*.
-6. **Projects and Records.** Start your own project, add records or a public GitHub history, and build claims from them.
+6. **Projects and Records.** Start your own project, add records or a public GitHub history, build claims from them, and see the history as a file tree.
+
+The full spoken walkthrough with timings is in [docs/DEMO_SCRIPT.md](docs/DEMO_SCRIPT.md).
 
 Press <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>K</kbd> anywhere to jump to a page or a claim.
 
@@ -172,7 +179,7 @@ The full list is in [CHANGELOG.md](CHANGELOG.md).
 
 | Measure | Result |
 |---|---|
-| Leak attacks (every route × every role × tampered values) | Before fixes: 1,290 attacks, **126 leaks**. After: 1,357 attacks, **0 leaks** |
+| Leak attacks (every route × every role × tampered values) | Before fixes: 1,290 attacks, **126 leaks**. After: 1,563 attacks across 49 endpoints, **0 leaks** |
 | Detail check on 40 labelled claim/quote pairs | Caught **5 of 5** invented details, **0** correct claims rejected. Cannot catch right words with the wrong meaning |
 | Backtest, synthetic sample | Backstop's ranking finds the troubled modules (overall F1 0.76). The data is generated, so this is a demonstration, not evidence |
 | Backtest, real mocha history | Backstop's top 5 hit **0 of 8** troubled modules; a plain commit count got **5 of 5**. Backstop over-weights small test folders the leaver owned alone |
@@ -223,7 +230,7 @@ BackStop/
 └── requirements.txt    Python dependencies
 ```
 
-## Sign-in and roles
+## 10a. Sign-in and roles
 
 | Who | Signs in at | Can |
 |---|---|---|
@@ -281,6 +288,9 @@ BackStop/
 | [docs/WORKSPACES.md](docs/WORKSPACES.md) | Your own projects and records |
 | [docs/USER_GUIDE.md](docs/USER_GUIDE.md) | Plain-language guide, no coding needed |
 | [docs/FINAL_REPORT.md](docs/FINAL_REPORT.md) | Content for the final product PDF |
+| [docs/DEMO_SCRIPT.md](docs/DEMO_SCRIPT.md) | Five-minute demo walkthrough |
+| [docs/SUBMISSION_CHECKLIST.md](docs/SUBMISSION_CHECKLIST.md) | Final test plan and submission pack |
+| [docs/screenshots/](docs/screenshots/) | Every page at desktop and phone width |
 | [docs/PROJECT_DETAILS.md](docs/PROJECT_DETAILS.md) | Round 2 technical specification |
 | [docs/design/](docs/design/) | Product brief and design system |
 | [CHANGELOG.md](CHANGELOG.md) | What changed, by round |

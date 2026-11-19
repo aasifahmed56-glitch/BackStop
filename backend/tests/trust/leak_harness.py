@@ -16,12 +16,14 @@ What counts as a leak
     claim, for a role that may not review that claim. A missing, empty or
     unknown role must get the LOWEST access, never a reviewer's.
 
-Roles are simulated: the server trusts the role value it is sent. This harness
-tests the access rules, not authentication.
+The harness runs with sign-in turned off (AUTH_DISABLED=1) so it tests the
+access rules on their own, as if every role value could reach them. With
+sign-in on, the server also refuses any role the signed-in account may not act
+as; tests/test_auth.py covers that.
 
 Run it on its own to write the report:
-    cd backend && python -m tests.trust.leak_harness            # writes data/trust/leak_report.json
-    cd backend && python -m tests.trust.leak_harness --out other.json
+    cd backend && AUTH_DISABLED=1 python -m tests.trust.leak_harness            # writes data/trust/leak_report.json
+    cd backend && AUTH_DISABLED=1 python -m tests.trust.leak_harness --out other.json
 """
 from __future__ import annotations
 
@@ -513,8 +515,8 @@ class LeakHarness:
         return {
             "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
             "llm_provider": os.getenv("LLM_PROVIDER", "none"),
-            "note": "Roles are simulated: the server trusts the role value it is sent. "
-                    "These are tested cases of the access rules, not a test of authentication.",
+            "note": "Run with sign-in turned off, so every role value reaches the access rules. "
+                    "These are tested cases of the access rules; sign-in itself is covered by tests/test_auth.py.",
             "summary": {
                 "attacks_run": len(self.results),
                 "blocked": len(self.results) - len(failed),

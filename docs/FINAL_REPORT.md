@@ -4,11 +4,11 @@
 
 | | |
 |---|---|
-| **Live app** | `<live link>` |
-| **Repository** | https://github.com/aasifahmed56-glitch/BackStop |
+| **Live app** | https://backstop-redesign.onrender.com (team accounts `lead`, `dev`, `pm` / `backstop-demo` at `/login`; `admin` / `admin` at `/admin/login`) |
+| **Repository** | https://github.com/itzz-inbathamizhanS/BackStop |
 | **One line** | Every claim shows its source quote and a status. A human approves before handover. |
 
-> This file is the source text for the final PDF. Fill in the live link and the contribution statements in section 10, then export.
+> This file is the source text for the final PDF. Each member fills in their statement in section 10 and their tools in section 11, then export.
 
 ---
 
@@ -30,17 +30,18 @@ Five rules make it trustworthy:
 
 ## 3. What a user can do
 
-1. Load the sample project, or create a project and add records (paste, upload, or import a public GitHub history).
-2. See which modules are most at risk now that the person is leaving.
-3. Review each claim with its quote highlighted in the source; approve, correct or reject.
-4. Send debrief questions to the person leaving, record the answers, and watch handover readiness rise.
-5. Open the role-gated handover with a Day 1 / Week 1 / Month 1 plan; acknowledge receipt; print.
-6. Before changing code, **Check a change** for tripwires: reverted work, recorded decisions, sole-knowledge areas.
-7. See how well Backstop itself works: **Backtest** and **Trust report**.
+1. Sign in. Leads and admins review; newcomers see only the handover and checks their role allows.
+2. Load the sample project, or create a project and add records (paste, upload, or import a public GitHub history), and see the history as a file tree.
+3. See which modules are most at risk now that the person is leaving.
+4. Review each claim with its quote highlighted in the source; approve, correct or reject.
+5. Send debrief questions to the person leaving, record the answers, and watch handover readiness rise.
+6. Open the role-gated handover with a Day 1 / Week 1 / Month 1 plan; acknowledge receipt; print.
+7. Before changing code, **Check a change** for tripwires: reverted work, recorded decisions, sole-knowledge areas.
+8. See how well Backstop itself works: **Backtest** and **Trust report**.
 
 ## 4. Architecture
 
-One FastAPI service serves the API and the React app; SQLite stores sources, chunks, claims, versions and the audit log. The derived engine is plain Python. The extractor runs from a committed cache in production (`LLM_PROVIDER=none`), so the live app needs no key and makes no outside calls. Verification fails closed: exact substring, then a deterministic detail check, then a support check. Every route that returns text enforces the caller's role on the server.
+One FastAPI service serves the API and the React app; SQLite stores sources, chunks, claims, versions and the audit log. The derived engine is plain Python. The extractor runs from a committed cache in production (`LLM_PROVIDER=none`), so the live app needs no key and makes no outside calls. Verification fails closed: exact substring, then a deterministic detail check, then a support check. Every `/api` request needs a signed-in session, the server refuses any role the account may not act as, and every route that returns text enforces that role.
 
 *(Insert the diagram from README section 5.)*
 
@@ -50,12 +51,13 @@ One FastAPI service serves the API and the React app; SQLite stores sources, chu
 
 - **What:** A pseudonymised dataset of mocha's public history (1,537 commits, 243 contributors, MIT licence). The original author's last commit was 16 May 2014. Backstop ranks modules using only history up to that day; ground truth is which modules needed new people *and* fixes in the next 180 days. Rules were written before results were computed and not tuned afterwards. Any public GitHub repository can also be analysed from a link, with time, size and rate limits.
 - **Result:** Backstop's top 5 hit **0 of 8** troubled modules. A plain count of the leaver's commits hit **5 of 5**. Backstop favoured small test folders the leaver owned alone, which nobody needed to touch later.
-- **What we learned:** Sole ownership alone is a poor predictor. The roadmap re-weights the score by module activity and tests it on more departures.
+- **Candidate score v2:** leaver share × √(leaver commits). On mocha its top 5 hits **4 of 5** at the real departure and at all three control dates, up from 0 or 1 for today's score; the commit count still gets 5 at three of the four dates. v2 was chosen after seeing mocha, so this is in-sample. It is shown on the Backtest page and not yet used for claims.
+- **What we learned:** Sole ownership alone is a poor predictor; weighting it by how much the leaver actually worked on a module closes most of the gap. The next step is to test v2 on a second real departure.
 
 ### 5.2 Trust test suite
 
 - **What:** A leak harness attacks every API route as every role, including guessed ids and tampered role values. A set of 40 hand-labelled claim/quote pairs, some deliberately wrong, measures the proof check.
-- **Result:** The first run found **126 real leaks** in 1,290 attacks. All were fixed and each is guarded by a test. The latest run: **1,357 attacks, 0 leaks**. A new deterministic detail check caught **5 of 5** invented details and rejected **0** correct claims. It cannot catch right words with the wrong meaning, and the live support check was not measured because it needs a provider key.
+- **Result:** The first run found **126 real leaks** in 1,290 attacks. All were fixed and each is guarded by a test. The latest run: **1,563 attacks across 49 endpoints, 0 leaks**. A new deterministic detail check caught **5 of 5** invented details and rejected **0** correct claims. It cannot catch right words with the wrong meaning, and the live support check was not measured because it needs a provider key.
 
 ### 5.3 Tripwires
 
@@ -69,7 +71,9 @@ One FastAPI service serves the API and the React app; SQLite stores sources, chu
 - Debrief questions, recorded answers and a readiness score.
 - Real projects with records and GitHub import, working offline with keyword rules.
 - Review queue with conflict view, keyboard review, search, shareable claim links and a command palette.
-- A new visual design with a documented design system.
+- Sign-in with separate team and admin pages, an Accounts page, and server-side role checks on every request.
+- A repository map on the Records page: the git history as an animated file tree with risk, tripwires and claims on each folder and file.
+- A new visual design with a slim top navigation bar and a documented design system, followed by a full design and accessibility review of every page.
 
 ## 7. Reliability
 
@@ -79,7 +83,7 @@ One FastAPI service serves the API and the React app; SQLite stores sources, chu
 
 ## 8. Limitations
 
-- No real sign-in; roles are simulated.
+- Username and password sign-in only: no SSO, password-reset email or two-factor yet.
 - Sample data is synthetic; its results demonstrate mechanics, not accuracy.
 - On real data the risk score lost to a simple baseline.
 - One real project and one departure is a case study.
@@ -90,8 +94,8 @@ One FastAPI service serves the API and the React app; SQLite stores sources, chu
 
 | Next | Why |
 |---|---|
-| Re-weight the risk score and test on more departures | Beat the commit-count baseline before relying on the ranking |
-| Real sign-in mapped to roles | Replace the role switcher |
+| Test score v2 on a second real departure, then adopt it if it holds | v2 nearly matches the commit-count baseline on mocha, but only in-sample |
+| SSO (GitHub / Google) | Let teams use the accounts they already have |
 | Live GitHub / GitLab webhooks | Keep claims current |
 | Measure the live support check | Close the open trust measurement |
 | Reduce tripwire noise | Reach a precision teams act on |

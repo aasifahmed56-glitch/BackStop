@@ -11,8 +11,8 @@ Workspaces: real handover projects beyond the sample (plain code, no AI).
                                                the extractor where a model or cache answers,
                                                and keyword rules for everything else
 
-Roles are simulated, as everywhere in Backstop: the role in the request is
-trusted for routing and checked against a fixed list, not authenticated.
+The role in the request is checked against a fixed list, and the sign-in
+layer has already refused any role the account may not act as.
 The sample project is read-only here so the demo stays reproducible.
 """
 from __future__ import annotations
