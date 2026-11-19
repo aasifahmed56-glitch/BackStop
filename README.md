@@ -4,7 +4,7 @@
 
 Backstop turns a departing engineer's scattered activity (git log, issues, meeting notes, tasks and chat) into a checked, role-gated handover. Every statement it makes carries proof: either a deterministic calculation over the history, or an exact quote from a source record. A lead approves, corrects or rejects each claim before the successor sees it.
 
-**Live demo:** https://backstop-redesign.atsu.com · **Demo script:** [docs/DEMO_SCRIPT.md](docs/DEMO_SCRIPT.md) · **Screenshots:** [every screen, from sign-in on](#4a-screenshots)
+**Live demo:** https://backstop/backstop-atsu.onrender.com · **Demo script:** [docs/DEMO_SCRIPT.md](docs/DEMO_SCRIPT.md) · **Screenshots:** [every screen, from sign-in on](#4a-screenshots)
 
 > **Demo notice.** Everyone signs in: team members at `/login`, admins at `/admin/login`. The demo deployment has a ready-made organisation: `admin` (password `admin`), plus `manager`, `lead`, `dev`, `pm`, `lead2`, `dev2` and `pm2` (password `backstop-demo`). See [Sign-in and roles](#10a-sign-in-and-roles). The sample project and everyone in it are fictional. The real-project backtest uses the public, MIT-licensed history of [mochajs/mocha](https://github.com/mochajs/mocha) with every contributor pseudonymised.
 
