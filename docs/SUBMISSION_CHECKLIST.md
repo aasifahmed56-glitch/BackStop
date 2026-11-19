@@ -65,4 +65,4 @@ Sign-in, Admin sign-in, Overview, Projects, Records, Check the claims, Debrief, 
 | Final report source | [FINAL_REPORT.md](FINAL_REPORT.md) |
 | Demo script | [DEMO_SCRIPT.md](DEMO_SCRIPT.md) |
 | Screenshots | [screenshots/](screenshots/) |
-| Contribution statements and tool disclosure | Written by each member in FINAL_REPORT.md sections 10 and 11 |
+| Contribution statements and tool disclosure | [FINAL_REPORT.md](FINAL_REPORT.md) sections 10 and 11 |

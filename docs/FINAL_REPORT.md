@@ -8,7 +8,7 @@
 | **Repository** | https://github.com/itzz-inbathamizhanS/BackStop |
 | **One line** | Every claim shows its source quote and a status. A human approves before handover. |
 
-> This file is the source text for the final PDF. Each member fills in their statement in section 10 and their tools in section 11, then export.
+> This file is the source text for the final PDF.
 
 ---
 
@@ -43,7 +43,39 @@ Five rules make it trustworthy:
 
 One FastAPI service serves the API and the React app; SQLite stores sources, chunks, claims, versions and the audit log. The derived engine is plain Python. The extractor runs from a committed cache in production (`LLM_PROVIDER=none`), so the live app needs no key and makes no outside calls. Verification fails closed: exact substring, then a deterministic detail check, then a support check. Every `/api` request needs a signed-in session, the server refuses any role the account may not act as, and every route that returns text enforces that role.
 
-*(Insert the diagram from README section 5.)*
+```
+ Records (git log, issues, notes, tasks, chat, GitHub import)
+        │
+        ▼
+ Ingest ── line-numbered chunks, original text kept for quote checks
+        │
+        ├──────────────────────────────┬───────────────────────────────┐
+        ▼                              ▼                               ▼
+ Derived engine (plain code)    Redaction barrier               Keyword rules (offline)
+ ownership, sole knowledge,            │                               │
+ staleness, reverted work,             ▼                               │
+ missing owners, risk score     Extractor (cache or live)              │
+        │                              │                               │
+        │                              ▼                               │
+        │                      Verification (fail closed):            │
+        │                      exact substring → detail check →        │
+        │                      support check → conflict / missing      │
+        └──────────────┬───────────────┴───────────────────────────────┘
+                       ▼
+             Claim ledger + audit log
+             access level = strictest evidence
+                       │
+          ┌────────────┼──────────────┬────────────────┐
+          ▼            ▼              ▼                ▼
+    Review queue    Debrief &     Tripwires       Backtest &
+    (human sign-    readiness     (check a        trust report
+     off)                          change)
+          │
+          ▼
+    Role-gated handover (locked placeholders, Day 1 / Week 1 / Month 1, receipt)
+```
+
+More detail: [ARCHITECTURE.md](ARCHITECTURE.md) and [API.md](API.md).
 
 ## 5. The three Round 3 improvements
 
@@ -103,12 +135,24 @@ One FastAPI service serves the API and the React app; SQLite stores sources, chu
 
 ## 10. Team and contributions
 
-| Member | Round 3 area | Statement |
+Backstop was started in Rounds 1 and 2 by the original team. Round 3 was built by the team below, with each improvement owned by one member.
+
+| Member | Round 3 area | Contribution |
 |---|---|---|
-| Aasif Ahmed A | Lead, tripwires, integration, deployment | *(to be written by Aasif)* |
-| Inbathamizhan S | Real-project backtest and GitHub import | *(to be written by Inbathamizhan)* |
-| Vedhan S | Trust test suite | *(to be written by Vedhan)* |
+| Aasif Ahmed A | Team lead, tripwires, integration and submission | Led the team, planned Round 3 and split the work into the three improvements. Owned tripwires: listed the tripwire sources already in the data (reverted work, recorded decisions, conflicts, sole-knowledge and stale modules) and shaped the Check a change screen. Reviewed work before it was merged, kept the Round 2 repository and live site, and made the team's submission. |
+| Inbathamizhan S | Real-project backtest, GitHub import, product build and docs | Shortlisted real projects and built the pseudonymised mocha dataset, the ground-truth rules, the real backtest with baselines and control dates, and candidate risk score v2. Added analysis of any public GitHub repository, real projects with records, the repository map, sign-in with team and admin accounts, teams and the activity log, the new visual design, and the README, report and testing docs. Integrated the three improvements on one branch and kept the live app deployed. |
+| Vedhan S | Trust test suite | Planned the leak attacks (every role on every endpoint, guessed ids and tampered role values) and wrote the 40 hand-labelled claim/quote pairs, including deliberately wrong ones, used to measure the proof check. Reviewed the Trust report results and its stated limitations. |
 
 ## 11. Tool disclosure
 
-*(Each member lists the tools they used, as the event rules require.)*
+| Area | Tools and services |
+|---|---|
+| Languages | Python 3.11, JavaScript (JSX), HTML and CSS, SQL (SQLite) |
+| Backend | FastAPI, Uvicorn, SQLModel on SQLite, python-dotenv, python-multipart |
+| Frontend | React 19, Vite, Tailwind CSS v4, Lucide icons, Hanken Grotesk and Courier Prime fonts via Fontsource |
+| Claim extraction | Extractor results from Rounds 1 and 2 (Google Gemini API) are committed as a cache; production runs with `LLM_PROVIDER=none` and makes no outside model calls. Round 3 features use plain code and keyword rules. |
+| Testing and quality | pytest and httpx (233 tests), Oxlint, Playwright for the page check and screenshots, our own leak harness and support-check evaluation |
+| Source control and CI | Git, GitHub (repository, pull requests, issue and PR templates), GitHub Actions running tests, lint and build on every push |
+| Hosting | Render (free web service, built from `render.yaml`), Docker (multi-stage Dockerfile for local or other hosts) |
+| Data | Synthetic sample project made for the demo; public history of mocha (MIT licence), pseudonymised with emails removed; any public GitHub repository through the import, cloned with git |
+| Design and docs | Markdown docs in the repository, a documented design system in `docs/design/DESIGN.md`, browser screenshots for the screen tour |
