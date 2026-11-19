@@ -1,15 +1,25 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { api } from "../api";
 import RealBacktestView from "./RealBacktestView";
 import { Button } from "./ui";
 
-export default function GithubImportPanel({ title = "Analyse a public repository" }) {
+export default function GithubImportPanel({ title = "Analyse a GitHub repository" }) {
   const [url, setUrl] = useState("");
   const [date, setDate] = useState("");
   const [leaver, setLeaver] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
   const [result, setResult] = useState(null);
+  const resultRef = useRef(null);
+
+  useEffect(() => {
+    if (!result) return;
+    const el = resultRef.current;
+    if (!el) return;
+    const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    el.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+    el.focus({ preventScroll: true });
+  }, [result]);
 
   const submit = async (e) => {
     e.preventDefault();
@@ -41,9 +51,9 @@ export default function GithubImportPanel({ title = "Analyse a public repository
 
   return (
     <div className="flex flex-col gap-5 min-w-0">
-      <form onSubmit={submit} className="bg-surface-container-lowest rounded-[22px] p-6 sm:p-10 flex flex-col gap-5" aria-busy={busy} aria-labelledby="gh-import-h">
+      <form onSubmit={submit} className="panel p-5 sm:p-6 flex flex-col gap-5" aria-busy={busy} aria-labelledby="gh-import-h">
         <div>
-          <h2 id="gh-import-h" className="text-[28px] sm:text-[34px] leading-[1.1] font-bold tracking-[-0.025em] text-on-surface">{title}.</h2>
+          <h2 id="gh-import-h" className="font-headline-md text-headline-md text-on-surface font-semibold">{title}</h2>
           <p className="text-[14px] leading-[22px] text-on-surface-variant mt-1 max-w-3xl">
             Backstop downloads the commit history (no file contents), replaces every name with a pseudonym, ranks modules as of the
             date you pick and checks the ranking against what happened in the next 180 days. Nothing is stored. Up to 3 imports per hour; large repositories may time out after 60 seconds.
@@ -80,13 +90,21 @@ export default function GithubImportPanel({ title = "Analyse a public repository
             commander.js, 1 Jan 2016
           </button>
         </p>
+        <p role="status" className="sr-only">{busy ? "Analysing the repository. This can take up to a minute." : ""}</p>
         {error && (
           <p role="alert" className="rounded-[3px] border border-error bg-error-container text-on-error-container px-3 py-2 text-[13.5px]">
             {error}
           </p>
         )}
       </form>
-      {result && <RealBacktestView key={result.dataset.name + result.dataset.departure_date} preloaded={result} />}
+      {result && (
+        <div className="flex flex-col gap-3 min-w-0">
+          <h2 ref={resultRef} tabIndex={-1} className="font-headline-md text-headline-md text-on-surface font-semibold scroll-mt-20 focus:outline-none">
+            Result for {result.dataset.name}
+          </h2>
+          <RealBacktestView key={result.dataset.name + result.dataset.departure_date} preloaded={result} />
+        </div>
+      )}
     </div>
   );
 }

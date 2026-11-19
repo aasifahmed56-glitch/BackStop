@@ -20,12 +20,19 @@ export default function ProjectsPage({ currentId, onOpen, onDeleted, startOpen =
   const [formError, setFormError] = useState(null);
   const [busy, setBusy] = useState(false);
   const [toDelete, setToDelete] = useState(null);
+  const [loadFailed, setLoadFailed] = useState(false);
 
   const load = () =>
     api
       .listProjects()
-      .then((p) => setProjects(Array.isArray(p) ? p : []))
-      .catch((e) => setError(formatErrorMessage(e)));
+      .then((p) => {
+        setProjects(Array.isArray(p) ? p : []);
+        setLoadFailed(false);
+      })
+      .catch((e) => {
+        setError(formatErrorMessage(e));
+        setLoadFailed(true);
+      });
 
   useEffect(() => {
     load();
@@ -115,13 +122,14 @@ export default function ProjectsPage({ currentId, onOpen, onDeleted, startOpen =
       )}
 
       {error && (
-        <p role="alert" className="text-[14px] text-error">
-          {error}
-        </p>
+        <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-[8px] border border-error/40 px-4 py-3 text-[14px] text-error">
+          <p>{loadFailed && !projects ? `Projects did not load. ${error}` : error}</p>
+          {loadFailed && !projects && <Button size="sm" className="min-h-9" onClick={() => (setError(null), load())}>Try again</Button>}
+        </div>
       )}
 
       <ul className="flex flex-col gap-3" aria-label="Your projects">
-        {!projects &&
+        {!projects && !loadFailed &&
           [0, 1].map((i) => (
             <li key={i}>
               <Skeleton className="h-24 w-full" />
@@ -129,7 +137,8 @@ export default function ProjectsPage({ currentId, onOpen, onDeleted, startOpen =
           ))}
         {projects?.map((p) => {
           const current = p.id === currentId;
-          const pct = p.claim_count ? Math.round((p.reviewed_count / p.claim_count) * 100) : 0;
+          const reviewed = p.reviewed_count ?? 0;
+          const pct = p.claim_count ? Math.round((reviewed / p.claim_count) * 100) : 0;
           return (
             <li
               key={p.id}
@@ -141,7 +150,6 @@ export default function ProjectsPage({ currentId, onOpen, onDeleted, startOpen =
                 <div className="flex items-center gap-2 flex-wrap">
                   <h2 className="text-[17px] font-bold truncate">{p.name}</h2>
                   {p.is_sample && <span className="px-2 py-px rounded-full text-[11.5px] font-medium bg-surface-container text-on-surface-variant">Synthetic sample</span>}
-                  {current && <span className="px-2 py-px rounded-full text-[11.5px] font-medium bg-stamp-container text-on-stamp-container">Open now</span>}
                 </div>
                 <p className="text-[13.5px] text-on-surface-variant">
                   {p.leaver_name} leaves {fmt(p.departure_date)} <span className="font-mono text-[12px] text-outline">· {consignmentNo(p.id)}</span>
@@ -153,13 +161,13 @@ export default function ProjectsPage({ currentId, onOpen, onDeleted, startOpen =
                     <span className="relative w-20 h-1.5 rounded-full bg-surface-container-high overflow-hidden" aria-hidden="true">
                       <span className="absolute inset-y-0 left-0 bg-stamp" style={{ width: `${pct}%` }} />
                     </span>
-                    <span className="font-mono tnum">{pct}% checked</span>
+                    <span className="font-mono tnum">{reviewed} of {p.claim_count} reviewed</span>
                   </span>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 {!p.is_sample && (
-                  <Button variant="ghost" size="sm" onClick={() => setToDelete(p)} aria-label={`Delete ${p.name}`}>
+                  <Button variant="ghost" size="sm" className="min-h-9 min-w-9" onClick={() => setToDelete(p)} aria-label={`Delete ${p.name}`}>
                     <Trash2 size={15} aria-hidden="true" />
                   </Button>
                 )}

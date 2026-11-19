@@ -99,7 +99,8 @@ export default function CommandPalette({ open, onClose, onNavigate, dataVersion 
               placeholder="Type a page, a word from a claim, or #16"
               className="flex-1 bg-transparent text-[15px] outline-none placeholder:text-outline"
               role="combobox"
-              aria-expanded="true"
+              aria-expanded={items.length > 0}
+              aria-autocomplete="list"
               aria-controls="palette-list"
               aria-activedescendant={items[active] ? `palette-${items[active].key}` : undefined}
             />
@@ -134,7 +135,10 @@ export default function CommandPalette({ open, onClose, onNavigate, dataVersion 
               </li>
             ))}
           </ul>
-          {error && <p className="px-4 pb-3 text-[12.5px] text-error">{error}</p>}
+          {error && <p role="alert" className="px-4 pb-3 text-[12.5px] text-error">{error}</p>}
+          <p className="sr-only" role="status" aria-live="polite">
+            {items.length === 1 ? "1 result" : `${items.length} results`}
+          </p>
         </div>
       )}
     </dialog>

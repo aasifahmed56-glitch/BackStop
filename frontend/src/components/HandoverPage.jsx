@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from "react"
 import { Lock, Printer, PenLine, ClipboardCheck, SearchX, Search, ListChecks } from "lucide-react";
 import { api, formatErrorMessage, canActAs } from "../api";
 import { ROLES as ALL_ROLES } from "./Navbar";
-import { Button, Field, Dialog, TextInput, Skeleton, humanize, consignmentNo } from "./ui";
+import { Button, Dialog, TextInput, Skeleton, AccessChip, humanize, consignmentNo } from "./ui";
 
 const PHASES = [
   { key: "day_1", name: "Day 1", purpose: "Blockers and critical dependencies.", empty: "Nothing approved for Day 1 in this view." },
@@ -16,14 +16,24 @@ const TypeChip = ({ type }) => (
   </span>
 );
 
-const AccessChip = ({ level }) =>
-  level === "restricted" ? (
-    <span className="inline-block rounded-[2px] bg-error-container px-1.5 py-px font-mono text-[11px] leading-4 font-semibold text-on-error-container">
-      restricted
-    </span>
-  ) : (
-    <span className="font-mono text-[11px] leading-4 text-on-surface-variant">{level || "team"}</span>
-  );
+function formatDate(iso) {
+  if (!iso) return "";
+  const d = new Date(String(iso).length <= 10 ? iso + "T00:00:00" : iso);
+  return Number.isNaN(d.getTime()) ? iso : d.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+}
+
+function MoreButton({ k, total, cap = 5, expanded, onToggle }) {
+  return total > cap ? (
+    <button
+      type="button"
+      onClick={() => onToggle(k)}
+      aria-expanded={!!expanded[k]}
+      className="no-print w-full px-3 py-2 text-left text-[13px] font-semibold text-primary hover:bg-surface-container-low border-t border-outline-variant cursor-pointer"
+    >
+      {expanded[k] ? "Show fewer" : `Show all ${total}`}
+    </button>
+  ) : null;
+}
 
 function formatWhen(value) {
   const d = value ? new Date(value) : new Date();
@@ -82,12 +92,14 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
   const [ackError, setAckError] = useState(null);
 
   const requestId = useRef(0);
+  const ackRef = useRef(null);
   const submitting = useRef(false);
 
   const loadHandover = useCallback(async () => {
     const myId = ++requestId.current;
     setIsLoading(true);
     setError(null);
+    setAckSuccess(null);
     try {
       const data = await api.getHandover({ role });
       if (myId !== requestId.current) return;
@@ -100,12 +112,39 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
     }
   }, [role]);
 
+  // A role change starts a fresh load and clears any receipt shown for the previous role.
+  const [loadedRole, setLoadedRole] = useState(role);
+  if (loadedRole !== role) {
+    setLoadedRole(role);
+    setIsLoading(true);
+    setError(null);
+    setAckSuccess(null);
+  }
+
   useEffect(() => {
-    loadHandover();
+    const myId = ++requestId.current;
+    api
+      .getHandover({ role })
+      .then((data) => {
+        if (myId !== requestId.current) return;
+        setHandoverData(data);
+        setIsLoading(false);
+      })
+      .catch((err) => {
+        if (myId !== requestId.current) return;
+        setError(formatErrorMessage(err) || "Failed to load handover");
+        setIsLoading(false);
+      });
     return () => {
       requestId.current += 1;
     };
-  }, [loadHandover]);
+  }, [role]);
+
+  useEffect(() => {
+    if (!ackSuccess) return undefined;
+    const raf = requestAnimationFrame(() => ackRef.current?.focus());
+    return () => cancelAnimationFrame(raf);
+  }, [ackSuccess]);
 
   const currentRoleObj = ROLES.find((r) => r.id === role) || ROLES[0];
   const approvedClaims = useMemo(() => handoverData?.claims || [], [handoverData]);
@@ -120,18 +159,6 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
   const toggle = (k) => setExpanded((e) => ({ ...e, [k]: !e[k] }));
   const CAP = 5;
   const shown = (k, list) => (expanded[k] ? list : list.slice(0, CAP));
-  const MoreButton = ({ k, total, cap = CAP }) =>
-    total > cap ? (
-      <button
-        type="button"
-        onClick={() => toggle(k)}
-        aria-expanded={!!expanded[k]}
-        className="no-print w-full px-3 py-2 text-left text-[13px] font-semibold text-primary hover:bg-surface-container-low border-t border-outline-variant cursor-pointer"
-      >
-        {expanded[k] ? "Show fewer" : `Show all ${total}`}
-      </button>
-    ) : null;
-
   const filteredClaims = useMemo(() => {
     const q = filter.trim().toLowerCase();
     if (!q) return approvedClaims;
@@ -210,7 +237,7 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
             <Printer size={16} aria-hidden="true" />
             Print or save PDF
           </Button>
-          <Button id="btn-ack" variant="stamp" onClick={openSign} disabled={!canSign || isLoading} title={signDisabledReason}>
+          <Button id="btn-ack" variant="stamp" onClick={openSign} disabled={!canSign || isLoading || !!ackSuccess} title={ackSuccess ? "Already signed for receipt" : signDisabledReason}>
             <PenLine size={16} aria-hidden="true" />
             Sign for receipt
           </Button>
@@ -280,7 +307,9 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
       ) : !hasApprovedClaims ? (
         <div className="panel p-8 flex flex-col items-start gap-2 max-w-2xl">
           <ClipboardCheck size={24} aria-hidden="true" className="text-primary" />
-          <h2 className="text-[20px] leading-7 font-bold text-on-surface">Nothing has been approved yet</h2>
+          <h2 className="text-[20px] leading-7 font-bold text-on-surface">
+            {role === "lead" ? "Nothing has been approved yet" : "Nothing your role can see has been approved yet"}
+          </h2>
           <p className="text-[14px] leading-[22px] text-on-surface-variant">
             The handover is built only from claims a person has approved. Review the claims, approve the ones that hold up, and they will appear here for the new owner to read and sign for.
           </p>
@@ -297,7 +326,7 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
               ["From", project.leaver_name || "Not recorded"],
               ["To", currentRoleObj.label],
               ["Project", project.name || "Not recorded"],
-              ["Departure", project.departure_date || "Not recorded"],
+              ["Departure", formatDate(project.departure_date) || "Not recorded"],
               [
                 "Contents",
                 `${visibleCount} approved ${visibleCount === 1 ? "item" : "items"}${withheldCount > 0 ? `, ${withheldCount} withheld` : ""}`,
@@ -350,7 +379,7 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
                           );
                         })}
                       </ul>
-                      <MoreButton k={ph.key} total={items.length} />
+                      <MoreButton expanded={expanded} onToggle={toggle} k={ph.key} total={items.length} />
                       </>
                     )}
                   </div>
@@ -397,7 +426,7 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
                           </li>
                         ))}
                       </ul>
-                      <MoreButton k={`focus-${typeKey}`} total={list.length} />
+                      <MoreButton expanded={expanded} onToggle={toggle} k={`focus-${typeKey}`} total={list.length} />
                     </div>
                   );
                 })}
@@ -423,7 +452,7 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
                     onChange={(e) => setFilter(e.target.value)}
                     placeholder="Filter contents"
                     maxLength={100}
-                    className="h-9 w-full sm:w-64 pl-8 pr-2.5 rounded-[3px] border border-outline-variant bg-surface-container-lowest text-[14px] placeholder:text-outline focus:outline-2 focus:outline-primary focus:border-primary"
+                    className="h-9 w-full sm:w-64 pl-8 pr-2.5 rounded-[3px] border border-outline-variant bg-surface-container-lowest text-[14px] placeholder:text-outline"
                   />
                 </label>
                 <span className="tnum text-[12px] text-on-surface-variant whitespace-nowrap" aria-live="polite">
@@ -480,7 +509,7 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
                   )}
                 </tbody>
               </table>
-              {!filter.trim() && <MoreButton k="contents" total={filteredClaims.length} cap={15} />}
+              {!filter.trim() && <MoreButton expanded={expanded} onToggle={toggle} k="contents" total={filteredClaims.length} cap={15} />}
             </div>
           </section>
 
@@ -491,7 +520,7 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
               <span className="font-mono text-[12px] text-on-surface-variant">No. {consignmentNo(project.id)}</span>
             </div>
             {ackSuccess ? (
-              <div id="ack-banner" className="flex flex-col md:flex-row md:items-center gap-5 p-4 overflow-hidden">
+              <div id="ack-banner" ref={ackRef} tabIndex={-1} role="status" className="flex flex-col md:flex-row md:items-center gap-5 p-4 overflow-hidden focus:outline-offset-[-2px]">
                 <div className="stamp-in shrink-0 self-start md:self-center border-2 border-stamp text-stamp rounded-[3px] px-4 py-1.5 text-[18px] leading-6 font-extrabold uppercase tracking-[0.14em] m-1" style={{ transform: "rotate(-3deg)" }}>
                   Received
                 </div>
@@ -520,7 +549,7 @@ export default function HandoverPage({ role, setRole, setActiveTab }) {
                   <div className="h-8 border-b border-outline max-w-sm" aria-hidden="true" />
                   <p className="text-[13px] text-on-surface-variant mt-1">Not signed yet. The person taking over signs here.</p>
                 </div>
-                <Button variant="stamp" onClick={openSign} disabled={!canSign} title={signDisabledReason} className="no-print self-start sm:self-center">
+                <Button variant="stamp" onClick={openSign} disabled={!canSign || !!ackSuccess} title={signDisabledReason} className="no-print self-start sm:self-center">
                   <PenLine size={16} aria-hidden="true" />
                   Sign for receipt
                 </Button>

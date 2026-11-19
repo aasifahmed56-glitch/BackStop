@@ -93,7 +93,7 @@ function ReadinessView({ readiness, compact }) {
           {parts.map((p) => (
             <li key={p.key} className="flex items-baseline justify-between gap-3 border-b border-outline-variant/70 py-1.5">
               <span className="text-on-surface-variant">
-                {p.label} <span className="text-outline">· weight {p.weight}</span>
+                {p.label} <span className="text-outline">· counts {p.weight}×</span>
               </span>
               <span className="font-mono tnum text-on-surface">
                 {p.done}/{p.total}

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { api, formatErrorMessage, canActAs } from "../api";
 import { ROLES as ALL_ROLES } from "./Navbar";
 import { Button } from "./ui";
@@ -59,7 +59,7 @@ function ResultCard({ tw }) {
         <span className="field-label ml-auto">{tw.access_level} access</span>
       </div>
       <h3 className="text-[17px] leading-6 font-bold text-on-surface">{tw.title}</h3>
-      <p className="text-[14px] leading-[22px] text-on-surface">{tw.warning}</p>
+      <p className="text-[14px] leading-[22px] text-on-surface max-w-[75ch]">{tw.warning}</p>
       <div>
         <h4 className="field-label">Why it matched</h4>
         <ul className="list-disc pl-5">
@@ -96,7 +96,7 @@ function ReplaySummary() {
   if (!data) return <p className="text-[13.5px] leading-[21px] text-on-surface-variant">Loading the replay result…</p>;
   return (
     <div className="flex flex-col gap-3">
-      <p className="text-[13.5px] leading-[21px] text-on-surface-variant">
+      <p className="text-[13.5px] leading-[21px] text-on-surface-variant max-w-[75ch]">
         Tripwires were built from history before a cutoff, then every later commit was checked as if it were a proposed change.
         A commit counts as later problematic if it was reverted or a fix touched the same files within {data.rules.fix_days} days.
         Only git-based tripwires can be replayed. No AI is used.
@@ -111,7 +111,7 @@ function ReplaySummary() {
         return (
           <div key={ds.dataset.name} className="flex flex-col gap-2">
             <h3 className="text-[17px] leading-6 font-bold text-on-surface">{ds.dataset.label}</h3>
-            <p className="text-[13.5px] leading-[21px] text-on-surface-variant">
+            <p className="text-[13.5px] leading-[21px] text-on-surface-variant max-w-[75ch]">
               Cutoff {ds.cutoff}, {ds.proposed_changes} later commits checked, {ds.tripwires_built} tripwires, {r.problematic} later problematic (base rate {pct(r.base_rate)}).
               {" "}{ds.dataset.note}
             </p>
@@ -147,7 +147,7 @@ function ReplaySummary() {
           </div>
         );
       })}
-      <p className="text-[13.5px] leading-[21px] text-on-surface">
+      <p className="text-[13.5px] leading-[21px] text-on-surface max-w-[75ch]">
         <strong>What this means:</strong> on mocha, tripwires are only slightly better than chance and flag most commits, so treat a warning as a
         prompt to ask, not as proof of risk. On the synthetic sample every commit has its own invented file name, so the replay cannot measure anything there.
         Method and limits: docs/TRIPWIRES.md in the repository.
@@ -164,8 +164,25 @@ export default function CheckChangePage({ role, setRole, setActiveTab }) {
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   const [isChecking, setIsChecking] = useState(false);
+  const resultHeadingRef = useRef(null);
+  const focusResult = useRef(false);
 
-  const runCheck = async (changesText = changes, desc = description) => {
+  useEffect(() => {
+    if (!result || !focusResult.current) return;
+    focusResult.current = false;
+    const el = resultHeadingRef.current;
+    if (!el) return;
+    let reduce = false;
+    try {
+      reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    } catch {
+      /* no matchMedia */
+    }
+    el.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+    el.focus({ preventScroll: true });
+  }, [result]);
+
+  const runCheck = async (changesText = changes, desc = description, fromUser = false) => {
     if (isChecking) return;
     const { files, diff } = splitInput(changesText);
     if (!files.length && !diff && !desc.trim()) {
@@ -175,10 +192,12 @@ export default function CheckChangePage({ role, setRole, setActiveTab }) {
     }
     setIsChecking(true);
     setError(null);
+    focusResult.current = fromUser;
     try {
       setResult(await api.checkChange({ role, files, diff, description: desc }));
     } catch (err) {
       setResult(null);
+      focusResult.current = false;
       setError(formatErrorMessage(err));
     } finally {
       setIsChecking(false);
@@ -194,7 +213,7 @@ export default function CheckChangePage({ role, setRole, setActiveTab }) {
   const applyExample = (ex) => {
     setChanges(ex.files);
     setDescription(ex.description);
-    runCheck(ex.files, ex.description);
+    runCheck(ex.files, ex.description, true);
   };
 
   return (
@@ -208,9 +227,12 @@ export default function CheckChangePage({ role, setRole, setActiveTab }) {
           <ArrowLeft size={14} aria-hidden="true" /> Back to the handover
         </button>
         <h1 className="text-[26px] leading-[34px] font-bold tracking-[-0.015em] text-on-surface">Check a change</h1>
-        <p className="text-[14px] leading-[22px] text-on-surface-variant max-w-2xl">
+        <p className="text-[14px] leading-[22px] text-on-surface-variant max-w-[75ch]">
           Before changing code you inherited, check it against what the handover already knows: reverted work, recorded decisions,
           code only the leaver understood, stale modules and unresolved conflicts. Plain rules, no AI.
+        </p>
+        <p className="text-[14px] leading-[22px] text-on-surface-variant max-w-[75ch]">
+          <strong className="font-semibold text-on-surface">A tripwire</strong> is a past event — reverted work, a recorded decision, code only one person knew — that should make you pause before changing a file.
         </p>
       </section>
 
@@ -218,7 +240,7 @@ export default function CheckChangePage({ role, setRole, setActiveTab }) {
         className="panel p-4 sm:p-5 flex flex-col gap-4"
         onSubmit={(e) => {
           e.preventDefault();
-          runCheck();
+          runCheck(changes, description, true);
         }}
       >
         <fieldset className="flex flex-wrap items-center gap-2">
@@ -250,7 +272,7 @@ export default function CheckChangePage({ role, setRole, setActiveTab }) {
             value={changes}
             onChange={(e) => setChanges(e.target.value)}
             placeholder={"deploy/deploy.sh\nauth/jwt.py"}
-            className="w-full p-2.5 rounded-[3px] border border-outline-variant bg-surface-container-lowest font-mono text-[12.5px] leading-5 text-on-surface placeholder:text-outline focus:outline-2 focus:outline-primary focus:border-primary"
+            className="w-full p-2.5 rounded-[3px] border border-outline-variant bg-surface-container-lowest font-mono text-[12.5px] leading-5 text-on-surface placeholder:text-outline"
           />
         </div>
 
@@ -265,7 +287,7 @@ export default function CheckChangePage({ role, setRole, setActiveTab }) {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="for example: switch notifications to websockets"
-            className="w-full h-10 px-2.5 rounded-[3px] border border-outline-variant bg-surface-container-lowest text-[14px] text-on-surface placeholder:text-outline focus:outline-2 focus:outline-primary focus:border-primary"
+            className="w-full h-10 px-2.5 rounded-[3px] border border-outline-variant bg-surface-container-lowest text-[14px] text-on-surface placeholder:text-outline"
           />
         </div>
 
@@ -291,12 +313,12 @@ export default function CheckChangePage({ role, setRole, setActiveTab }) {
         )}
         {result && (
           <>
-            <h2 className="text-[22px] leading-[28px] font-bold text-on-surface">
+            <h2 ref={resultHeadingRef} tabIndex={-1} className="text-[22px] leading-[28px] font-bold text-on-surface scroll-mt-20">
               {result.triggered.length
                 ? `${result.triggered.length} tripwire${result.triggered.length === 1 ? "" : "s"} matched`
                 : "No tripwires matched"}
             </h2>
-            <p className="text-[13.5px] leading-[21px] text-on-surface-variant">
+            <p className="text-[13.5px] leading-[21px] text-on-surface-variant max-w-[75ch]">
               Checked {result.files.length} file{result.files.length === 1 ? "" : "s"} against {result.tripwires_checked} tripwires visible to this role.
               {result.claims_withheld > 0 && ` ${result.claims_withheld} claims above this role's access level were not used.`}
               {result.decisions_waiting_for_review > 0 &&
@@ -313,10 +335,12 @@ export default function CheckChangePage({ role, setRole, setActiveTab }) {
         )}
       </section>
 
-      <section className="panel p-4 sm:p-5 flex flex-col gap-3">
-        <h2 className="text-[22px] leading-[28px] font-bold text-on-surface">Do tripwires work? Replay on past history</h2>
-        <ReplaySummary />
-      </section>
+      <details className="panel p-4 sm:p-5 group">
+        <summary className="cursor-pointer text-[17px] leading-6 font-bold text-on-surface">Do tripwires work? Replay on past history</summary>
+        <div className="mt-3">
+          <ReplaySummary />
+        </div>
+      </details>
     </div>
   );
 }

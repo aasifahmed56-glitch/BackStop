@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Lock, ShieldCheck } from "lucide-react";
 import { Mark } from "./Navbar";
 import { Button, TextInput } from "./ui";
@@ -12,6 +12,7 @@ export default function LoginPage({ admin = false, onSignedIn }) {
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
   const [config, setConfig] = useState(null);
+  const submitRef = useRef(null);
 
   useEffect(() => {
     document.title = admin ? "Admin sign-in · Backstop" : "Sign in · Backstop";
@@ -30,6 +31,14 @@ export default function LoginPage({ admin = false, onSignedIn }) {
       setError(formatErrorMessage(err));
       setBusy(false);
     }
+  };
+
+  const demoPassword = admin ? (config?.demo_admin_password_hint ? "admin" : "") : config?.demo_password_hint ? "backstop-demo" : "";
+  const fillDemo = (name) => {
+    setUsername(name);
+    setPassword(demoPassword);
+    setError(null);
+    if (demoPassword) requestAnimationFrame(() => submitRef.current?.focus());
   };
 
   const demoNames = admin ? (config?.demo_admin ? [config.demo_admin] : []) : config?.demo_users || [];
@@ -63,6 +72,8 @@ export default function LoginPage({ admin = false, onSignedIn }) {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
+              aria-invalid={error ? true : undefined}
+              aria-describedby={error ? "login-error" : undefined}
               autoFocus
             />
             <TextInput
@@ -73,13 +84,15 @@ export default function LoginPage({ admin = false, onSignedIn }) {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              aria-invalid={error ? true : undefined}
+              aria-describedby={error ? "login-error" : undefined}
             />
             {error && (
-              <p role="alert" className="text-[13.5px] leading-5 text-error">
+              <p id="login-error" role="alert" className="text-[13.5px] leading-5 text-error">
                 {error}
               </p>
             )}
-            <Button type="submit" variant={admin ? "stamp" : "primary"} size="lg" disabled={busy || !username || !password}>
+            <Button ref={submitRef} type="submit" variant={admin ? "stamp" : "primary"} size="lg" disabled={busy || !username || !password}>
               {busy ? "Signing in…" : "Sign in"}
             </Button>
           </form>
@@ -90,7 +103,8 @@ export default function LoginPage({ admin = false, onSignedIn }) {
             Demo accounts: {demoNames.map((n, i) => (
               <React.Fragment key={n}>
                 {i > 0 && ", "}
-                <button type="button" className="font-mono underline underline-offset-2 hover:text-on-surface cursor-pointer" onClick={() => setUsername(n)}>
+                <button type="button" className="font-mono underline underline-offset-2 hover:text-on-surface cursor-pointer inline-block py-1.5 px-1"
+                  onClick={() => fillDemo(n)}>
                   {n}
                 </button>
               </React.Fragment>

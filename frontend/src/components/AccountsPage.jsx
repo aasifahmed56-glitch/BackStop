@@ -37,22 +37,38 @@ export default function AccountsPage() {
   const [resetFor, setResetFor] = useState(null);
   const [newPw, setNewPw] = useState("");
   const [toDelete, setToDelete] = useState(null);
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [rowNote, setRowNote] = useState(null);
 
   const load = () =>
     api
       .listUsers()
-      .then((r) => setUsers(r.users))
-      .catch((e) => setError(formatErrorMessage(e)));
+      .then((r) => {
+        setUsers(r.users);
+        setLoadFailed(false);
+      })
+      .catch((e) => {
+        setError(formatErrorMessage(e));
+        setLoadFailed(true);
+      });
+
+  const pwShort = (pw) => (pw.length >= 8 ? null : `8 characters minimum, ${pw.length} so far`);
+  const canCreate = form.username.trim().length > 0 && form.password.length >= 8;
 
   useEffect(() => {
     load();
   }, []);
 
-  const run = async (fn) => {
+  const run = async (fn, note) => {
     setError(null);
+    setRowNote(null);
     try {
       await fn();
       await load();
+      if (note) {
+        setRowNote(note);
+        setTimeout(() => setRowNote((cur) => (cur === note ? null : cur)), 4000);
+      }
     } catch (err) {
       setError(formatErrorMessage(err));
     }
@@ -119,29 +135,37 @@ export default function AccountsPage() {
             <span className="text-[13px] font-semibold">Password</span>
             <input className={input} type="password" autoComplete="new-password" value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })} />
-            <span className="text-[12px] text-on-surface-variant">At least 8 characters. Share it with the person directly.</span>
+            <span className="text-[12px] text-on-surface-variant">
+              {form.password ? pwShort(form.password) || "Long enough." : "8 characters minimum."} Share it with the person directly.
+            </span>
           </label>
           {formError && <p role="alert" className="sm:col-span-2 text-[13.5px] text-error">{formError}</p>}
           <div className="sm:col-span-2 flex justify-end gap-2">
             <Button onClick={() => (setCreating(false), setFormError(null))}>Cancel</Button>
-            <Button type="submit" variant="primary" disabled={busy}>{busy ? "Creating…" : "Create account"}</Button>
+            <Button type="submit" variant="primary" disabled={busy || !canCreate}>{busy ? "Creating…" : "Create account"}</Button>
           </div>
         </form>
       )}
 
-      {error && <p role="alert" className="panel border-error/40 px-4 py-3 text-[14px] text-error">{error}</p>}
+      {error && (
+        <div role="alert" className="panel border-error/40 px-4 py-3 flex flex-wrap items-center justify-between gap-3 text-[14px] text-error">
+          <p>{error}</p>
+          {loadFailed && <Button size="sm" className="min-h-9" onClick={() => (setError(null), load())}>Try again</Button>}
+        </div>
+      )}
+      {rowNote && <p role="status" className="text-[13.5px] text-tertiary">{rowNote}</p>}
 
       {!users ? (
-        <Skeleton className="h-40" />
+        loadFailed ? null : <Skeleton className="h-40" />
       ) : (
         <div className="panel relative overflow-x-auto">
           <table className="w-full text-[14px]">
             <thead>
-              <tr className="text-left text-[12px] uppercase tracking-[0.06em] text-on-surface-variant border-b border-outline-variant">
+              <tr className="text-left text-[12.5px] text-on-surface-variant border-b border-outline-variant">
                 <th className="px-4 py-2.5 font-semibold">Person</th>
                 <th className="px-4 py-2.5 font-semibold">Role</th>
-                <th className="px-4 py-2.5 font-semibold">Last sign-in</th>
-                <th className="px-4 py-2.5 font-semibold sr-only">Actions</th>
+                <th className="px-4 py-2.5 font-semibold hidden sm:table-cell">Last sign-in</th>
+                <th className="px-4 py-2.5 font-semibold"><span className="sr-only">Actions</span></th>
               </tr>
             </thead>
             <tbody>
@@ -152,34 +176,35 @@ export default function AccountsPage() {
                     <td className="px-4 py-3">
                       <div className="font-semibold">{u.display_name}{self && <span className="ml-1.5 text-[12px] font-normal text-on-surface-variant">(you)</span>}</div>
                       <div className="font-mono text-[12.5px] text-on-surface-variant">{u.username}{!u.active && " · disabled"}</div>
+                      <div className="sm:hidden text-[12px] text-on-surface-variant tnum whitespace-nowrap">Last sign-in: {fmt(u.last_login_at)}</div>
                     </td>
                     <td className="px-4 py-3">
                       <select
                         aria-label={`Role for ${u.username}`}
-                        className="h-8 px-2 rounded-[6px] border border-outline-variant bg-surface-container-lowest text-[13.5px] disabled:opacity-60"
+                        className="min-h-9 sm:min-h-8 px-2 rounded-[6px] border border-outline-variant bg-surface-container-lowest text-[13.5px] disabled:opacity-60"
                         value={u.role}
                         disabled={self}
-                        onChange={(e) => run(() => api.updateUser(u.id, { role: e.target.value }))}
+                        onChange={(e) => run(() => api.updateUser(u.id, { role: e.target.value }), `Role for ${u.username} is now ${ROLE_LABEL[e.target.value]}.`)}
                       >
                         {Object.entries(ROLE_LABEL).map(([id, label]) => (
                           <option key={id} value={id}>{label}</option>
                         ))}
                       </select>
                     </td>
-                    <td className="px-4 py-3 text-on-surface-variant tnum">{fmt(u.last_login_at)}</td>
+                    <td className="px-4 py-3 text-on-surface-variant tnum whitespace-nowrap hidden sm:table-cell">{fmt(u.last_login_at)}</td>
                     <td className="px-4 py-3">
                       <div className="flex justify-end gap-1">
-                        <Button size="sm" variant="ghost" onClick={() => (setResetFor(u), setNewPw(""))} title="Set a new password">
-                          <KeyRound size={15} aria-hidden="true" /> <span className="hidden md:inline">Password</span>
+                        <Button size="sm" variant="ghost" className="min-h-9 min-w-9" onClick={() => (setResetFor(u), setNewPw(""))} title="Set a new password">
+                          <KeyRound size={15} aria-hidden="true" /> <span className="sr-only md:not-sr-only">Set password for {u.username}</span>
                         </Button>
                         {!self && (
-                          <Button size="sm" variant="ghost" onClick={() => run(() => api.updateUser(u.id, { active: !u.active }))}>
+                          <Button size="sm" variant="ghost" className="min-h-9 min-w-9" onClick={() => run(() => api.updateUser(u.id, { active: !u.active }), `${u.username} is now ${u.active ? "disabled" : "enabled"}.`)}>
                             {u.active ? <UserX size={15} aria-hidden="true" /> : <UserCheck size={15} aria-hidden="true" />}
-                            <span className="hidden md:inline">{u.active ? "Disable" : "Enable"}</span>
+                            <span className="sr-only md:not-sr-only">{u.active ? "Disable" : "Enable"}<span className="sr-only"> {u.username}</span></span>
                           </Button>
                         )}
                         {!self && (
-                          <Button size="sm" variant="ghost" onClick={() => setToDelete(u)} aria-label={`Delete ${u.username}`}>
+                          <Button size="sm" variant="ghost" className="min-h-9 min-w-9" onClick={() => setToDelete(u)} aria-label={`Delete ${u.username}`}>
                             <Trash2 size={15} aria-hidden="true" />
                           </Button>
                         )}
@@ -207,7 +232,7 @@ export default function AccountsPage() {
               onClick={() => {
                 const u = resetFor;
                 setResetFor(null);
-                run(() => api.updateUser(u.id, { password: newPw }));
+                run(() => api.updateUser(u.id, { password: newPw }), `Password set for ${u.username}.`);
               }}
             >
               Set password
@@ -218,7 +243,7 @@ export default function AccountsPage() {
         <label className="flex flex-col gap-1.5">
           <span className="text-[13px] font-semibold">Password</span>
           <input className={input} type="password" autoComplete="new-password" value={newPw} onChange={(e) => setNewPw(e.target.value)} />
-          <span className="text-[12px] text-on-surface-variant">At least 8 characters.</span>
+          <span className="text-[12px] text-on-surface-variant">{pwShort(newPw) || "Long enough."}</span>
         </label>
       </Dialog>
 

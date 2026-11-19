@@ -14,14 +14,16 @@ const CATEGORY_LABELS = {
 };
 const VERDICTS = ["yes", "partly", "no", "unchecked"];
 
+const fmt = (n) => (typeof n === "number" ? n.toLocaleString("en-GB") : n);
 const pct = (x) => (x === null || x === undefined ? "n/a" : `${Math.round(x * 100)}%`);
 
 const card = "panel p-4 sm:p-5 flex flex-col gap-4 min-w-0";
 const h2 = "text-[22px] leading-[28px] font-bold text-on-surface";
 const h3 = "text-[17px] leading-6 font-bold text-on-surface";
-const body = "text-[14px] leading-[22px] text-on-surface-variant max-w-3xl";
-const th = "py-2 px-3 font-semibold text-left text-on-surface";
+const body = "text-[14px] leading-[22px] text-on-surface-variant max-w-[72ch]";
+const th = "py-2 px-3 font-semibold text-left text-on-surface sticky left-0 bg-surface-container-lowest";
 const thHead = "py-2 px-3 text-left field-label";
+const thHeadFirst = `${thHead} sticky left-0 bg-surface-container-low`;
 const td = "py-2 px-3 align-top tnum text-on-surface";
 
 function Stat({ label, value, note }) {
@@ -47,14 +49,27 @@ function Table({ caption, children }) {
 
 function EvalSummary({ title, ev }) {
   if (!ev) return null;
+  const aiNotRun = ev.ai_check_ran === false && ev.ai_check_not_run === ev.pairs;
+  const usesAi = ev.ai_check_ran !== undefined || ev.ai_check_not_run > 0;
   return (
     <div className="flex flex-col gap-2">
       <h3 className={h3}>{title}</h3>
       <p className={body}>{ev.system}</p>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <Stat label="Bad claims caught" value={`${ev.caught} of ${ev.bad_pairs}`} note={pct(ev.catch_rate)} />
-        <Stat label="Correct claims wrongly rejected" value={`${ev.falsely_rejected} of ${ev.correct_pairs}`} note={pct(ev.false_reject_rate)} />
-        <Stat label="AI check did not run" value={`${ev.ai_check_not_run} of ${ev.pairs}`} note="Never counted as caught" />
+      <div className={`grid grid-cols-1 gap-3 ${usesAi ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}>
+        {aiNotRun ? (
+          <>
+            <Stat label="Bad claims caught" value="Not run" note="The AI check had no verdicts to count" />
+            <Stat label="Correct claims wrongly rejected" value="Not run" note="The AI check had no verdicts to count" />
+          </>
+        ) : (
+          <>
+            <Stat label="Bad claims caught" value={pct(ev.catch_rate)} note={`${fmt(ev.caught)} of ${fmt(ev.bad_pairs)}`} />
+            <Stat label="Correct claims wrongly rejected" value={pct(ev.false_reject_rate)} note={`${fmt(ev.falsely_rejected)} of ${fmt(ev.correct_pairs)}`} />
+          </>
+        )}
+        {usesAi && (
+          <Stat label="AI check did not run" value={`${fmt(ev.ai_check_not_run)} of ${fmt(ev.pairs)}`} note="Never counted as caught" />
+        )}
       </div>
     </div>
   );
@@ -67,7 +82,7 @@ function ConfusionMatrix({ ev, caption }) {
     <Table caption={caption}>
       <thead>
         <tr className="bg-surface-container-low border-b border-outline-variant">
-          <th scope="col" className={thHead}>Category</th>
+          <th scope="col" className={thHeadFirst}>Category</th>
           {VERDICTS.map((v) => (
             <th key={v} scope="col" className={thHead}>Verdict: {v}</th>
           ))}
@@ -78,7 +93,7 @@ function ConfusionMatrix({ ev, caption }) {
           <tr key={c} className="border-b border-outline-variant last:border-b-0">
             <th scope="row" className={th}>{CATEGORY_LABELS[c] || c}</th>
             {VERDICTS.map((v) => (
-              <td key={v} className={td}>{ev.confusion_matrix[c][v]}</td>
+              <td key={v} className={td}>{fmt(ev.confusion_matrix[c][v])}</td>
             ))}
           </tr>
         ))}
@@ -97,7 +112,7 @@ function ReplayTable({ datasets }) {
     <Table caption="Tripwire replay, same-file results">
       <thead>
         <tr className="bg-surface-container-low border-b border-outline-variant">
-          <th scope="col" className={thHead}>Dataset</th>
+          <th scope="col" className={thHeadFirst}>Dataset</th>
           <th scope="col" className={thHead}>Method</th>
           <th scope="col" className={thHead}>Flagged</th>
           <th scope="col" className={thHead}>Later problematic</th>
@@ -115,13 +130,13 @@ function ReplayTable({ datasets }) {
                 <th scope="rowgroup" rowSpan={REPLAY_ROWS.filter(([kk]) => r[kk]).length} className={`${th} align-top`}>
                   {name}
                   <span className="block text-[12px] font-normal text-on-surface-variant">
-                    {d.proposed_changes} later commits, base rate {pct(r.base_rate)}
+                    {fmt(d.proposed_changes)} later commits, base rate {pct(r.base_rate)}
                   </span>
                 </th>
               )}
               <td className={td}>{label}</td>
-              <td className={td}>{r[k].flagged} of {d.proposed_changes}</td>
-              <td className={td}>{r.problematic}</td>
+              <td className={td}>{fmt(r[k].flagged)} of {fmt(d.proposed_changes)}</td>
+              <td className={td}>{fmt(r.problematic)}</td>
               <td className={td}>{r.problematic ? pct(r[k].precision) : "n/a"}</td>
               <td className={td}>{pct(r[k].recall)}</td>
             </tr>
@@ -177,7 +192,7 @@ export default function TrustReportPage() {
     <div className="flex flex-col w-full gap-5 min-w-0">
       <header className="flex flex-col gap-1">
         <h1 className="text-[26px] leading-[34px] font-bold tracking-[-0.015em] text-on-surface">Trust report</h1>
-        <p className={`${body} max-w-2xl`}>
+        <p className={body}>
           Saved results of two tests: an attack run that tries to read or change claims a role should not reach, and an
           evaluation of how often the support check catches deliberately wrong claims. These are tested cases on synthetic
           data, not a guarantee.
@@ -198,9 +213,9 @@ export default function TrustReportPage() {
               write is accepted above the role's ceiling.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <Stat label="Attacks run" value={now?.attacks_run ?? "n/a"} note={`${now?.endpoints_covered ?? "?"} endpoints`} />
-              <Stat label="Blocked" value={now?.blocked ?? "n/a"} />
-              <Stat label="Leaked" value={now?.leaked ?? "n/a"} note={before ? `Before the fixes: ${before.leaked} of ${before.attacks_run}` : undefined} />
+              <Stat label="Attacks run" value={fmt(now?.attacks_run ?? "n/a")} note={`${fmt(now?.endpoints_covered ?? "?")} endpoints`} />
+              <Stat label="Blocked" value={fmt(now?.blocked ?? "n/a")} />
+              <Stat label="Leaked" value={fmt(now?.leaked ?? "n/a")} note={before ? `Before the fixes: ${fmt(before.leaked)} of ${fmt(before.attacks_run)} attacks leaked (an earlier, smaller attack set)` : undefined} />
             </div>
 
             {leak.found_before_fixes?.length > 0 && (
@@ -209,7 +224,7 @@ export default function TrustReportPage() {
                 <Table caption="Leaks found before the fixes">
                   <thead>
                     <tr className="bg-surface-container-low border-b border-outline-variant">
-                      <th scope="col" className={thHead}>Endpoint</th>
+                      <th scope="col" className={thHeadFirst}>Endpoint</th>
                       <th scope="col" className={thHead}>Failed attacks</th>
                       <th scope="col" className={thHead}>What was exposed</th>
                       <th scope="col" className={thHead}>Fix</th>
@@ -221,7 +236,7 @@ export default function TrustReportPage() {
                       return (
                         <tr key={f.endpoint} className="border-b border-outline-variant last:border-b-0">
                           <th scope="row" className={`${th} font-mono text-[12.5px] font-normal whitespace-nowrap`}>{f.endpoint}</th>
-                          <td className={td}>{f.count}</td>
+                          <td className={td}>{fmt(f.count)}</td>
                           <td className={td}>{f.exposed.join(", ")}</td>
                           <td className={td}>{fix ? fix.fix : "See docs/TRUST_REPORT.md"}</td>
                         </tr>
@@ -242,23 +257,23 @@ export default function TrustReportPage() {
 
       {/* Support evaluation */}
       <section className={card} aria-labelledby="support-heading">
+        {se.available && !se.after?.ai_check_ran && (
+          <p role="note" className="max-w-[72ch] rounded-[3px] border border-goldenrod bg-goldenrod-container text-on-goldenrod p-3 text-[13.5px] leading-[21px]">
+            The AI support check has not been run on these pairs yet: no API key was available, so every AI verdict is
+            "unchecked". In the app an unchecked claim is never shown as Verified. The numbers below for the detail
+            check are real; the AI numbers still need a run with a key.
+          </p>
+        )}
         <h2 id="support-heading" className={h2}>Support-check evaluation</h2>
         {!se.available ? (
           <p className={body}>No saved evaluation yet. Run <code>python scripts/run_support_eval.py</code> in backend/.</p>
         ) : (
           <>
             <p className={body}>
-              {se.after.pairs} hand-labelled claim and quote pairs from the sample: {se.after.correct_pairs} correct and{" "}
-              {se.after.bad_pairs} deliberately wrong (unrelated, opposite, overstated, with an invented detail, or partly
+              {fmt(se.after.pairs)} hand-labelled claim and quote pairs from the sample: {fmt(se.after.correct_pairs)} correct and{" "}
+              {fmt(se.after.bad_pairs)} deliberately wrong (unrelated, opposite, overstated, with an invented detail, or partly
               supported). A wrong claim counts as caught when the verdict is "no" or "partly", so it is not shown as Verified.
             </p>
-            {!se.after.ai_check_ran && (
-              <p role="note" className="rounded-[3px] border border-goldenrod bg-goldenrod-container text-on-goldenrod p-3 text-[13.5px] leading-[21px]">
-                The AI support check has not been run on these pairs yet: no API key was available, so every AI verdict is
-                "unchecked". In the app an unchecked claim is never shown as Verified. The numbers below for the detail
-                check are real; the AI numbers still need a run with a key.
-              </p>
-            )}
             <EvalSummary title="Before: AI support check" ev={se.before} />
             <EvalSummary title="After: AI support check plus detail check" ev={se.after} />
             <EvalSummary title="Detail check on its own" ev={alone} />
@@ -276,9 +291,9 @@ export default function TrustReportPage() {
               <div className="flex flex-col gap-2">
                 <h3 className={h3}>Effect on the sample project</h3>
                 <p className={body}>
-                  With saved AI answers only (no key), the detail check downgraded {effect.downgraded_by_detail_check} of the{" "}
-                  {effect.verified + effect.downgraded_by_detail_check} claims the support check marked as supported.{" "}
-                  {effect.ai_answers_missing_from_cache} saved AI answers were missing.
+                  With saved AI answers only (no key), the detail check downgraded {fmt(effect.downgraded_by_detail_check)} of the{" "}
+                  {fmt(effect.verified + effect.downgraded_by_detail_check)} claims the support check marked as supported.{" "}
+                  {fmt(effect.ai_answers_missing_from_cache)} saved AI answers were missing.
                 </p>
               </div>
             )}
@@ -286,12 +301,12 @@ export default function TrustReportPage() {
             {se.after.misses?.length > 0 && (
               <details className="flex flex-col gap-2">
                 <summary className={`${h3} cursor-pointer rounded-[2px]`}>
-                  Wrong claims that were not caught ({se.after.misses.length})
+                  Wrong claims that were not caught ({fmt(se.after.misses.length)})
                 </summary>
                 <Table caption="Missed wrong claims">
                   <thead>
                     <tr className="bg-surface-container-low border-b border-outline-variant">
-                      <th scope="col" className={thHead}>Category</th>
+                      <th scope="col" className={thHeadFirst}>Category</th>
                       <th scope="col" className={thHead}>Claim</th>
                       <th scope="col" className={thHead}>Quote</th>
                       <th scope="col" className={thHead}>Verdict</th>
@@ -328,7 +343,7 @@ export default function TrustReportPage() {
 
       <section className={card} aria-labelledby="limits-heading">
         <h2 id="limits-heading" className={h2}>Limitations</h2>
-        <ul className="list-disc pl-5 flex flex-col gap-1 text-[14px] leading-[22px] text-on-surface">
+        <ul className="list-disc pl-5 flex flex-col gap-1 text-[14px] leading-[22px] text-on-surface max-w-[72ch]">
           {(data?.limitations || []).map((l) => (
             <li key={l}>{l}</li>
           ))}

@@ -553,13 +553,12 @@ export default function RepoMap({ projectId, refreshKey = 0, grow = false, setAc
         </div>
 
         <div className="flex flex-wrap items-center gap-x-5 gap-y-2.5 text-[12.5px] text-on-surface-variant">
-          <div role="radiogroup" aria-label="Colour buds by" className="inline-flex p-0.5 rounded-full bg-surface-container text-[12.5px] font-semibold">
+          <div role="group" aria-label="Colour buds by" className="inline-flex p-0.5 rounded-full bg-surface-container text-[12.5px] font-semibold">
             {MODES.map(([id, label]) => (
               <button
                 key={id}
                 type="button"
-                role="radio"
-                aria-checked={mode === id}
+                aria-pressed={mode === id}
                 onClick={() => setMode(id)}
                 className={`h-7 px-3 rounded-full cursor-pointer transition-colors ${mode === id ? "bg-surface-container-lowest text-on-surface shadow-[0_1px_2px_rgb(29_32_31/0.12)]" : "text-on-surface-variant hover:text-on-surface"}`}
               >

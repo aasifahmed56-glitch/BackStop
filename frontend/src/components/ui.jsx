@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { X } from "lucide-react";
+import { X, Lock } from "lucide-react";
 
 /* Shared vocabulary for every screen: the herbarium sheet.
    Status = what the automated checks found (leaf, ochre, rust, graphite).
@@ -121,6 +121,7 @@ export function Button({ variant = "outline", size = "md", className = "", child
 
 /* Native <dialog>: real focus trap, Esc to close, top layer (never clipped). */
 export function Dialog({ open, onClose, title, description, children, footer, width = "max-w-md" }) {
+  const titleId = React.useId();
   const ref = useRef(null);
   useEffect(() => {
     const d = ref.current;
@@ -143,13 +144,13 @@ export function Dialog({ open, onClose, title, description, children, footer, wi
         if (e.target === ref.current) onClose?.();
       }}
       className={`sheet m-auto w-[calc(100vw-2rem)] ${width} p-0 rounded-[10px] border border-outline-variant bg-surface-container-lowest text-on-surface shadow-[0_24px_60px_-20px_rgb(29_32_31/0.45)]`}
-      aria-labelledby="dialog-title"
+      aria-labelledby={titleId}
     >
       {open && (
         <div className="flex flex-col">
           <header className="flex items-start justify-between gap-4 px-5 pt-4 pb-3 border-b border-outline-variant">
             <div>
-              <h2 id="dialog-title" className="text-[17px] leading-6 font-bold">{title}</h2>
+              <h2 id={titleId} className="text-[17px] leading-6 font-bold">{title}</h2>
               {description && <p className="text-[13px] leading-5 text-on-surface-variant mt-0.5">{description}</p>}
             </div>
             <button type="button" onClick={onClose} aria-label="Close" className="p-1 -m-1 rounded-[2px] text-on-surface-variant hover:text-on-surface hover:bg-surface-container cursor-pointer">
@@ -170,7 +171,7 @@ export function TextArea({ id, label, hint, ...props }) {
       <span className="text-[13px] font-semibold">{label}</span>
       <textarea
         id={id}
-        className="w-full min-h-24 p-2.5 rounded-[6px] border border-outline-variant bg-surface-container-lowest text-[14px] leading-[22px] text-on-surface placeholder:text-outline focus:outline-2 focus:outline-stamp focus:border-stamp"
+        className="w-full min-h-24 p-2.5 rounded-[6px] border border-outline-variant bg-surface-container-lowest text-[14px] leading-[22px] text-on-surface placeholder:text-outline focus:border-stamp"
         {...props}
       />
       {hint && <span className="text-[12px] text-on-surface-variant">{hint}</span>}
@@ -185,11 +186,27 @@ export function TextInput({ id, label, hint, ...props }) {
       <input
         id={id}
         type="text"
-        className="w-full h-10 px-2.5 rounded-[6px] border border-outline-variant bg-surface-container-lowest text-[14px] text-on-surface placeholder:text-outline focus:outline-2 focus:outline-stamp focus:border-stamp"
+        className="w-full h-10 px-2.5 rounded-[6px] border border-outline-variant bg-surface-container-lowest text-[14px] text-on-surface placeholder:text-outline focus:border-stamp"
         {...props}
       />
       {hint && <span className="text-[12px] text-on-surface-variant">{hint}</span>}
     </label>
+  );
+}
+
+const ACCESS_CHIP = {
+  restricted: "bg-error-container text-on-error-container",
+  confidential: "bg-goldenrod-container text-on-goldenrod",
+  team: "bg-surface-container text-on-surface",
+  public: "bg-tertiary-fixed text-on-tertiary-fixed",
+};
+
+export function AccessChip({ level }) {
+  return (
+    <span className={`inline-flex items-center gap-1 px-1.5 py-px rounded-[2px] text-[11px] font-semibold capitalize ${ACCESS_CHIP[level] || ACCESS_CHIP.team}`}>
+      {(level === "restricted" || level === "confidential") && <Lock size={10} aria-hidden="true" />}
+      {level || "team"}
+    </span>
   );
 }
 
