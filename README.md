@@ -1,3 +1,10 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/brand/bstop-logo-dark.png">
+    <img src="docs/brand/bstop-logo-light.png" alt="bStop" width="280">
+  </picture>
+</p>
+
 # Backstop
 
 **Every claim shows its source quote and a status. A human approves before handover.**

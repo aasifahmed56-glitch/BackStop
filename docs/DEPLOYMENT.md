@@ -28,7 +28,9 @@ docker run -p 8000:8000 -e LLM_PROVIDER=none backstop
 
 ## Live demo
 
-The live service is https://backstop-redesign.onrender.com. It is a Docker web service on Render's free plan in Singapore, and it deploys from the `redesign-herbarium` branch, which is kept level with `main`.
+The live service is https://backstop-atsu.onrender.com. It is Aasif's Render service and deploys from `main` of [aasifahmed56-glitch/BackStop](https://github.com/aasifahmed56-glitch/BackStop), so it shows changes once they are merged there.
+
+A second copy runs at https://backstop-redesign.onrender.com as a preview. It is a Docker web service on Render's free plan in Singapore, deploys from the `redesign-herbarium` branch of [itzz-inbathamizhanS/BackStop](https://github.com/itzz-inbathamizhanS/BackStop), and that branch is kept level with `main`.
 
 ## Environment variables
 

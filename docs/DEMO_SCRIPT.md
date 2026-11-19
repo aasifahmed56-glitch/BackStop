@@ -2,7 +2,7 @@
 
 A five-minute walk through Backstop for judges or a recorded video. Every step works on the live site with the demo accounts and needs no setup.
 
-**Live site:** https://backstop-redesign.onrender.com
+**Live site:** https://backstop-atsu.onrender.com
 **Accounts:** `manager`, `lead`, `dev`, `pm`, `lead2`, `dev2`, `pm2` with password `backstop-demo` at `/login`; `admin` with password `admin` at `/admin/login`.
 
 > The free Render instance sleeps when idle. Open the site a minute before you start so the first page loads at once.

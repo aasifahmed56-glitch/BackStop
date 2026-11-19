@@ -235,7 +235,7 @@ A neutral graphite-and-white world with one saturated violet that means "a perso
 
 ### Tertiary (check status)
 These say what the automated checks found, never what a person decided. Each pairs a dot colour with a pale chip ground.
-- **Pressed Leaf** (tertiary on tertiary-fixed): Quote matched. Leaf also draws the pressed stem in the brand mark.
+- **Pressed Leaf** (tertiary on tertiary-fixed): Quote matched.
 - **Dried Ochre** (goldenrod on goldenrod-container): Inferred.
 - **Iron-Gall Rust** (error on error-container): Conflicting; also destructive (Reject) and the "Not ready yet" verdict.
 - **Graphite Grey** (outline on surface-container-high): Missing evidence. Withheld uses outline-variant on surface-container.
@@ -335,9 +335,9 @@ Firm and quiet: semibold Hanken on a 6px corner, a 1px border in every variant, 
 - **Focus:** border and 2px outline both turn violet.
 
 ### Navigation
-- **Rail:** graphite, 248px. Brand mark and name (18px bold), then project name, leaver line and a Courier accession number, then a "Jump to" button with a ⌘K kbd, then numbered steps.
+- **Rail:** graphite, 248px. The bStop logo (purple #423c92 rounded square with a dark "b", then "Stop"), then project name, leaver line and a Courier accession number, then a "Jump to" button with a ⌘K kbd, then numbered steps.
 - **Step link:** 40px, 6px corner, 14px medium in rail ash; Courier step number to the left. Active: rail-raised ground, rail-paper text, step number in lilac. Check the claims shows a Courier `done/total` count.
-- **Mobile:** 56px graphite bar with mark, project line and icon buttons; steps scroll horizontally under a rail rule, 13px semibold, active underlined 2px in lilac.
+- **Mobile:** 56px graphite bar with the bStop mark, project line and icon buttons; steps scroll horizontally under a rail rule, 13px semibold, active underlined 2px in lilac.
 
 ### Determination Slip (signature)
 One small paper label per human decision, pinned to the claim. White, 1px violet border, 3px corner, slip lift shadow, stamp-ink text. First line in Courier: bold "det." then who and when; second line the decision in 13px semibold; optional note clamped to two lines. Slips stack newest on top, each older one indented 10px more (up to 30px) and at 70% opacity. New slips enter with the stamp-in animation (420ms: from 10px up, -4deg, 108% scale, slight blur, to rest).
@@ -377,3 +377,7 @@ Courier 12.5px on board tint with a line-number gutter divided by a hairline; th
 - **Don't** set quotes or catalogue numbers in the sans, or interface prose in Courier.
 - **Don't** put small uppercase tracked labels above headings; labels are sentence-case 12.5px.
 - **Don't** add shadows to panels or sheets at rest.
+
+## Logo
+
+The logo is **bStop**: a purple rounded square (`#423c92`, corner radius about 14% of its side) holding a dark "b" (`#20221d`), followed by the word "Stop". In the app the mark is drawn inline by `Mark` in `frontend/src/components/Navbar.jsx`, and `Logo` adds the word beside it in the interface font. The source files are in `docs/brand/`: `bstop-logo.png` (on its original dark ground), `bstop-logo-dark.png` and `bstop-logo-light.png` (transparent, for dark and light backgrounds) and `bstop-mark.svg`. The favicon, `favicon.ico`, `apple-touch-icon.png` and the 192 and 512 app icons in `frontend/public/` are made from the same mark.

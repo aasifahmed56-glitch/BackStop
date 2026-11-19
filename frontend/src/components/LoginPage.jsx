@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Lock, ShieldCheck } from "lucide-react";
-import { Mark } from "./Navbar";
+import { Logo } from "./Navbar";
 import { Button, TextInput } from "./ui";
 import { api, formatErrorMessage } from "../api";
 
@@ -46,9 +46,8 @@ export default function LoginPage({ admin = false, onSignedIn }) {
   return (
     <div className="min-h-screen bg-background text-on-surface flex items-center justify-center px-4 py-10 antialiased">
       <main className="w-full max-w-[400px]">
-        <div className="flex items-center gap-2 mb-6">
-          <Mark size={28} />
-          <span className="text-[18px] font-bold tracking-[-0.01em]">Backstop</span>
+        <div className="flex items-center mb-6" role="img" aria-label="Backstop">
+          <Logo size={28} />
         </div>
 
         <div className={`panel px-6 py-6 ${admin ? "border-stamp/50" : ""}`}>
