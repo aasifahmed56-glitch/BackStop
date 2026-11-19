@@ -18,7 +18,7 @@ Backstop is one web service. FastAPI serves the REST API under `/api` and the bu
 | `views.py` | Role-gated handover, locked placeholders, Day 1 / Week 1 / Month 1 plan, acknowledgement, sample reset |
 | `debrief.py` | Debrief questions, recorded answers and readiness score |
 | `workspace.py` | User projects: create, delete, add or remove records, build claims |
-| `githubimport.py` | Public GitHub import: bare blob-less clone, 60 s timeout, 3,000 commits, one at a time, 3 per hour per client |
+| `githubimport.py` | Public GitHub import: blob-less download of only the needed window of history, falling back to the last year when slow; 10,000 commits; one at a time, 3 per hour per client |
 | `realdata.py` | Pseudonymises and cleans real commit histories |
 | `backtest.py`, `realbacktest.py` | Sample and real-project backtests against baselines |
 | `tripwires.py`, `tripwires_replay.py` | Check a change; saved replay results |

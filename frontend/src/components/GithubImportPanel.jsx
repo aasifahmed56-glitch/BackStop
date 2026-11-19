@@ -56,7 +56,7 @@ export default function GithubImportPanel({ title = "Analyse a GitHub repository
           <h2 id="gh-import-h" className="font-headline-md text-headline-md text-on-surface font-semibold">{title}</h2>
           <p className="text-[14px] leading-[22px] text-on-surface-variant mt-1 max-w-[65ch]">
             Backstop downloads the commit history (no file contents), replaces every name with a pseudonym, ranks modules as of the
-            date you pick and checks the ranking against what happened in the next 180 days. Nothing is stored. Up to 3 imports per hour; large repositories may time out after 60 seconds.
+            date you pick and checks the ranking against what happened in the next 180 days. Nothing is stored. Up to 3 imports per hour. Large repositories are trimmed to recent history so the import stays quick.
           </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_auto] gap-3 items-end">

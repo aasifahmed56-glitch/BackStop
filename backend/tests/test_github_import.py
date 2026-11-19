@@ -54,7 +54,7 @@ def local_repo(tmp_path: Path) -> Path:
 
 
 def _fake_clone_from(src: Path):
-    def fake(url, dest):
+    def fake(url, dest, **kw):
         assert url.startswith("https://github.com/")
         subprocess.run(["git", "clone", "-q", "--bare", str(src), str(dest)], check=True)
     return fake
@@ -82,15 +82,15 @@ def test_temp_dir_is_deleted(monkeypatch, local_repo, tmp_path):
 
 
 def test_timeout_gives_friendly_error(monkeypatch):
-    def slow(url, dest):
+    def slow(url, dest, **kw):
         raise subprocess.TimeoutExpired(cmd="git", timeout=60)
     monkeypatch.setattr(gi, "_clone", slow)
     r = TestClient(app).post("/api/import/github", json={"url": "https://github.com/o/r", "departure_date": "2020-06-01"})
-    assert r.status_code == 504 and "too long" in r.json()["detail"]
+    assert r.status_code == 504 and "too slow" in r.json()["detail"]
 
 
 def test_not_found_gives_friendly_error(monkeypatch):
-    def missing(url, dest):
+    def missing(url, dest, **kw):
         raise subprocess.CalledProcessError(128, "git")
     monkeypatch.setattr(gi, "_clone", missing)
     r = TestClient(app).post("/api/import/github", json={"url": "https://github.com/o/r", "departure_date": "2020-06-01"})
@@ -98,7 +98,7 @@ def test_not_found_gives_friendly_error(monkeypatch):
 
 
 def test_rate_limit_and_future_date(monkeypatch):
-    monkeypatch.setattr(gi, "_clone", lambda u, d: (_ for _ in ()).throw(subprocess.CalledProcessError(1, "git")))
+    monkeypatch.setattr(gi, "_clone", lambda u, d, **kw: (_ for _ in ()).throw(subprocess.CalledProcessError(1, "git")))
     c = TestClient(app)
     future = (date.today() + timedelta(days=2)).isoformat()
     assert c.post("/api/import/github", json={"url": "https://github.com/o/r", "departure_date": future}).status_code == 422
@@ -152,3 +152,49 @@ def test_zero_commits_before_date_is_an_empty_state(monkeypatch, tmp_path):
     monkeypatch.setattr(gi, "_clone", _fake_clone_from(_small_repo(tmp_path, 0)))
     r = TestClient(app).post("/api/import/github", json={"url": "https://github.com/o/r", "departure_date": "2020-06-01"})
     assert r.status_code == 422 and "no commits before" in r.json()["detail"]
+
+
+def test_large_repo_reads_a_window_and_skips_the_cut_edge(tmp_path, local_repo):
+    """A real shallow download: commits older than the window are not read, and
+    the commit at the cut edge (which looks as if it added every file) is left out."""
+    url = local_repo.as_uri()
+    raw, info = None, None
+    real_clone = gi._clone
+    try:
+        gi._clone = lambda u, d, since=None, sha=None: real_clone(url, d, since=since, sha=sha)
+        raw, info = gi.fetch_history("o", "r", date(2020, 4, 1), date(2021, 6, 1))
+    finally:
+        gi._clone = real_clone
+    assert raw and all(c.when.date() >= date(2020, 4, 1) for c in raw)
+    assert info["trimmed_from"] == date(2020, 4, 1)
+    assert "were read to keep the import fast" in gi.trimmed_note(info)
+
+
+def test_slow_download_falls_back_to_the_last_year(monkeypatch, local_repo):
+    calls = []
+    real = _fake_clone_from(local_repo)
+
+    def first_slow(url, dest, since=None, sha=None):
+        calls.append(since)
+        if len(calls) == 1:
+            raise subprocess.TimeoutExpired(cmd="git", timeout=60)
+        real(url, dest)
+    monkeypatch.setattr(gi, "_clone", first_slow)
+    raw, info = gi.fetch_history("o", "r", date(2017, 1, 1), date(2021, 6, 1))
+    assert calls == [date(2017, 1, 1), date(2020, 6, 1)]
+    assert raw and info["trimmed_from"] == date(2020, 6, 1)
+
+
+def test_window_fetch_falls_back_to_plain_clone(monkeypatch, local_repo):
+    calls = []
+    real = _fake_clone_from(local_repo)
+    monkeypatch.setattr(gi, "_commit_at", lambda *a: "a" * 40)
+
+    def picky(url, dest, since=None, sha=None):
+        calls.append((since, sha))
+        if since or sha:
+            raise subprocess.CalledProcessError(128, "git")
+        real(url, dest)
+    monkeypatch.setattr(gi, "_clone", picky)
+    raw, info = gi.fetch_history("o", "r", date(2019, 1, 1), date(2020, 12, 1))
+    assert calls[-1] == (None, None) and raw and info["trimmed_from"] is None

@@ -20,8 +20,6 @@ from __future__ import annotations
 import json
 import re
 import shutil
-import subprocess
-import tempfile
 from collections import defaultdict
 from datetime import date, datetime, timedelta
 from pathlib import Path
@@ -349,7 +347,7 @@ class GithubIn(BaseModel):
 @router.post("/projects/{project_id}/sources/github", summary="Add a public repository's commit history (lead only)", status_code=201)
 def github_source(project_id: int, body: GithubIn, request: Request, session: Session = Depends(get_session)):
     from app import githubimport as gi
-    from app.realdata import format_git_log, pseudonymise, read_git_history
+    from app.realdata import format_git_log, pseudonymise
 
     project = _editable(session, project_id, body.role)
     owner, repo = gi.validate_url(body.url)
@@ -361,18 +359,9 @@ def github_source(project_id: int, body: GithubIn, request: Request, session: Se
         raise HTTPException(429, "You have run 3 imports in the last hour. Please wait, or paste a git log instead.")
     if not gi._lock.acquire(blocking=False):
         raise HTTPException(429, "Another import is running. Try again in a minute.")
-    tmp = Path(tempfile.mkdtemp(prefix="backstop-ws-"))
     try:
-        try:
-            gi._clone(f"https://github.com/{owner}/{repo}.git", tmp / "repo.git")
-            raw = read_git_history(tmp / "repo.git", until=project.departure_date,
-                                   max_commits=gi.MAX_COMMITS, timeout=30)
-        except subprocess.TimeoutExpired:
-            raise HTTPException(504, "The repository took too long to read. Try a smaller one.")
-        except subprocess.CalledProcessError:
-            raise HTTPException(404, "That repository could not be downloaded. Check that it exists and is public.")
+        raw, info = gi.fetch_history(owner, repo, project.departure_date - gi.PROJECT_HISTORY, project.departure_date)
     finally:
-        shutil.rmtree(tmp, ignore_errors=True)
         gi._lock.release()
     if not raw:
         raise HTTPException(422, "There are no commits before the departure date, so there is nothing to read yet.")
@@ -402,10 +391,11 @@ def github_source(project_id: int, body: GithubIn, request: Request, session: Se
     session.commit()
     return {
         "source_id": src.id, "name": src.name, "kind": src.kind, "chunk_count": parts,
-        "commit_count": len(raw), "commit_limit_reached": len(raw) >= gi.MAX_COMMITS,
+        "commit_count": len(raw), "commit_limit_reached": info["limit_reached"],
         "contributor_count": len(set(names.values())), "leaver": leaver_label, "leaver_chosen": chosen,
         "low_confidence": low_confidence,
         "note": f"Contributors are pseudonymised. The person leaving is now {leaver_label} (was {previous})."
+                + (f" {gi.trimmed_note(info)}" if gi.trimmed_note(info) else "")
                 + (f" {gi.low_confidence_note(len(raw))}" if low_confidence else ""),
     }
 

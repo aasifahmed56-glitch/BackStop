@@ -64,4 +64,4 @@ Routes that return claim or source text take a `role` (`incoming_dev`, `incoming
 | `POST …/upload` | 10 per minute; 5 MB; `.txt`, `.json`, `.md`, `.csv` only |
 | `POST …/extract` | 6 per minute |
 | `POST /api/auth/login`, `POST /api/auth/admin/login` | 10 attempts per minute |
-| GitHub import | One at a time; 3 per hour per client; 60 s clone timeout; 3,000 commits |
+| GitHub import | One at a time; 3 per hour per client; downloads only the needed window of history (shorter window if slow); 10,000 commits |
