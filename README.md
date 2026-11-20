@@ -68,7 +68,7 @@ Backstop gives the successor a handover they can trust, and gives the team a way
 **Requirements:** Python 3.11+, Node 20+, git.
 
 ```bash
-git clone https://github.com/itzz-inbathamizhanS/BackStop.git
+git clone https://github.com/aasifahmed56-glitch/BackStop.git
 cd BackStop
 
 # Backend
